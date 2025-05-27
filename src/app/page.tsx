@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Wallet, Coins, ArrowUpRight, ArrowDownRight, Github, Twitter, ExternalLink } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { FlowingBackground } from "../components/flowing-background"
+import { Navbar } from "@/components/navbar"
 
 export default function SolanaStakingDApp() {
   const [isConnected, setIsConnected] = useState(false)
@@ -16,26 +16,32 @@ export default function SolanaStakingDApp() {
   const [isStaking, setIsStaking] = useState(false)
   const [isUnstaking, setIsUnstaking] = useState(false)
 
-  // Mock data - in a real app, this would come from Solana blockchain
-  const mockData = {
-    walletBalance: 1250.75,
-    stakedAmount: 500.0,
-    earnedRewards: 12.45,
-    apy: 8.5,
-    stakingToken: "SOL",
-    rewardToken: "YIELD",
-    totalValueLocked: 2500000,
-    totalStakers: 1247,
-  }
+  // Real data - to be connected to Solana blockchain
+  const [walletBalance, setWalletBalance] = useState(0)
+  const [stakedAmount, setStakedAmount] = useState(0)
+  const [earnedRewards, setEarnedRewards] = useState(0)
+  const [apy, setApy] = useState(0)
+  const [totalValueLocked, setTotalValueLocked] = useState(0)
+  const [totalStakers, setTotalStakers] = useState(0)
+
+  // Suppress unused warnings - these will be used when Solana integration is implemented
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ = { setWalletBalance, setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked, setTotalStakers }
 
   const handleConnectWallet = () => {
     setIsConnected(true)
+    // TODO: Implement actual wallet connection logic
+  }
+
+  const handleReset = () => {
+    setIsConnected(false)
   }
 
   const handleStake = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount) <= 0) return
 
     setIsStaking(true)
+    // TODO: Implement actual staking logic
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsStaking(false)
     setStakeAmount("")
@@ -45,179 +51,135 @@ export default function SolanaStakingDApp() {
     if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return
 
     setIsUnstaking(true)
+    // TODO: Implement actual unstaking logic
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsUnstaking(false)
     setUnstakeAmount("")
   }
 
   const handleClaimRewards = async () => {
+    // TODO: Implement actual claim rewards logic
     await new Promise((resolve) => setTimeout(resolve, 1500))
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1c] via-[#10182a] to-[#0a0f1c] text-white relative overflow-x-hidden">
+      <div className="absolute inset-0 pointer-events-none z-0" style={{
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(74,133,255,0.08) 0%, transparent 70%)'
+      }} />
       <FlowingBackground />
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-gray-800/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[#4a85ff] rounded-md flex items-center justify-center">
-                  <Coins className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-semibold">SolanaStake</span>
-              </div>
+        <div className="backdrop-blur-md bg-black/80 border-b border-gray-800/50 shadow-[0_2px_16px_0_rgba(0,0,0,0.3)]">
+          <Navbar isConnected={isConnected} onConnectWallet={handleConnectWallet} onTitleClick={handleReset} />
+        </div>
 
-              <nav className="hidden md:flex items-center gap-8">
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Stake
-                </a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Pools
-                </a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Analytics
-                </a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Docs
-                </a>
-              </nav>
-
-              <div className="flex items-center gap-4">
-                <div className="hidden md:flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Twitter className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Github className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {!isConnected ? (
-                  <Button onClick={handleConnectWallet} className="bg-white text-black hover:bg-gray-100">
-                    <Wallet className="w-4 h-4 mr-2" />
-                    Connect Wallet
-                  </Button>
-                ) : (
-                  <Badge variant="outline" className="border-[#4a85ff] text-[#4a85ff]">
-                    <div className="w-2 h-2 bg-[#4a85ff] rounded-full mr-2"></div>
-                    Connected
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-16">
           {!isConnected ? (
             <div className="text-center max-w-4xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
-                Stake SOL,
+              <h1 className="text-6xl md:text-7xl font-light mb-8 leading-tight tracking-tight">
+                Stake LABS,
                 <br />
-                <span className="text-[#4a85ff]">Earn YIELD</span>
+                <span className="text-[#4a85ff] font-semibold">Earn xLABS</span>
               </h1>
-              <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-                Maximize your Solana holdings through our high-yield staking protocol. Earn rewards while contributing
-                to network security.
+              <p className="text-xl text-gray-300 mb-16 max-w-2xl mx-auto font-light leading-relaxed">
+                Maximize your LABS holdings through our DAO-governed staking protocol. xLABS is a redeemable token that earns 100% of protocol revenue.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Button
                   onClick={handleConnectWallet}
                   size="lg"
-                  className="bg-white text-black hover:bg-gray-100 px-8 py-6 text-lg"
+                  className="bg-[#4a85ff] text-white hover:bg-[#3a75ef] px-10 py-6 text-lg rounded-xl shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_25px_rgba(74,133,255,0.4)] active:bg-[#2a5bbf] font-medium"
                 >
                   Get Started
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-6 text-lg"
-                >
-                  Learn More
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-12">
               {/* Stats Overview */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-gray-400 mb-2">Wallet Balance</p>
-                    <p className="text-2xl font-semibold">{mockData.walletBalance.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">{mockData.stakingToken}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Wallet Balance</p>
+                    <p className="text-3xl font-light mb-1 text-white">{walletBalance.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">SOL</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-gray-400 mb-2">Staked Amount</p>
-                    <p className="text-2xl font-semibold">{mockData.stakedAmount.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">{mockData.stakingToken}</p>
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Staked Amount</p>
+                    <p className="text-3xl font-light mb-1 text-white">{stakedAmount.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">SOL</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-gray-400 mb-2">Earned Rewards</p>
-                    <p className="text-2xl font-semibold text-[#4a85ff]">{mockData.earnedRewards.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">{mockData.rewardToken}</p>
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Earned Rewards</p>
+                    <p className="text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">YIELD</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-gray-400 mb-2">Current APY</p>
-                    <p className="text-2xl font-semibold text-[#4a85ff]">{mockData.apy}%</p>
-                    <p className="text-xs text-gray-500">Annual</p>
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-sm text-gray-400 mb-3 font-medium">Current APY</p>
+                    <p className="text-3xl font-light mb-1 text-[#4a85ff]">{apy}%</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Annual</p>
                   </CardContent>
                 </Card>
               </div>
 
-              <div className="grid lg:grid-cols-3 gap-8">
+              <div className="grid lg:grid-cols-3 gap-10">
                 {/* Main Staking Interface */}
-                <Card className="lg:col-span-2 bg-gray-900/30 border-gray-800 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Staking Interface</CardTitle>
-                    <CardDescription className="text-gray-400">
+                <Card className="lg:col-span-2 bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <CardHeader className="pb-8">
+                    <CardTitle className="text-3xl font-light text-white">Staking Interface</CardTitle>
+                    <CardDescription className="text-gray-400 text-lg font-light">
                       Stake your SOL tokens to earn YIELD rewards
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-8">
-                    <div className="grid md:grid-cols-2 gap-8">
+                  <CardContent className="space-y-10">
+                    <div className="grid md:grid-cols-2 gap-10">
                       {/* Stake Section */}
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <ArrowUpRight className="w-5 h-5 text-[#4a85ff]" />
-                          <h3 className="text-lg font-semibold">Stake Tokens</h3>
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-[#4a85ff]/20 rounded-lg">
+                            <ArrowUpRight className="w-5 h-5 text-[#4a85ff]" />
+                          </div>
+                          <h3 className="text-xl font-medium text-white">Stake Tokens</h3>
                         </div>
 
-                        <div className="space-y-3">
-                          <Label htmlFor="stake-amount" className="text-gray-300">
+                        <div className="space-y-4">
+                          <Label htmlFor="stake-amount" className="text-gray-300 font-medium">
                             Amount to Stake
                           </Label>
                           <div className="relative">
                             <Input
                               id="stake-amount"
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               placeholder="0.00"
                               value={stakeAmount}
-                              onChange={(e) => setStakeAmount(e.target.value)}
-                              className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 pr-16"
+                              onChange={(e) => {
+                                const value = e.target.value
+                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                  setStakeAmount(value)
+                                }
+                              }}
+                              className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">SOL</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">SOL</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">Available: {mockData.walletBalance.toFixed(2)} SOL</span>
+                            <span className="text-gray-400">Available: {walletBalance.toFixed(2)} SOL</span>
                             <button
-                              className="text-[#4a85ff] hover:underline"
-                              onClick={() => setStakeAmount(mockData.walletBalance.toString())}
+                              className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                              onClick={() => setStakeAmount(walletBalance.toString())}
                             >
                               Max
                             </button>
@@ -227,39 +189,48 @@ export default function SolanaStakingDApp() {
                         <Button
                           onClick={handleStake}
                           disabled={!stakeAmount || Number.parseFloat(stakeAmount) <= 0 || isStaking}
-                          className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white"
+                          className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-6 text-lg rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                         >
                           {isStaking ? "Staking..." : "Stake SOL"}
                         </Button>
                       </div>
 
                       {/* Unstake Section */}
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <ArrowDownRight className="w-5 h-5 text-orange-400" />
-                          <h3 className="text-lg font-semibold">Unstake Tokens</h3>
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-orange-400/20 rounded-lg">
+                            <ArrowDownRight className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <h3 className="text-xl font-medium text-white">Unstake Tokens</h3>
                         </div>
 
-                        <div className="space-y-3">
-                          <Label htmlFor="unstake-amount" className="text-gray-300">
+                        <div className="space-y-4">
+                          <Label htmlFor="unstake-amount" className="text-gray-300 font-medium">
                             Amount to Unstake
                           </Label>
                           <div className="relative">
                             <Input
                               id="unstake-amount"
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               placeholder="0.00"
                               value={unstakeAmount}
-                              onChange={(e) => setUnstakeAmount(e.target.value)}
-                              className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 pr-16"
+                              onChange={(e) => {
+                                const value = e.target.value
+                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                  setUnstakeAmount(value)
+                                }
+                              }}
+                              className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">SOL</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">SOL</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">Staked: {mockData.stakedAmount.toFixed(2)} SOL</span>
+                            <span className="text-gray-400">Staked: {stakedAmount.toFixed(2)} SOL</span>
                             <button
-                              className="text-[#4a85ff] hover:underline"
-                              onClick={() => setUnstakeAmount(mockData.stakedAmount.toString())}
+                              className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                              onClick={() => setUnstakeAmount(stakedAmount.toString())}
                             >
                               Max
                             </button>
@@ -270,7 +241,7 @@ export default function SolanaStakingDApp() {
                           onClick={handleUnstake}
                           disabled={!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0 || isUnstaking}
                           variant="outline"
-                          className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                          className="w-full border-gray-600/60 text-gray-300 hover:bg-gray-800/60 py-6 text-lg rounded-xl backdrop-blur-sm transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                         >
                           {isUnstaking ? "Unstaking..." : "Unstake SOL"}
                         </Button>
@@ -280,22 +251,22 @@ export default function SolanaStakingDApp() {
                 </Card>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {/* Claim Rewards */}
-                  <Card className="bg-gray-900/30 border-gray-800 backdrop-blur-sm">
+                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
                     <CardHeader>
-                      <CardTitle>Claim Rewards</CardTitle>
-                      <CardDescription className="text-gray-400">Your earned YIELD tokens</CardDescription>
+                      <CardTitle className="text-xl font-medium text-white">Claim Rewards</CardTitle>
+                      <CardDescription className="text-gray-400 font-light">Your earned YIELD tokens</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="text-center py-4">
-                        <p className="text-3xl font-bold text-[#4a85ff] mb-1">{mockData.earnedRewards.toFixed(2)}</p>
-                        <p className="text-sm text-gray-400">YIELD Tokens</p>
+                    <CardContent className="space-y-6">
+                      <div className="text-center py-6">
+                        <p className="text-4xl font-light text-[#4a85ff] mb-2">{earnedRewards.toFixed(2)}</p>
+                        <p className="text-sm text-gray-400 uppercase tracking-wider">YIELD Tokens</p>
                       </div>
                       <Button
                         onClick={handleClaimRewards}
-                        disabled={mockData.earnedRewards <= 0}
-                        className="w-full bg-white text-black hover:bg-gray-100"
+                        disabled={earnedRewards <= 0}
+                        className="w-full bg-white text-black hover:bg-gray-100 py-6 text-lg rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium"
                       >
                         Claim Rewards
                       </Button>
@@ -303,23 +274,23 @@ export default function SolanaStakingDApp() {
                   </Card>
 
                   {/* Pool Stats */}
-                  <Card className="bg-gray-900/30 border-gray-800 backdrop-blur-sm">
+                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
                     <CardHeader>
-                      <CardTitle>Pool Statistics</CardTitle>
+                      <CardTitle className="text-xl font-medium text-white">Pool Statistics</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Total Value Locked</span>
-                          <span className="font-medium">${mockData.totalValueLocked.toLocaleString()}</span>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-gray-400 font-light">Total Value Locked</span>
+                          <span className="font-medium text-lg text-white">${totalValueLocked.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Total Stakers</span>
-                          <span className="font-medium">{mockData.totalStakers.toLocaleString()}</span>
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-gray-400 font-light">Total Stakers</span>
+                          <span className="font-medium text-lg text-white">{totalStakers.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Current APY</span>
-                          <span className="font-medium text-[#4a85ff]">{mockData.apy}%</span>
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-gray-400 font-light">Current APY</span>
+                          <span className="font-medium text-lg text-[#4a85ff]">{apy}%</span>
                         </div>
                       </div>
                     </CardContent>
