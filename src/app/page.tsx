@@ -71,7 +71,7 @@ export default function SolanaStakingDApp() {
 
       <div className="relative z-10">
         {/* Header */}
-        <div className="backdrop-blur-md bg-black/80 border-b border-gray-800/50 shadow-[0_2px_16px_0_rgba(0,0,0,0.3)]">
+        <div className="">
           <Navbar isConnected={isConnected} onConnectWallet={handleConnectWallet} onTitleClick={handleReset} />
         </div>
 
@@ -100,7 +100,7 @@ export default function SolanaStakingDApp() {
             <div className="space-y-12">
               {/* Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Wallet Balance</p>
                     <p className="text-3xl font-light mb-1 text-white">{walletBalance.toFixed(2)}</p>
@@ -108,7 +108,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Staked Amount</p>
                     <p className="text-3xl font-light mb-1 text-white">{stakedAmount.toFixed(2)}</p>
@@ -116,7 +116,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Earned Rewards</p>
                     <p className="text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toFixed(2)}</p>
@@ -124,7 +124,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Current APY</p>
                     <p className="text-3xl font-light mb-1 text-[#4a85ff]">{apy}%</p>
@@ -135,7 +135,7 @@ export default function SolanaStakingDApp() {
 
               <div className="grid lg:grid-cols-3 gap-10">
                 {/* Main Staking Interface */}
-                <Card className="lg:col-span-2 bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                <Card className="lg:col-span-2 bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                   <CardHeader className="pb-8">
                     <CardTitle className="text-3xl font-light text-white">Staking Interface</CardTitle>
                     <CardDescription className="text-gray-400 text-lg font-light">
@@ -253,7 +253,7 @@ export default function SolanaStakingDApp() {
                 {/* Sidebar */}
                 <div className="space-y-8">
                   {/* Claim Rewards */}
-                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                     <CardHeader>
                       <CardTitle className="text-xl font-medium text-white">Claim Rewards</CardTitle>
                       <CardDescription className="text-gray-400 font-light">Your earned YIELD tokens</CardDescription>
@@ -274,7 +274,7 @@ export default function SolanaStakingDApp() {
                   </Card>
 
                   {/* Pool Stats */}
-                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md">
+                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                     <CardHeader>
                       <CardTitle className="text-xl font-medium text-white">Pool Statistics</CardTitle>
                     </CardHeader>

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Wallet, Github, Twitter } from "lucide-react"
+import Image from "next/image"
 
 interface NavbarProps {
   isConnected: boolean
@@ -12,17 +13,28 @@ interface NavbarProps {
 
 export function Navbar({ isConnected, onConnectWallet, onTitleClick }: NavbarProps) {
   return (
-    <header className="border-b border-gray-800/50 backdrop-blur-sm">
+    <header className="">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-center">
           <div className="flex-1">
-            <span 
-              className="text-xl font-light text-white transition-transform duration-200 hover:scale-105 inline-block cursor-pointer" 
-              style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}
+            <div 
+              className="flex items-center gap-3 cursor-pointer transition-transform duration-200 hover:scale-105"
               onClick={onTitleClick}
             >
-              Epicentral Stake
-            </span>
+              <Image 
+                src="/EpicentralLabsLogo.png" 
+                alt="Epicentral Labs Logo" 
+                width={32} 
+                height={32}
+                className="rounded"
+              />
+              <span 
+                className="text-xl font-light text-white" 
+                style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}
+              >
+                Epicentral Labs
+              </span>
+            </div>
           </div>
 
           <nav className="flex items-center gap-8 flex-1 justify-center">
