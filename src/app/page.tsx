@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { FlowingBackground } from "../components/flowing-background"
 import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
 
 export default function SolanaStakingDApp() {
   const [isConnected, setIsConnected] = useState(false)
@@ -63,19 +64,19 @@ export default function SolanaStakingDApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1c] via-[#10182a] to-[#0a0f1c] text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1c] via-[#10182a] to-[#0a0f1c] text-white relative overflow-x-hidden flex flex-col">
       <div className="absolute inset-0 pointer-events-none z-0" style={{
         background: 'radial-gradient(ellipse at 50% 0%, rgba(74,133,255,0.08) 0%, transparent 70%)'
       }} />
       <FlowingBackground />
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
         <div className="">
           <Navbar isConnected={isConnected} onConnectWallet={handleConnectWallet} onTitleClick={handleReset} />
         </div>
 
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 py-16 flex-1">
           {!isConnected ? (
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-6xl md:text-7xl font-light mb-8 leading-tight tracking-tight">
@@ -300,6 +301,8 @@ export default function SolanaStakingDApp() {
             </div>
           )}
         </div>
+        
+        <Footer />
       </div>
     </div>
   )
