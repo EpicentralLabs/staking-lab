@@ -84,7 +84,7 @@ export default function SolanaStakingDApp() {
                 <span className="text-[#4a85ff] font-semibold">Earn xLABS</span>
               </h1>
               <p className="text-xl text-gray-300 mb-16 max-w-2xl mx-auto font-light leading-relaxed">
-                Maximize your LABS holdings through our DAO-governed staking protocol. xLABS is a redeemable token that earns 100% of protocol revenue.
+                Maximize your LABS holdings through our DAO-governed staking protocol. xLABS is a redeemable token that earns 80% of protocol revenue.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Button
@@ -104,7 +104,7 @@ export default function SolanaStakingDApp() {
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Wallet Balance</p>
                     <p className="text-3xl font-light mb-1 text-white">{walletBalance.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">SOL</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                   </CardContent>
                 </Card>
 
@@ -112,7 +112,7 @@ export default function SolanaStakingDApp() {
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Staked Amount</p>
                     <p className="text-3xl font-light mb-1 text-white">{stakedAmount.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">SOL</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                   </CardContent>
                 </Card>
 
@@ -120,7 +120,7 @@ export default function SolanaStakingDApp() {
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Earned Rewards</p>
                     <p className="text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">YIELD</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
                   </CardContent>
                 </Card>
 
@@ -139,7 +139,7 @@ export default function SolanaStakingDApp() {
                   <CardHeader className="pb-8">
                     <CardTitle className="text-3xl font-light text-white">Staking Interface</CardTitle>
                     <CardDescription className="text-gray-400 text-lg font-light">
-                      Stake your SOL tokens to earn YIELD rewards
+                      Stake your LABS tokens to earn xLABS rewards
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-10">
@@ -173,10 +173,10 @@ export default function SolanaStakingDApp() {
                               }}
                               className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">SOL</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">LABS</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">Available: {walletBalance.toFixed(2)} SOL</span>
+                            <span className="text-gray-400">Available: {walletBalance.toFixed(2)} LABS</span>
                             <button
                               className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
                               onClick={() => setStakeAmount(walletBalance.toString())}
@@ -191,7 +191,7 @@ export default function SolanaStakingDApp() {
                           disabled={!stakeAmount || Number.parseFloat(stakeAmount) <= 0 || isStaking}
                           className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-6 text-lg rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                         >
-                          {isStaking ? "Staking..." : "Stake SOL"}
+                          {isStaking ? "Staking..." : "Stake LABS"}
                         </Button>
                       </div>
 
@@ -224,10 +224,10 @@ export default function SolanaStakingDApp() {
                               }}
                               className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">SOL</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">LABS</span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">Staked: {stakedAmount.toFixed(2)} SOL</span>
+                            <span className="text-gray-400">Staked: {stakedAmount.toFixed(2)} LABS</span>
                             <button
                               className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
                               onClick={() => setUnstakeAmount(stakedAmount.toString())}
@@ -243,7 +243,7 @@ export default function SolanaStakingDApp() {
                           variant="outline"
                           className="w-full border-gray-600/60 text-gray-300 hover:bg-gray-800/60 py-6 text-lg rounded-xl backdrop-blur-sm transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                         >
-                          {isUnstaking ? "Unstaking..." : "Unstake SOL"}
+                          {isUnstaking ? "Unstaking..." : "Unstake LABS"}
                         </Button>
                       </div>
                     </div>
@@ -256,12 +256,12 @@ export default function SolanaStakingDApp() {
                   <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
                     <CardHeader>
                       <CardTitle className="text-xl font-medium text-white">Claim Rewards</CardTitle>
-                      <CardDescription className="text-gray-400 font-light">Your earned YIELD tokens</CardDescription>
+                      <CardDescription className="text-gray-400 font-light">Your earned xLABS tokens</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="text-center py-6">
                         <p className="text-4xl font-light text-[#4a85ff] mb-2">{earnedRewards.toFixed(2)}</p>
-                        <p className="text-sm text-gray-400 uppercase tracking-wider">YIELD Tokens</p>
+                        <p className="text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
                       </div>
                       <Button
                         onClick={handleClaimRewards}
