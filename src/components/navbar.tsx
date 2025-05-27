@@ -1,17 +1,22 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Wallet, Github, Twitter } from "lucide-react"
+import { Github, Twitter } from "lucide-react"
 import Image from "next/image"
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 
 interface NavbarProps {
-  isConnected: boolean
-  onConnectWallet: () => void
   onTitleClick?: () => void
 }
 
-export function Navbar({ isConnected, onConnectWallet, onTitleClick }: NavbarProps) {
+export function Navbar({ onTitleClick }: NavbarProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <header className="">
       <div className="container mx-auto px-4 py-4">
@@ -40,8 +45,7 @@ export function Navbar({ isConnected, onConnectWallet, onTitleClick }: NavbarPro
           <nav className="flex items-center gap-8 flex-1 justify-center">
             <a href="#" 
                className="text-gray-300 hover:text-white transition-colors cursor-pointer" 
-               style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}
-               onClick={onConnectWallet}>
+               style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}>
               Stake
             </a>
             <a href="#" className="text-gray-300 hover:text-white transition-colors"
@@ -60,17 +64,7 @@ export function Navbar({ isConnected, onConnectWallet, onTitleClick }: NavbarPro
               </Button>
             </div>
 
-            {!isConnected ? (
-              <Button onClick={onConnectWallet} className="bg-white text-black hover:bg-gray-100">
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
-            ) : (
-              <Badge variant="outline" className="border-[#4a85ff] text-[#4a85ff]">
-                <div className="w-2 h-2 bg-[#4a85ff] rounded-full mr-2"></div>
-                Connected
-              </Badge>
-            )}
+            {mounted && <WalletMultiButton />}
           </div>
         </div>
       </div>
