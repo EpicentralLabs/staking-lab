@@ -24,7 +24,7 @@ const DiscordIcon = ({ className }: { className?: string }) => (
 
 export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-gray-700/60 bg-gray-900/80 backdrop-blur-md">
+    <footer className="relative z-10 border-t border-gray-700/60 backdrop-blur-md">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center space-y-6">
           {/* Social Media Icons */}

@@ -64,9 +64,9 @@ export default function SolanaStakingDApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1c] via-[#10182a] to-[#0a0f1c] text-white relative overflow-x-hidden flex flex-col">
-      <div className="absolute inset-0 pointer-events-none z-0" style={{
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(74,133,255,0.08) 0%, transparent 70%)'
+    <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white relative overflow-x-hidden flex flex-col">
+      <div className="absolute inset-0 pointer-events-none z-0 bg-black/40 backdrop-blur-2xl" style={{
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(74,133,255,0.03) 0%, transparent 70%)'
       }} />
       <FlowingBackground />
 
@@ -101,7 +101,7 @@ export default function SolanaStakingDApp() {
             <div className="space-y-12">
               {/* Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Wallet Balance</p>
                     <p className="text-3xl font-light mb-1 text-white">{walletBalance.toFixed(2)}</p>
@@ -109,7 +109,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Staked Amount</p>
                     <p className="text-3xl font-light mb-1 text-white">{stakedAmount.toFixed(2)}</p>
@@ -117,7 +117,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Earned Rewards</p>
                     <p className="text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toFixed(2)}</p>
@@ -125,7 +125,7 @@ export default function SolanaStakingDApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardContent className="p-8 text-center">
                     <p className="text-sm text-gray-400 mb-3 font-medium">Current APY</p>
                     <p className="text-3xl font-light mb-1 text-[#4a85ff]">{apy}%</p>
@@ -136,9 +136,9 @@ export default function SolanaStakingDApp() {
 
               <div className="grid lg:grid-cols-3 gap-10">
                 {/* Main Staking Interface */}
-                <Card className="lg:col-span-2 bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                <Card className="lg:col-span-2 bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardHeader className="pb-8">
-                    <CardTitle className="text-3xl font-light text-white">Staking Interface</CardTitle>
+                    <CardTitle className="text-3xl font-bold text-white">Stake LABS</CardTitle>
                     <CardDescription className="text-gray-400 text-lg font-light">
                       Stake your LABS tokens to earn xLABS rewards
                     </CardDescription>
@@ -172,7 +172,7 @@ export default function SolanaStakingDApp() {
                                   setStakeAmount(value)
                                 }
                               }}
-                              className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">LABS</span>
                           </div>
@@ -223,7 +223,7 @@ export default function SolanaStakingDApp() {
                                   setUnstakeAmount(value)
                                 }
                               }}
-                              className="bg-gray-800/80 border-gray-600/60 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-6 text-lg rounded-xl backdrop-blur-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">LABS</span>
                           </div>
@@ -254,7 +254,7 @@ export default function SolanaStakingDApp() {
                 {/* Sidebar */}
                 <div className="space-y-8">
                   {/* Claim Rewards */}
-                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                  <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                     <CardHeader>
                       <CardTitle className="text-xl font-medium text-white">Claim Rewards</CardTitle>
                       <CardDescription className="text-gray-400 font-light">Your earned xLABS tokens</CardDescription>
@@ -275,7 +275,7 @@ export default function SolanaStakingDApp() {
                   </Card>
 
                   {/* Pool Stats */}
-                  <Card className="bg-gray-900/80 border border-gray-700/60 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-md transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/90">
+                  <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                     <CardHeader>
                       <CardTitle className="text-xl font-medium text-white">Pool Statistics</CardTitle>
                     </CardHeader>
