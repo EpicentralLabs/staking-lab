@@ -22,11 +22,10 @@ export default function SolanaStakingDApp() {
   const [earnedRewards, setEarnedRewards] = useState(0)
   const [apy, setApy] = useState(0)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
-  const [totalStakers, setTotalStakers] = useState(0)
 
   // Suppress unused warnings - these will be used when Solana integration is implemented
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _ = { setWalletBalance, setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked, setTotalStakers }
+  const _ = { setWalletBalance, setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked }
 
   const handleReset = () => {
     setStakeAmount("")
@@ -38,7 +37,6 @@ export default function SolanaStakingDApp() {
     setEarnedRewards(0)
     setApy(0)
     setTotalValueLocked(0)
-    setTotalStakers(0)
   }
 
   const handleStake = async () => {
@@ -263,10 +261,6 @@ export default function SolanaStakingDApp() {
                       <div className="flex justify-between items-center py-1 sm:py-2">
                         <span className="text-xs sm:text-sm text-gray-400 font-light">Total Value Locked</span>
                         <span className="font-medium text-base sm:text-lg text-white">${totalValueLocked.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-1 sm:py-2">
-                        <span className="text-xs sm:text-sm text-gray-400 font-light">Total Stakers</span>
-                        <span className="font-medium text-base sm:text-lg text-white">{totalStakers.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center py-1 sm:py-2">
                         <span className="text-xs sm:text-sm text-gray-400 font-light">Current APY</span>
