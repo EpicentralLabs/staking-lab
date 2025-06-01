@@ -9,8 +9,9 @@ import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { FlowingBackground } from "../components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { TokenBalance } from "@/components/solana-rpc-methods/get-token-balance"
+import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
 import { transferTokens } from "@/components/solana-rpc-methods/txs/deposit-stake-tx"
+import { createAssociatedTokenAccount } from "@/components/solana-rpc-methods/txs/create-ata-tx"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
@@ -45,13 +46,27 @@ export default function SolanaStakingDApp() {
 
     setIsStaking(true);
     try {
+      // First, ensure the ATA exists
+      try {
+        await createAssociatedTokenAccount();
+        console.log("ATA created or already exists");
+      } catch (error: any) {
+        console.error("Error creating ATA:", error);
+        // If the error is because the ATA already exists, we can continue
+        if (!error.message?.includes("already in use")) {
+          throw error;
+        }
+      }
+
+      // Then proceed with the stake deposit
       const signature = await transferTokens(stakeAmount);
       console.log("Staking transaction successful:", signature);
+      
       // Update UI state after successful staking
       setStakedAmount(prev => prev + Number.parseFloat(stakeAmount));
       setStakeAmount("");
     } catch (error) {
-      console.error("Error staking tokens:", error);
+      console.error("Error in staking process:", error);
       // Handle error appropriately
     } finally {
       setIsStaking(false);
