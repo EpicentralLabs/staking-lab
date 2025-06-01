@@ -10,6 +10,7 @@ import { FlowingBackground } from "../components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-token-balance"
+import { transferTokens } from "@/components/solana-rpc-methods/txs/deposit-stake-tx"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
@@ -40,14 +41,22 @@ export default function SolanaStakingDApp() {
   }
 
   const handleStake = async () => {
-    if (!stakeAmount || Number.parseFloat(stakeAmount) <= 0) return
+    if (!stakeAmount || Number.parseFloat(stakeAmount) <= 0) return;
 
-    setIsStaking(true)
-    // TODO: Implement actual staking logic
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsStaking(false)
-    setStakeAmount("")
-  }
+    setIsStaking(true);
+    try {
+      const signature = await transferTokens(stakeAmount);
+      console.log("Staking transaction successful:", signature);
+      // Update UI state after successful staking
+      setStakedAmount(prev => prev + Number.parseFloat(stakeAmount));
+      setStakeAmount("");
+    } catch (error) {
+      console.error("Error staking tokens:", error);
+      // Handle error appropriately
+    } finally {
+      setIsStaking(false);
+    }
+  };
 
   const handleUnstake = async () => {
     if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return
