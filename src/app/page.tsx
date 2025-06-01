@@ -84,21 +84,21 @@ export default function SolanaStakingDApp() {
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Wallet Balance</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                 </CardContent>
               </Card>
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Staked Amount</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                 </CardContent>
               </Card>
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Earned Rewards</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
                 </CardContent>
               </Card>
