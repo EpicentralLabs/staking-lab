@@ -9,6 +9,7 @@ import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { FlowingBackground } from "../components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { TokenBalance } from "@/components/solana-rpc-methods/get-token-balance"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
@@ -17,7 +18,7 @@ export default function SolanaStakingDApp() {
   const [isUnstaking, setIsUnstaking] = useState(false)
 
   // Real data - to be connected to Solana blockchain
-  const [walletBalance, setWalletBalance] = useState(0)
+  const walletBalance = TokenBalance()
   const [stakedAmount, setStakedAmount] = useState(0)
   const [earnedRewards, setEarnedRewards] = useState(0)
   const [apy, setApy] = useState(0)
@@ -25,14 +26,13 @@ export default function SolanaStakingDApp() {
 
   // Suppress unused warnings - these will be used when Solana integration is implemented
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _ = { setWalletBalance, setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked }
+  const _ = { setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked }
 
   const handleReset = () => {
     setStakeAmount("")
     setUnstakeAmount("")
     setIsStaking(false)
     setIsUnstaking(false)
-    setWalletBalance(0)
     setStakedAmount(0)
     setEarnedRewards(0)
     setApy(0)
@@ -84,21 +84,21 @@ export default function SolanaStakingDApp() {
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Wallet Balance</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{walletBalance.toFixed(2)}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                 </CardContent>
               </Card>
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Staked Amount</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{stakedAmount.toFixed(2)}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
                 </CardContent>
               </Card>
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Earned Rewards</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toFixed(2)}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
                 </CardContent>
               </Card>
@@ -154,7 +154,7 @@ export default function SolanaStakingDApp() {
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                         </div>
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Available: {walletBalance.toFixed(2)} LABS</span>
+                          <span className="text-gray-400">Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
                           <button
                             className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
                             onClick={() => setStakeAmount(walletBalance.toString())}
@@ -205,7 +205,7 @@ export default function SolanaStakingDApp() {
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                         </div>
                         <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Staked: {stakedAmount.toFixed(2)} LABS</span>
+                          <span className="text-gray-400">Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
                           <button
                             className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
                             onClick={() => setUnstakeAmount(stakedAmount.toString())}
@@ -238,7 +238,7 @@ export default function SolanaStakingDApp() {
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="text-center py-4 sm:py-6">
-                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">{earnedRewards.toFixed(2)}</p>
+                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
                     </div>
                     <Button

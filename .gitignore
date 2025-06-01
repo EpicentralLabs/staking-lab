@@ -19,6 +19,8 @@ out
 
 # production
 build
+dist
+.cursor
 
 # misc
 .DS_Store
