@@ -56,7 +56,7 @@ export default function SolanaStakingDApp() {
   }, [stakingStartTime, stakedAmount, publicKey])
 
   // Add smooth number animation component
-  const SmoothNumber = ({ value }: { value: number }) => {
+  const SmoothNumber = ({ value, decimals = 4 }: { value: number, decimals?: number }) => {
     const [displayValue, setDisplayValue] = useState(value)
 
     useEffect(() => {
@@ -84,7 +84,7 @@ export default function SolanaStakingDApp() {
     }, [value])
 
     return (
-      <span>{displayValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</span>
+      <span>{displayValue.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>
     )
   }
 
@@ -167,12 +167,18 @@ export default function SolanaStakingDApp() {
 
     try {
       // TODO: Implement actual claim rewards logic
+      const totalToClaim = currentRewards + totalRewardsEarned;
+      
+      // Add current rewards to total rewards earned
       setTotalRewardsEarned(prev => prev + currentRewards);
+      
+      // Reset current rewards and staking time to start fresh accumulation
       setCurrentRewards(0);
-      // Only reset staking time if we're currently staking
-      if (stakedAmount > 0) {
-        setStakingStartTime(new Date()); // Reset staking time after claiming
-      }
+      setStakingStartTime(new Date());
+
+      // TODO: Add transaction logic here to actually claim the rewards
+      console.log(`Claiming ${totalToClaim} xLABS tokens`);
+      
     } catch (error: unknown) {
       console.error("Error in claiming rewards:", error);
     }
@@ -356,21 +362,21 @@ export default function SolanaStakingDApp() {
                 <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardHeader>
                     <CardTitle className="text-lg sm:text-xl font-medium text-white">Claim Rewards</CardTitle>
-                    <CardDescription className="text-gray-400 font-light text-sm sm:text-base">Your total xLABS tokens earned</CardDescription>
+                    <CardDescription className="text-gray-400 font-light text-sm sm:text-base">Your current xLABS tokens to claim</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="text-center py-4 sm:py-6">
                       <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">
-                        <SmoothNumber value={totalRewardsEarned + currentRewards} />
+                        <SmoothNumber value={currentRewards} />
                       </p>
                       <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
                     </div>
                     <Button
                       onClick={handleClaimRewards}
-                      disabled={currentRewards <= 0 && totalRewardsEarned <= 0}
-                      className="w-full bg-white text-black hover:bg-gray-100 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium"
+                      disabled={currentRewards <= 0}
+                      className="w-full bg-white text-black hover:bg-gray-100 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium disabled:opacity-50 disabled:hover:scale-100"
                     >
-                      Claim Rewards
+                      {currentRewards > 0 ? "Claim Rewards" : "No Rewards to Claim"}
                     </Button>
                   </CardContent>
                 </Card>
