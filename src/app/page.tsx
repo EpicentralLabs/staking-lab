@@ -23,25 +23,35 @@ export default function SolanaStakingDApp() {
 
   const walletBalance = TokenBalance()
   const [stakedAmount, setStakedAmount] = useState(0)
-  const [earnedRewards, setEarnedRewards] = useState(0)
+  const [totalRewardsEarned, setTotalRewardsEarned] = useState(0)
+  const [currentRewards, setCurrentRewards] = useState(0)
   const [stakingStartTime, setStakingStartTime] = useState<Date | null>(null)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
+  const [walletRewards, setWalletRewards] = useState<Map<string, number>>(new Map())
 
-  // Update earned rewards based on staking time
+  // Update current rewards based on staking time
   useEffect(() => {
-    if (stakingStartTime && stakedAmount > 0) {
+    if (stakingStartTime && stakedAmount > 0 && publicKey) {
       const updateRewards = () => {
         const now = new Date()
         const daysStaked = (now.getTime() - stakingStartTime.getTime()) / (1000 * 60 * 60 * 24)
         const newRewards = calculateXLABSAccumulation(stakedAmount, daysStaked)
-        setEarnedRewards(newRewards)
+        setCurrentRewards(newRewards)
+        
+        // Update total rewards earned for current wallet
+        setWalletRewards(prev => {
+          const newMap = new Map(prev)
+          const currentWalletRewards = newMap.get(publicKey.toString()) || 0
+          newMap.set(publicKey.toString(), currentWalletRewards + newRewards)
+          return newMap
+        })
       }
 
       updateRewards()
       const interval = setInterval(updateRewards, 1000) // Update every second
       return () => clearInterval(interval)
     }
-  }, [stakingStartTime, stakedAmount])
+  }, [stakingStartTime, stakedAmount, publicKey])
 
   const handleReset = () => {
     setStakeAmount("")
@@ -49,7 +59,7 @@ export default function SolanaStakingDApp() {
     setIsStaking(false)
     setIsUnstaking(false)
     setStakedAmount(0)
-    setEarnedRewards(0)
+    setCurrentRewards(0)
     setStakingStartTime(null)
     setTotalValueLocked(0)
   }
@@ -95,10 +105,15 @@ export default function SolanaStakingDApp() {
       setStakedAmount(prev => prev - amountToUnstake);
       setTotalValueLocked(prev => prev - amountToUnstake);
       
-      // If all tokens are unstaked, reset staking time
+      // Add current rewards to total rewards earned before resetting
+      if (currentRewards > 0) {
+        setTotalRewardsEarned(prev => prev + currentRewards);
+      }
+      
+      // If all tokens are unstaked, reset staking time and current rewards
       if (stakedAmount - amountToUnstake === 0) {
         setStakingStartTime(null);
-        setEarnedRewards(0);
+        setCurrentRewards(0);
       }
       
       setUnstakeAmount("");
@@ -117,8 +132,12 @@ export default function SolanaStakingDApp() {
 
     try {
       // TODO: Implement actual claim rewards logic
-      setEarnedRewards(0);
-      setStakingStartTime(new Date()); // Reset staking time after claiming
+      setTotalRewardsEarned(prev => prev + currentRewards);
+      setCurrentRewards(0);
+      // Only reset staking time if we're currently staking
+      if (stakedAmount > 0) {
+        setStakingStartTime(new Date()); // Reset staking time after claiming
+      }
     } catch (error: unknown) {
       console.error("Error in claiming rewards:", error);
     }
@@ -155,8 +174,8 @@ export default function SolanaStakingDApp() {
               </Card>
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
-                  <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Earned Rewards</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
+                  <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Total Rewards Earned</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{(totalRewardsEarned + currentRewards).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
                 </CardContent>
               </Card>
@@ -300,16 +319,16 @@ export default function SolanaStakingDApp() {
                 <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                   <CardHeader>
                     <CardTitle className="text-lg sm:text-xl font-medium text-white">Claim Rewards</CardTitle>
-                    <CardDescription className="text-gray-400 font-light text-sm sm:text-base">Your earned xLABS tokens</CardDescription>
+                    <CardDescription className="text-gray-400 font-light text-sm sm:text-base">Your total xLABS tokens earned</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="text-center py-4 sm:py-6">
-                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">{earnedRewards.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">{(totalRewardsEarned + currentRewards).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
                     </div>
                     <Button
                       onClick={handleClaimRewards}
-                      disabled={earnedRewards <= 0}
+                      disabled={currentRewards <= 0 && totalRewardsEarned <= 0}
                       className="w-full bg-white text-black hover:bg-gray-100 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium"
                     >
                       Claim Rewards
