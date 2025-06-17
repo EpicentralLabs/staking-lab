@@ -202,9 +202,13 @@ export default function SolanaStakingDApp() {
                             placeholder="0.00"
                             value={stakeAmount}
                             onChange={(e) => {
-                              const value = e.target.value
+                              const value = e.target.value.replace(/,/g, '')
                               if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                setStakeAmount(value)
+                                const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
+                                  maximumFractionDigits: 9,
+                                  useGrouping: true
+                                })
+                                setStakeAmount(formattedValue)
                               }
                             }}
                             className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -253,9 +257,13 @@ export default function SolanaStakingDApp() {
                             placeholder="0.00"
                             value={unstakeAmount}
                             onChange={(e) => {
-                              const value = e.target.value
+                              const value = e.target.value.replace(/,/g, '')
                               if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                setUnstakeAmount(value)
+                                const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
+                                  maximumFractionDigits: 9,
+                                  useGrouping: true
+                                })
+                                setUnstakeAmount(formattedValue)
                               }
                             }}
                             className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
