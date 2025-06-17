@@ -55,7 +55,7 @@ export default function SolanaStakingDApp() {
   }
 
   const handleStake = async () => {
-    if (!stakeAmount || Number.parseFloat(stakeAmount) <= 0) return;
+    if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
     if (!publicKey || !signTransaction) {
       console.error("Wallet not connected");
       return;
@@ -64,7 +64,7 @@ export default function SolanaStakingDApp() {
     setIsStaking(true);
     try {
       // TODO: Implement actual staking logic
-      const amountToStake = Number.parseFloat(stakeAmount);
+      const amountToStake = Number.parseFloat(stakeAmount.replace(/,/g, ''));
       setStakedAmount(prev => prev + amountToStake);
       setStakingStartTime(new Date());
       setTotalValueLocked(prev => prev + amountToStake);
@@ -77,7 +77,7 @@ export default function SolanaStakingDApp() {
   };
 
   const handleUnstake = async () => {
-    if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return;
+    if (!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0) return;
     if (!publicKey || !signTransaction) {
       console.error("Wallet not connected");
       return;
@@ -85,7 +85,7 @@ export default function SolanaStakingDApp() {
 
     setIsUnstaking(true);
     try {
-      const amountToUnstake = Number.parseFloat(unstakeAmount);
+      const amountToUnstake = Number.parseFloat(unstakeAmount.replace(/,/g, ''));
       if (amountToUnstake > stakedAmount) {
         console.error("Cannot unstake more than staked amount");
         return;
@@ -228,7 +228,7 @@ export default function SolanaStakingDApp() {
 
                       <Button
                         onClick={handleStake}
-                        disabled={!stakeAmount || Number.parseFloat(stakeAmount) <= 0 || isStaking}
+                        disabled={!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0 || isStaking}
                         className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                       >
                         {isStaking ? "Staking..." : "Stake LABS"}
@@ -283,7 +283,7 @@ export default function SolanaStakingDApp() {
 
                       <Button
                         onClick={handleUnstake}
-                        disabled={!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0 || isUnstaking}
+                        disabled={!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0 || isUnstaking}
                         variant="outline"
                         className="w-full border-gray-600/60 text-gray-300 hover:bg-gray-800/60 py-4 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-sm transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
                       >
