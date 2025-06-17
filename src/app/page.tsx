@@ -34,7 +34,8 @@ export default function SolanaStakingDApp() {
     if (stakingStartTime && stakedAmount > 0 && publicKey) {
       const updateRewards = () => {
         const now = new Date()
-        const daysStaked = (now.getTime() - stakingStartTime.getTime()) / (1000 * 60 * 60 * 24)
+        const timeStaked = (now.getTime() - stakingStartTime.getTime()) / 1000 // Convert to seconds
+        const daysStaked = timeStaked / (24 * 60 * 60) // Convert seconds to days
         const newRewards = calculateXLABSAccumulation(stakedAmount, daysStaked)
         setCurrentRewards(newRewards)
         
@@ -48,10 +49,44 @@ export default function SolanaStakingDApp() {
       }
 
       updateRewards()
-      const interval = setInterval(updateRewards, 1000) // Update every second
+      // Update every 100ms for smoother animation
+      const interval = setInterval(updateRewards, 100)
       return () => clearInterval(interval)
     }
   }, [stakingStartTime, stakedAmount, publicKey])
+
+  // Add smooth number animation component
+  const SmoothNumber = ({ value }: { value: number }) => {
+    const [displayValue, setDisplayValue] = useState(value)
+
+    useEffect(() => {
+      const startValue = displayValue
+      const endValue = value
+      const duration = 100 // Animation duration in ms
+      const startTime = performance.now()
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+
+        // Easing function for smooth animation
+        const easeOutQuad = (t: number) => t * (2 - t)
+        const currentValue = startValue + (endValue - startValue) * easeOutQuad(progress)
+
+        setDisplayValue(currentValue)
+
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        }
+      }
+
+      requestAnimationFrame(animate)
+    }, [value])
+
+    return (
+      <span>{displayValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</span>
+    )
+  }
 
   const handleReset = () => {
     setStakeAmount("")
@@ -175,7 +210,9 @@ export default function SolanaStakingDApp() {
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Total Rewards Earned</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{(totalRewardsEarned + currentRewards).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">
+                    <SmoothNumber value={totalRewardsEarned + currentRewards} />
+                  </p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
                 </CardContent>
               </Card>
@@ -323,7 +360,9 @@ export default function SolanaStakingDApp() {
                   </CardHeader>
                   <CardContent className="space-y-4 sm:space-y-6">
                     <div className="text-center py-4 sm:py-6">
-                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">{(totalRewardsEarned + currentRewards).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      <p className="text-2xl sm:text-4xl font-light text-[#4a85ff] mb-2">
+                        <SmoothNumber value={totalRewardsEarned + currentRewards} />
+                      </p>
                       <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
                     </div>
                     <Button
