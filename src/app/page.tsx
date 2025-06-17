@@ -10,25 +10,20 @@ import { FlowingBackground } from "../components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
-import { transferTokens } from "@/components/solana-rpc-methods/txs/deposit-stake-tx"
-import { createAssociatedTokenAccount } from "@/components/solana-rpc-methods/txs/create-ata-tx"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
   const [isStaking, setIsStaking] = useState(false)
   const [isUnstaking, setIsUnstaking] = useState(false)
+  const { publicKey, signTransaction } = useWallet()
 
-  // Real data - to be connected to Solana blockchain
   const walletBalance = TokenBalance()
   const [stakedAmount, setStakedAmount] = useState(0)
   const [earnedRewards, setEarnedRewards] = useState(0)
   const [apy, setApy] = useState(0)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
-
-  // Suppress unused warnings - these will be used when Solana integration is implemented
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _ = { setStakedAmount, setEarnedRewards, setApy, setTotalValueLocked }
 
   const handleReset = () => {
     setStakeAmount("")
@@ -43,31 +38,19 @@ export default function SolanaStakingDApp() {
 
   const handleStake = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount) <= 0) return;
+    if (!publicKey || !signTransaction) {
+      console.error("Wallet not connected");
+      return;
+    }
 
     setIsStaking(true);
     try {
-      // First, ensure the ATA exists
-      try {
-        await createAssociatedTokenAccount();
-        console.log("ATA created or already exists");
-      } catch (error: any) {
-        console.error("Error creating ATA:", error);
-        // If the error is because the ATA already exists, we can continue
-        if (!error.message?.includes("already in use")) {
-          throw error;
-        }
-      }
-
-      // Then proceed with the stake deposit
-      const signature = await transferTokens(stakeAmount);
-      console.log("Staking transaction successful:", signature);
-      
-      // Update UI state after successful staking
+      // TODO: Implement staking logic
+      console.log("Staking functionality to be implemented");
       setStakedAmount(prev => prev + Number.parseFloat(stakeAmount));
       setStakeAmount("");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error in staking process:", error);
-      // Handle error appropriately
     } finally {
       setIsStaking(false);
     }
@@ -77,14 +60,12 @@ export default function SolanaStakingDApp() {
     if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return
 
     setIsUnstaking(true)
-    // TODO: Implement actual unstaking logic
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsUnstaking(false)
     setUnstakeAmount("")
   }
 
   const handleClaimRewards = async () => {
-    // TODO: Implement actual claim rewards logic
     await new Promise((resolve) => setTimeout(resolve, 1500))
   }
 
@@ -96,14 +77,12 @@ export default function SolanaStakingDApp() {
       <FlowingBackground />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header */}
         <div className="">
           <Navbar onTitleClick={handleReset} />
         </div>
 
         <div className="container mx-auto sm:px-2 px-1 py-8 sm:py-12 md:py-16 flex-1">
           <div className="space-y-8 sm:space-y-10 md:space-y-12">
-            {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 overflow-x-auto">
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
