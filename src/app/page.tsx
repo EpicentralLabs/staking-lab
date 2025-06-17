@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,8 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { STAKE_APY } from "@/lib/constants"
+import { calculateXLABSAccumulation } from "@/lib/utils"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
@@ -22,8 +24,24 @@ export default function SolanaStakingDApp() {
   const walletBalance = TokenBalance()
   const [stakedAmount, setStakedAmount] = useState(0)
   const [earnedRewards, setEarnedRewards] = useState(0)
-  const [apy, setApy] = useState(0)
+  const [stakingStartTime, setStakingStartTime] = useState<Date | null>(null)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
+
+  // Update earned rewards based on staking time
+  useEffect(() => {
+    if (stakingStartTime && stakedAmount > 0) {
+      const updateRewards = () => {
+        const now = new Date()
+        const daysStaked = (now.getTime() - stakingStartTime.getTime()) / (1000 * 60 * 60 * 24)
+        const newRewards = calculateXLABSAccumulation(stakedAmount, daysStaked)
+        setEarnedRewards(newRewards)
+      }
+
+      updateRewards()
+      const interval = setInterval(updateRewards, 1000) // Update every second
+      return () => clearInterval(interval)
+    }
+  }, [stakingStartTime, stakedAmount])
 
   const handleReset = () => {
     setStakeAmount("")
@@ -32,7 +50,7 @@ export default function SolanaStakingDApp() {
     setIsUnstaking(false)
     setStakedAmount(0)
     setEarnedRewards(0)
-    setApy(0)
+    setStakingStartTime(null)
     setTotalValueLocked(0)
   }
 
@@ -45,9 +63,11 @@ export default function SolanaStakingDApp() {
 
     setIsStaking(true);
     try {
-      // TODO: Implement staking logic
-      console.log("Staking functionality to be implemented");
-      setStakedAmount(prev => prev + Number.parseFloat(stakeAmount));
+      // TODO: Implement actual staking logic
+      const amountToStake = Number.parseFloat(stakeAmount);
+      setStakedAmount(prev => prev + amountToStake);
+      setStakingStartTime(new Date());
+      setTotalValueLocked(prev => prev + amountToStake);
       setStakeAmount("");
     } catch (error: unknown) {
       console.error("Error in staking process:", error);
@@ -57,16 +77,51 @@ export default function SolanaStakingDApp() {
   };
 
   const handleUnstake = async () => {
-    if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return
+    if (!unstakeAmount || Number.parseFloat(unstakeAmount) <= 0) return;
+    if (!publicKey || !signTransaction) {
+      console.error("Wallet not connected");
+      return;
+    }
 
-    setIsUnstaking(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsUnstaking(false)
-    setUnstakeAmount("")
+    setIsUnstaking(true);
+    try {
+      const amountToUnstake = Number.parseFloat(unstakeAmount);
+      if (amountToUnstake > stakedAmount) {
+        console.error("Cannot unstake more than staked amount");
+        return;
+      }
+
+      // TODO: Implement actual unstaking logic
+      setStakedAmount(prev => prev - amountToUnstake);
+      setTotalValueLocked(prev => prev - amountToUnstake);
+      
+      // If all tokens are unstaked, reset staking time
+      if (stakedAmount - amountToUnstake === 0) {
+        setStakingStartTime(null);
+        setEarnedRewards(0);
+      }
+      
+      setUnstakeAmount("");
+    } catch (error: unknown) {
+      console.error("Error in unstaking process:", error);
+    } finally {
+      setIsUnstaking(false);
+    }
   }
 
   const handleClaimRewards = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (!publicKey || !signTransaction) {
+      console.error("Wallet not connected");
+      return;
+    }
+
+    try {
+      // TODO: Implement actual claim rewards logic
+      setEarnedRewards(0);
+      setStakingStartTime(new Date()); // Reset staking time after claiming
+    } catch (error: unknown) {
+      console.error("Error in claiming rewards:", error);
+    }
   }
 
   return (
@@ -108,7 +163,7 @@ export default function SolanaStakingDApp() {
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[220px]">
                 <CardContent className="p-4 sm:p-6 md:p-8 text-center">
                   <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Current APY</p>
-                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{apy}%</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{STAKE_APY}%</p>
                   <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Annual</p>
                 </CardContent>
               </Card>
@@ -267,7 +322,7 @@ export default function SolanaStakingDApp() {
                       </div>
                       <div className="flex justify-between items-center py-1 sm:py-2">
                         <span className="text-xs sm:text-sm text-gray-400 font-light">Current APY</span>
-                        <span className="font-medium text-base sm:text-lg text-[#4a85ff]">{apy}%</span>
+                        <span className="font-medium text-base sm:text-lg text-[#4a85ff]">{STAKE_APY}%</span>
                       </div>
                     </div>
                   </CardContent>

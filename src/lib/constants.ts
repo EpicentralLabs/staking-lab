@@ -9,6 +9,9 @@ export const xTEST_TOKEN_MINT = "11111111111111111111111111111111";
 
 export const DEVNET_RPC_URL = "https://epicentr-solanad-4efb.devnet.rpcpool.com/c598cabe-b1dc-4ef9-bdc1-1a2981c9bf5f";
 
+// APY configuration (in percentage)
+export const STAKE_APY = 12.5; // 12.5% APY
+
 export const solanaClient = createSolanaClient({
   urlOrMoniker: DEVNET_RPC_URL, // Triton Devnet
 });
