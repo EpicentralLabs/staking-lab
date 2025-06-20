@@ -2,4 +2,4 @@
 
 [WIP]
 
-xLAbs - A RevShare Token for Epicentral Labs
+xLABS - A RevShare Token for Epicentral Labs
