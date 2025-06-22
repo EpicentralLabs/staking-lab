@@ -13,12 +13,22 @@ import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-bal
 import { useWallet } from "@solana/wallet-adapter-react"
 import { STAKE_APY } from "@/lib/constants"
 import { calculateXLABSAccumulation } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
   const [isStaking, setIsStaking] = useState(false)
   const [isUnstaking, setIsUnstaking] = useState(false)
+  const [isStakeDialogOpen, setIsStakeDialogOpen] = useState(false)
+  const [isUnstakeDialogOpen, setIsUnstakeDialogOpen] = useState(false)
   const { publicKey, signTransaction } = useWallet()
 
   const walletBalance = TokenBalance()
@@ -278,13 +288,31 @@ export default function SolanaStakingDApp() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={handleStake}
-                      disabled={!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0 || isStaking}
-                      className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                    >
-                      {isStaking ? "Staking..." : "Stake LABS"}
-                    </Button>
+                    <Dialog open={isStakeDialogOpen} onOpenChange={setIsStakeDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          disabled={!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0 || isStaking}
+                          className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                        >
+                          {isStaking ? "Staking..." : "Stake LABS"}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+                        <DialogHeader>
+                          <DialogTitle>Confirm Stake</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Are you sure you want to stake {stakeAmount} LABS?
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button variant="outline" className="border-gray-600/60 text-black hover:bg-gray-800/60" onClick={() => setIsStakeDialogOpen(false)}>Cancel</Button>
+                          <Button className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white" onClick={() => {
+                            handleStake();
+                            setIsStakeDialogOpen(false);
+                          }}>Confirm</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
 
                   {/* Unstake Section */}
@@ -333,14 +361,31 @@ export default function SolanaStakingDApp() {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={handleUnstake}
-                      disabled={!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0 || isUnstaking}
-                      variant="outline"
-                      className="w-full border-gray-600/60 text-gray-300 hover:bg-gray-800/60 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-sm transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                    >
-                      {isUnstaking ? "Unstaking..." : "Unstake LABS"}
-                    </Button>
+                    <Dialog open={isUnstakeDialogOpen} onOpenChange={setIsUnstakeDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          disabled={!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0 || isUnstaking}
+                          className="w-full bg-white text-black hover:bg-gray-200 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                        >
+                          {isUnstaking ? "Unstaking..." : "Unstake LABS"}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+                        <DialogHeader>
+                          <DialogTitle>Confirm Unstake</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Are you sure you want to unstake {unstakeAmount} LABS?
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button variant="outline" className="border-gray-600/60 text-black hover:bg-gray-800/60" onClick={() => setIsUnstakeDialogOpen(false)}>Cancel</Button>
+                          <Button className="bg-orange-400 hover:bg-orange-500 text-white" onClick={() => {
+                            handleUnstake();
+                            setIsUnstakeDialogOpen(false);
+                          }}>Confirm</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </CardContent>
