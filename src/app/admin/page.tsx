@@ -48,6 +48,15 @@ export default function AdminPanelPage() {
   const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
 
   const handleSetApy = async () => {
+    if (!isAdmin) {
+      setUpdateMessage({
+        type: 'error',
+        text: 'Authorization failed. Please ensure the admin wallet is connected.',
+      });
+      setIsDialogOpen(false);
+      return;
+    }
+
     setIsDialogOpen(false)
     console.log("Setting APY to:", apy)
     
@@ -93,18 +102,42 @@ export default function AdminPanelPage() {
   }
 
   const handleInitializeStakeProgram = async () => {
+    if (!isAdmin) {
+      setUpdateMessage({
+        type: 'error',
+        text: 'Authorization failed. Please ensure the admin wallet is connected.',
+      });
+      setIsInitProgramDialogOpen(false);
+      return;
+    }
     setIsInitProgramDialogOpen(false)
     console.log("Initializing stake program...")
     // TODO: Implement actual logic to initialize the stake program
   }
 
   const handleInitializeStakePool = async () => {
+    if (!isAdmin) {
+      setUpdateMessage({
+        type: 'error',
+        text: 'Authorization failed. Please ensure the admin wallet is connected.',
+      });
+      setIsInitPoolDialogOpen(false);
+      return;
+    }
     setIsInitPoolDialogOpen(false)
     console.log("Initializing stake pool...")
     // TODO: Implement actual logic to initialize the stake pool
   }
 
   const handleInitializeXLabsMint = async () => {
+    if (!isAdmin) {
+      setUpdateMessage({
+        type: 'error',
+        text: 'Authorization failed. Please ensure the admin wallet is connected.',
+      });
+      setIsInitMintDialogOpen(false);
+      return;
+    }
     setIsInitMintDialogOpen(false)
     console.log("Initializing xLABS mint...")
     // TODO: Implement actual logic to initialize the xLABS mint
