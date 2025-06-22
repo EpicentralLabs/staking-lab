@@ -37,9 +37,9 @@ export default function AdminPanelPage() {
     // TODO: Implement actual logic to set APY on-chain
   }
 
-  const handleCreateVault = async () => {
-    console.log("Creating rewards vault...")
-    // TODO: Implement actual logic to create the vault
+  const handleInitializeStakeProgram = async () => {
+    console.log("Initializing stake program...")
+    // TODO: Implement actual logic to initialize the stake program
   }
 
   if (!isMounted) {
@@ -133,16 +133,16 @@ export default function AdminPanelPage() {
 
                 {/* Staking Vault Management */}
                 <div className="space-y-4">
-                    <h3 className="text-base sm:text-xl font-medium text-white">Rewards Vault</h3>
+                    <h3 className="text-base sm:text-xl font-medium text-white">Stake Program</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
                             <CardHeader className="p-0 mb-4">
                                 <CardTitle className="text-lg font-semibold text-white">Initialize Stake Program</CardTitle>
-                                <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program..</CardDescription>
+                                <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 space-y-4">
                                 <Button 
-                                    onClick={handleCreateVault} 
+                                    onClick={handleInitializeStakeProgram} 
                                     className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
                                 >
                                     Initialize Staking Program
