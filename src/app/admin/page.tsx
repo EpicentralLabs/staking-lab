@@ -27,17 +27,69 @@ export default function AdminPanelPage() {
   const [isInitProgramDialogOpen, setIsInitProgramDialogOpen] = useState(false)
   const [isInitPoolDialogOpen, setIsInitPoolDialogOpen] = useState(false)
   const [isInitMintDialogOpen, setIsInitMintDialogOpen] = useState(false)
+  const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
+  
+  // Effect to refresh APY from constants when needed
+  useEffect(() => {
+    // This will re-import the STAKE_APY constant when updateMessage changes
+    // and it's a success message about APY update
+    if (updateMessage?.type === 'success' && updateMessage.text.includes('APY')) {
+      // Dynamic import to get the fresh value
+      import('@/lib/constants').then(constants => {
+        setApy(constants.STAKE_APY.toString())
+      })
+    }
+  }, [updateMessage])
 
   const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
 
   const handleSetApy = async () => {
     setIsDialogOpen(false)
     console.log("Setting APY to:", apy)
-    // TODO: Implement actual logic to set APY on-chain
+    
+    try {
+      // Update APY via API
+      const response = await fetch('/api/admin/update-apy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ apy: parseFloat(apy) }),
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        console.log("APY updated successfully:", data.newApy)
+        // Show success message
+        setUpdateMessage({
+          type: 'success',
+          text: `APY successfully updated to ${data.newApy}%`
+        })
+        // Clear message after 5 seconds
+        setTimeout(() => {
+          setUpdateMessage(null)
+        }, 5000)
+      } else {
+        console.error("Failed to update APY:", data.message)
+        setUpdateMessage({
+          type: 'error',
+          text: `Failed to update APY: ${data.message}`
+        })
+      }
+    } catch (error) {
+      console.error("Error updating APY:", error)
+      setUpdateMessage({
+        type: 'error',
+        text: "An error occurred while updating the APY. Please try again."
+      })
+    }
+    
+    // TODO: Implement actual logic to set APY on-chain as well
   }
 
   const handleInitializeStakeProgram = async () => {
@@ -109,6 +161,11 @@ export default function AdminPanelPage() {
         <Navbar />
 
         <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
+          {updateMessage && (
+            <div className={`mb-4 p-4 rounded-lg text-white ${updateMessage.type === 'success' ? 'bg-green-600/70' : 'bg-red-600/70'} max-w-4xl mx-auto`}>
+              {updateMessage.text}
+            </div>
+          )}
           <div className="max-w-4xl mx-auto">
             <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
               <CardHeader>
