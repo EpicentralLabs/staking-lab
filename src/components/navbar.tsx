@@ -7,6 +7,7 @@ import Image from "next/image"
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ADMIN_PANEL_ACCESS_ADDRESS } from "@/lib/constants"
+import Link from "next/link"
 
 interface NavbarProps {
   onTitleClick?: () => void
@@ -72,10 +73,11 @@ export function Navbar({ onTitleClick }: NavbarProps) {
             </div>
 
             <Button
+              asChild
               className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
               disabled={!isAdmin}
             >
-              Admin Panel
+              <Link href="/admin">Admin Panel</Link>
             </Button>
             {mounted && <WalletMultiButton />}
           </div>
