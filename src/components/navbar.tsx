@@ -84,43 +84,79 @@ export function Navbar({ onTitleClick }: NavbarProps) {
           </div>
           <div className="flex items-center gap-2 md:hidden">
             {mounted && <WalletMultiButton />}
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="relative"
+            >
+              <Menu
+                className={`h-6 w-6 transition-all duration-300 ease-in-out ${
+                  isMenuOpen
+                    ? "opacity-0 rotate-90 scale-50"
+                    : "opacity-100 rotate-0 scale-100"
+                }`}
+              />
+              <X
+                className={`absolute h-6 w-6 transition-all duration-300 ease-in-out ${
+                  isMenuOpen
+                    ? "opacity-100 rotate-0 scale-100"
+                    : "opacity-0 -rotate-90 scale-50"
+                }`}
+              />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </div>
         </div>
-        {isMenuOpen && (
-          <div className="md:hidden mt-4 bg-zinc-900/80 backdrop-blur-sm p-4 rounded-lg">
-            <nav className="flex flex-col gap-4">
-              <Link href="/" className="text-gray-300 hover:text-white text-lg" onClick={() => setIsMenuOpen(false)}>Stake</Link>
-              <a href="#" className="text-gray-300 hover:text-white text-lg" onClick={() => setIsMenuOpen(false)}>Docs</a>
-              
-              <div className="border-t border-zinc-700 my-2"></div>
+        <div
+          className={`md:hidden mt-4 overflow-hidden rounded-lg bg-zinc-900/80 backdrop-blur-sm transition-all duration-300 ease-in-out ${
+            isMenuOpen ? "max-h-96 p-4" : "max-h-0"
+          }`}
+        >
+          <nav className="flex flex-col gap-4">
+            <Link
+              href="/"
+              className="text-gray-300 hover:text-white text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Stake
+            </Link>
+            <a
+              href="#"
+              className="text-gray-300 hover:text-white text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Docs
+            </a>
 
-              {isAdmin && (
-                <Button
-                  asChild
-                  className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700 justify-center text-lg py-3"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Link href="/admin">Admin Panel</Link>
-                </Button>
-              )}
-              
-              <div className="border-t border-zinc-700 my-2"></div>
+            <div className="border-t border-zinc-700 my-2"></div>
 
-              <div className="flex items-center gap-2 justify-center">
-                <Button variant="ghost" size="sm" asChild>
-                  <a href="#" target="_blank" rel="noopener noreferrer"><Twitter className="w-5 h-5" /></a>
-                </Button>
-                <Button variant="ghost" size="sm" asChild>
-                  <a href="#" target="_blank" rel="noopener noreferrer"><Github className="w-5 h-5" /></a>
-                </Button>
-              </div>
-            </nav>
-          </div>
-        )}
+            {isAdmin && (
+              <Button
+                asChild
+                className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700 justify-center text-lg py-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Link href="/admin">Admin Panel</Link>
+              </Button>
+            )}
+
+            <div className="border-t border-zinc-700 my-2"></div>
+
+            <div className="flex items-center gap-2 justify-center">
+              <Button variant="ghost" size="sm" asChild>
+                <a href="#" target="_blank" rel="noopener noreferrer">
+                  <Twitter className="w-5 h-5" />
+                </a>
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <a href="#" target="_blank" rel="noopener noreferrer">
+                  <Github className="w-5 h-5" />
+                </a>
+              </Button>
+            </div>
+          </nav>
+        </div>
       </div>
     </header>
   )
