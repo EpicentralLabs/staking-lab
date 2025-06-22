@@ -13,12 +13,22 @@ import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-bal
 import { useWallet } from "@solana/wallet-adapter-react"
 import { STAKE_APY } from "@/lib/constants"
 import { calculateXLABSAccumulation } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function SolanaStakingDApp() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
   const [isStaking, setIsStaking] = useState(false)
   const [isUnstaking, setIsUnstaking] = useState(false)
+  const [isStakeDialogOpen, setIsStakeDialogOpen] = useState(false)
+  const [isUnstakeDialogOpen, setIsUnstakeDialogOpen] = useState(false)
   const { publicKey, signTransaction } = useWallet()
 
   const walletBalance = TokenBalance()
@@ -27,7 +37,7 @@ export default function SolanaStakingDApp() {
   const [currentRewards, setCurrentRewards] = useState(0)
   const [stakingStartTime, setStakingStartTime] = useState<Date | null>(null)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
-  const [walletRewards, setWalletRewards] = useState<Map<string, number>>(new Map())
+  // const [walletRewards, setWalletRewards] = useState<Map<string, number>>(new Map())
 
   // Update current rewards based on staking time
   useEffect(() => {
@@ -40,12 +50,12 @@ export default function SolanaStakingDApp() {
         setCurrentRewards(newRewards)
         
         // Update total rewards earned for current wallet
-        setWalletRewards(prev => {
-          const newMap = new Map(prev)
-          const currentWalletRewards = newMap.get(publicKey.toString()) || 0
-          newMap.set(publicKey.toString(), currentWalletRewards + newRewards)
-          return newMap
-        })
+        // setWalletRewards(prev => {
+        //   const newMap = new Map(prev)
+        //   const currentWalletRewards = newMap.get(publicKey.toString()) || 0
+        //   newMap.set(publicKey.toString(), currentWalletRewards + newRewards)
+        //   return newMap
+        // })
       }
 
       updateRewards()
@@ -56,7 +66,7 @@ export default function SolanaStakingDApp() {
   }, [stakingStartTime, stakedAmount, publicKey])
 
   // Add smooth number animation component
-  const SmoothNumber = ({ value, decimals = 4 }: { value: number, decimals?: number }) => {
+  const SmoothNumber = ({ value, decimals = 4, align = 'right' }: { value: number, decimals?: number, align?: 'right' | 'center' }) => {
     const [displayValue, setDisplayValue] = useState(value)
 
     useEffect(() => {
@@ -81,19 +91,25 @@ export default function SolanaStakingDApp() {
       }
 
       requestAnimationFrame(animate)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
 
     // Format number with fixed width and consistent decimal places
     const formatNumber = (num: number) => {
+      const useGrouping = align !== 'center'
       const formatted = num.toLocaleString(undefined, {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
-        useGrouping: true
-      });
-      
+        useGrouping,
+      })
+
+      if (align === 'center') {
+        return <span className="tabular-nums">{formatted}</span>
+      }
+
       // Split into integer and decimal parts
-      const [intPart, decPart] = formatted.split('.');
-      
+      const [intPart, decPart] = formatted.split('.')
+
       // Format with fixed width
       return (
         <span className="tabular-nums">
@@ -101,10 +117,10 @@ export default function SolanaStakingDApp() {
           <span className="inline-block">.</span>
           <span className="inline-block min-w-[4em] text-left">{decPart}</span>
         </span>
-      );
-    };
+      )
+    }
 
-    return formatNumber(displayValue);
+    return formatNumber(displayValue)
   }
 
   const handleReset = () => {
@@ -216,211 +232,237 @@ export default function SolanaStakingDApp() {
         </div>
 
         <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
-          <div className="space-y-6 sm:space-y-8 md:space-y-12">
-            <div className="overflow-x-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 md:gap-8 min-w-[340px]">
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[180px]">
-                  <CardContent className="p-3 sm:p-6 md:p-8 text-center">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Wallet Balance</p>
-                    <p className="text-lg sm:text-2xl md:text-3xl font-light mb-1 text-white break-all">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[180px]">
-                  <CardContent className="p-3 sm:p-6 md:p-8 text-center">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Staked Amount</p>
-                    <p className="text-lg sm:text-2xl md:text-3xl font-light mb-1 text-white break-all">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">LABS</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[180px]">
-                  <CardContent className="p-3 sm:p-6 md:p-8 text-center">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Total Rewards Earned</p>
-                    <p className="text-lg sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff] break-all">
-                      <SmoothNumber value={totalRewardsEarned + currentRewards} />
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">xLABS</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30 min-w-[180px]">
-                  <CardContent className="p-3 sm:p-6 md:p-8 text-center">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 font-medium">Current APY</p>
-                    <p className="text-lg sm:text-2xl md:text-3xl font-light mb-1 text-[#4a85ff]">{STAKE_APY}%</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Annual</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 md:gap-10">
-              {/* Main Staking Interface */}
-              <Card className="lg:col-span-2 bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-                <CardHeader className="pb-4 sm:pb-8">
-                  <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Stake LABS</CardTitle>
-                  <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
-                    Stake your LABS tokens to earn xLABS rewards
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6 sm:space-y-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-10">
-                    {/* Stake Section */}
-                    <div className="space-y-3 sm:space-y-6">
-                      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
-                        <div className="p-2 bg-[#4a85ff]/20 rounded-lg">
-                          <ArrowUpRight className="w-5 h-5 text-[#4a85ff]" />
-                        </div>
-                        <h3 className="text-base sm:text-xl font-medium text-white">Stake Tokens</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-8 md:gap-10">
+            {/* Main Staking Interface */}
+            <Card className="lg:col-span-3 bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+              <CardHeader>
+                <CardTitle className="text-base sm:text-xl font-medium text-white">The Staking Lab</CardTitle>
+                <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
+                  Stake your LABS tokens to earn xLABS revenue sharing tokens!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 sm:space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-10">
+                  {/* Stake Section */}
+                  <div className="space-y-3 sm:space-y-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <div className="p-2 bg-[#4a85ff]/20 rounded-lg">
+                        <ArrowUpRight className="w-5 h-5 text-[#4a85ff]" />
                       </div>
-
-                      <div className="space-y-1 sm:space-y-4">
-                        <Label htmlFor="stake-amount" className="text-gray-300 font-medium text-xs sm:text-base">
-                          Amount to Stake
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="stake-amount"
-                            type="text"
-                            inputMode="decimal"
-                            pattern="[0-9]*\.?[0-9]*"
-                            placeholder="0.00"
-                            value={stakeAmount}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/,/g, '')
-                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                  maximumFractionDigits: 9,
-                                  useGrouping: true
-                                })
-                                setStakeAmount(formattedValue)
-                              }
-                            }}
-                            className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
-                        </div>
-                        <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                          <button
-                            className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
-                            onClick={() => setStakeAmount(walletBalance.toString())}
-                          >
-                            Max
-                          </button>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={handleStake}
-                        disabled={!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0 || isStaking}
-                        className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                      >
-                        {isStaking ? "Staking..." : "Stake LABS"}
-                      </Button>
+                      <h3 className="text-base sm:text-xl font-medium text-white">Stake Tokens</h3>
                     </div>
 
-                    {/* Unstake Section */}
-                    <div className="space-y-3 sm:space-y-6">
-                      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
-                        <div className="p-2 bg-orange-400/20 rounded-lg">
-                          <ArrowDownRight className="w-5 h-5 text-orange-400" />
-                        </div>
-                        <h3 className="text-base sm:text-xl font-medium text-white">Unstake Tokens</h3>
+                    <div className="space-y-1 sm:space-y-4">
+                      <Label htmlFor="stake-amount" className="text-gray-300 font-medium text-xs sm:text-base">
+                        Amount to Stake
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="stake-amount"
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*\.?[0-9]*"
+                          placeholder="0.00"
+                          value={stakeAmount}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/,/g, '')
+                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
+                                maximumFractionDigits: 9,
+                                useGrouping: true
+                              })
+                              setStakeAmount(formattedValue)
+                            }
+                          }}
+                          className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                       </div>
-
-                      <div className="space-y-1 sm:space-y-4">
-                        <Label htmlFor="unstake-amount" className="text-gray-300 font-medium text-xs sm:text-base">
-                          Amount to Unstake
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="unstake-amount"
-                            type="text"
-                            inputMode="decimal"
-                            pattern="[0-9]*\.?[0-9]*"
-                            placeholder="0.00"
-                            value={unstakeAmount}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/,/g, '')
-                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                  maximumFractionDigits: 9,
-                                  useGrouping: true
-                                })
-                                setUnstakeAmount(formattedValue)
-                              }
-                            }}
-                            className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
-                        </div>
-                        <div className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-gray-400">Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                          <button
-                            className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
-                            onClick={() => setUnstakeAmount(stakedAmount.toString())}
-                          >
-                            Max
-                          </button>
-                        </div>
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-gray-400">Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                        <button
+                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                          onClick={() => setStakeAmount(walletBalance.toString())}
+                        >
+                          Max
+                        </button>
                       </div>
+                    </div>
 
-                      <Button
-                        onClick={handleUnstake}
-                        disabled={!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0 || isUnstaking}
-                        variant="outline"
-                        className="w-full border-gray-600/60 text-gray-300 hover:bg-gray-800/60 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-sm transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                      >
-                        {isUnstaking ? "Unstaking..." : "Unstake LABS"}
-                      </Button>
+                    <Dialog open={isStakeDialogOpen} onOpenChange={setIsStakeDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          disabled={!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0 || isStaking}
+                          className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                        >
+                          {isStaking ? "Staking..." : "Stake LABS"}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+                        <DialogHeader>
+                          <DialogTitle>Confirm Stake</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Are you sure you want to stake {stakeAmount} LABS?
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button variant="outline" className="border-gray-600/60 text-black hover:bg-gray-800/60" onClick={() => setIsStakeDialogOpen(false)}>Cancel</Button>
+                          <Button className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white" onClick={() => {
+                            handleStake();
+                            setIsStakeDialogOpen(false);
+                          }}>Confirm</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  {/* Unstake Section */}
+                  <div className="space-y-3 sm:space-y-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <div className="p-2 bg-orange-400/20 rounded-lg">
+                        <ArrowDownRight className="w-5 h-5 text-orange-400" />
+                      </div>
+                      <h3 className="text-base sm:text-xl font-medium text-white">Unstake Tokens</h3>
+                    </div>
+
+                    <div className="space-y-1 sm:space-y-4">
+                      <Label htmlFor="unstake-amount" className="text-gray-300 font-medium text-xs sm:text-base">
+                        Amount to Unstake
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="unstake-amount"
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*\.?[0-9]*"
+                          placeholder="0.00"
+                          value={unstakeAmount}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/,/g, '')
+                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
+                                maximumFractionDigits: 9,
+                                useGrouping: true
+                              })
+                              setUnstakeAmount(formattedValue)
+                            }
+                          }}
+                          className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
+                      </div>
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-gray-400">Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                        <button
+                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                          onClick={() => setUnstakeAmount(stakedAmount.toString())}
+                        >
+                          Max
+                        </button>
+                      </div>
+                    </div>
+
+                    <Dialog open={isUnstakeDialogOpen} onOpenChange={setIsUnstakeDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          disabled={!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0 || isUnstaking}
+                          className="w-full bg-white text-black hover:bg-gray-200 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                        >
+                          {isUnstaking ? "Unstaking..." : "Unstake LABS"}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+                        <DialogHeader>
+                          <DialogTitle>Confirm Unstake</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Are you sure you want to unstake {unstakeAmount} LABS?
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end space-x-4 pt-4">
+                          <Button variant="outline" className="border-gray-600/60 text-black hover:bg-gray-800/60" onClick={() => setIsUnstakeDialogOpen(false)}>Cancel</Button>
+                          <Button className="bg-orange-400 hover:bg-orange-500 text-white" onClick={() => {
+                            handleUnstake();
+                            setIsUnstakeDialogOpen(false);
+                          }}>Confirm</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-8">
+              {/* Stake Pool Details */}
+              <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-xl font-medium text-white">Stake Pool Details</CardTitle>
+                  <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
+                    The current state of the stake pool.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Value Locked:</span>
+                    <span className="font-mono text-white">{totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Staking APY:</span>
+                    <span className="font-mono text-[#4a85ff]" style={{ textShadow: "0 0 8px #4a85ff" }}>{STAKE_APY}%</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Account Overview */}
+              <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-xl font-medium text-white">Account Overview</CardTitle>
+                  <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
+                    Your personal staking details.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Wallet Balance:</span>
+                    <span className="font-mono text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Staked Amount:</span>
+                    <span className="font-mono text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Rewards:</span>
+                    <div className="font-mono text-[#4a85ff] flex items-center gap-1">
+                      <span>{(totalRewardsEarned + currentRewards).toFixed(4)}</span>
+                      <span className="text-[#4a85ff]">xLABS</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Sidebar */}
-              <div className="space-y-4 sm:space-y-8">
-                {/* Claim Rewards */}
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-                  <CardHeader>
-                    <CardTitle className="text-base sm:text-xl font-medium text-white">Claim Rewards</CardTitle>
-                    <CardDescription className="text-gray-400 font-light text-xs sm:text-base">Your current xLABS tokens to claim</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 sm:space-y-6">
-                    <div className="text-center py-2 sm:py-6">
-                      <p className="text-xl sm:text-4xl font-light text-[#4a85ff] mb-2">
-                        <SmoothNumber value={currentRewards} />
-                      </p>
-                      <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
-                    </div>
-                    <Button
-                      onClick={handleClaimRewards}
-                      disabled={currentRewards <= 0}
-                      className="w-full bg-white text-black hover:bg-gray-100 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium disabled:opacity-50 disabled:hover:scale-100"
-                    >
-                      {currentRewards > 0 ? "Claim Rewards" : "No Rewards to Claim"}
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Pool Stats */}
-                <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-                  <CardHeader>
-                    <CardTitle className="text-base sm:text-xl font-medium text-white">Pool Statistics</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 sm:space-y-6">
-                    <div className="space-y-1 sm:space-y-4">
-                      <div className="flex justify-between items-center py-1 sm:py-2">
-                        <span className="text-xs sm:text-sm text-gray-400 font-light">Total Value Locked</span>
-                        <span className="font-medium text-base sm:text-lg text-white">${totalValueLocked.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-1 sm:py-2">
-                        <span className="text-xs sm:text-sm text-gray-400 font-light">Current APY</span>
-                        <span className="font-medium text-base sm:text-lg text-[#4a85ff]">{STAKE_APY}%</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Claim Rewards */}
+              <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-xl font-medium text-white">Claim Rewards</CardTitle>
+                  <CardDescription className="text-gray-400 font-light text-xs sm:text-base">Your current xLABS tokens to claim</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 sm:space-y-6">
+                  <div className="text-center py-2 sm:py-6">
+                    <p className="text-xl sm:text-4xl font-light text-[#4a85ff] mb-2">
+                      <SmoothNumber value={currentRewards} align="center" />
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
+                  </div>
+                  <Button
+                    onClick={handleClaimRewards}
+                    disabled={currentRewards <= 0}
+                    className="w-full bg-white text-black hover:bg-gray-100 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] font-medium disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    {currentRewards > 0 ? "Claim Rewards" : "No Rewards to Claim"}
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
