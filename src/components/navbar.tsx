@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Github, Twitter } from "lucide-react"
 import Image from "next/image"
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { ADMIN_PANEL_ACCESS_ADDRESS } from "@/lib/constants"
 
 interface NavbarProps {
   onTitleClick?: () => void
@@ -12,10 +14,15 @@ interface NavbarProps {
 
 export function Navbar({ onTitleClick }: NavbarProps) {
   const [mounted, setMounted] = useState(false)
+  const { publicKey } = useWallet()
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const isAdmin = publicKey
+    ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS
+    : false
 
   return (
     <header className="">
@@ -64,7 +71,12 @@ export function Navbar({ onTitleClick }: NavbarProps) {
               </Button>
             </div>
 
-            <Button className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700">Admin Panel</Button>
+            <Button
+              className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+              disabled={!isAdmin}
+            >
+              Admin Panel
+            </Button>
             {mounted && <WalletMultiButton />}
           </div>
         </div>
