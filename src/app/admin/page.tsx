@@ -15,7 +15,6 @@ export default function AdminPanelPage() {
   const { publicKey } = useWallet()
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
-  const [depositAmount, setDepositAmount] = useState("")
 
   useEffect(() => {
     setIsMounted(true)
@@ -31,11 +30,6 @@ export default function AdminPanelPage() {
   const handleCreateVault = async () => {
     console.log("Creating rewards vault...")
     // TODO: Implement actual logic to create the vault
-  }
-
-  const handleDepositRewards = async () => {
-    console.log("Depositing rewards:", depositAmount)
-    // TODO: Implement actual logic to deposit rewards
   }
 
   if (!isMounted) {
@@ -113,7 +107,7 @@ export default function AdminPanelPage() {
                                     placeholder="e.g., 10"
                                     value={apy}
                                     onChange={(e) => setApy(e.target.value)}
-                                    className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-12 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full"
+                                    className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-12 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">%</span>
                             </div>
@@ -133,7 +127,7 @@ export default function AdminPanelPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
                             <CardHeader className="p-0 mb-4">
-                                <CardTitle className="text-lg font-semibold">Vault Management</CardTitle>
+                                <CardTitle className="text-lg font-semibold text-white">Vault Management</CardTitle>
                                 <CardDescription className="text-gray-400 text-sm">Create and fund the rewards vault.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 space-y-4">
@@ -143,33 +137,11 @@ export default function AdminPanelPage() {
                                 >
                                     Create Vault
                                 </Button>
-                                <div className="space-y-2">
-                                    <Label htmlFor="deposit-amount" className="text-gray-300 font-medium text-xs">
-                                        Amount to Deposit
-                                    </Label>
-                                     <div className="relative">
-                                        <Input
-                                            id="deposit-amount"
-                                            type="number"
-                                            placeholder="0.00"
-                                            value={depositAmount}
-                                            onChange={(e) => setDepositAmount(e.target.value)}
-                                            className="bg-gray-700/40 border-gray-600/50 text-white placeholder-gray-500 pr-16 py-2 text-sm rounded-md w-full"
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">xLABS</span>
-                                    </div>
-                                </div>
-                                <Button 
-                                    onClick={handleDepositRewards} 
-                                    className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                                >
-                                    Deposit Rewards
-                                </Button>
                             </CardContent>
                         </Card>
                         <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
                            <CardHeader className="p-0 mb-4">
-                                <CardTitle className="text-lg font-semibold">Vault Status</CardTitle>
+                                <CardTitle className="text-lg font-semibold text-white">Vault Status</CardTitle>
                                 <CardDescription className="text-gray-400 text-sm">Current state of the vault.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 space-y-3 text-sm">
