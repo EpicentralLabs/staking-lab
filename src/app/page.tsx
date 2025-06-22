@@ -225,9 +225,9 @@ export default function SolanaStakingDApp() {
             {/* Main Staking Interface */}
             <Card className="lg:col-span-3 bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
               <CardHeader className="pb-4 sm:pb-8">
-                <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Stake LABS</CardTitle>
+                <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">The Staking Lab</CardTitle>
                 <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
-                  Stake your LABS tokens to earn xLABS rewards
+                  Stake your LABS tokens to earn xLABS revenue sharing tokens!
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 sm:space-y-10">
