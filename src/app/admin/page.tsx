@@ -127,31 +127,53 @@ export default function AdminPanelPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
                             <CardHeader className="p-0 mb-4">
-                                <CardTitle className="text-lg font-semibold text-white">Vault Management</CardTitle>
-                                <CardDescription className="text-gray-400 text-sm">Create and fund the rewards vault.</CardDescription>
+                                <CardTitle className="text-lg font-semibold text-white">Initialize Stake Program</CardTitle>
+                                <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program..</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 space-y-4">
                                 <Button 
                                     onClick={handleCreateVault} 
                                     className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
                                 >
-                                    Create Vault
+                                    Initialize Staking Program
                                 </Button>
                             </CardContent>
                         </Card>
                         <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
                            <CardHeader className="p-0 mb-4">
-                                <CardTitle className="text-lg font-semibold text-white">Vault Status</CardTitle>
-                                <CardDescription className="text-gray-400 text-sm">Current state of the vault.</CardDescription>
+                                <CardTitle className="text-lg font-semibold text-white">Stake Pool Status</CardTitle>
+                                <CardDescription className="text-gray-400 text-sm">Current state of the stake pool.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0 space-y-3 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-400">Vault Address:</span>
-                                    <span className="font-mono text-xs truncate text-gray-500">Not Created Yet</span>
+                                    <span className="text-gray-400">Program Address:</span>
+                                    <span className="font-mono text-xs truncate text-gray-500">Not Initialized Yet</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-400">Balance:</span>
-                                    <span className="text-white">0 xLABS</span>
+                                    <span className="text-gray-400">Stake Pool Address:</span>
+                                    <span className="font-mono text-xs truncate text-gray-500">Not Initialized Yet</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">LABS Token Address:</span>
+                                    <a 
+                                        href="https://solscan.io/token/LABSh5DTebUcUbEoLzXKCiXFJLecDFiDWiBGUU1GpxR" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                    >
+                                        LABS...pxR
+                                    </a>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">xLABS Token Address:</span>
+                                    <a 
+                                        href="https://solscan.io/token/11111111111111111111111111111111" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                    >
+                                        NULL
+                                    </a>
                                 </div>
                             </CardContent>
                         </Card>
