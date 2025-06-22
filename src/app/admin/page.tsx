@@ -175,6 +175,22 @@ export default function AdminPanelPage() {
                                         NULL
                                     </a>
                                 </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>
+                                    <span className="font-mono text-xs text-gray-500">0</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Claimed Rewards (xLABS Minted):</span>
+                                    <span className="font-mono text-xs text-gray-500">0</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">Total LABS Staked:</span>
+                                    <span className="font-mono text-xs text-gray-500">0</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-400">TVL Staked (USDC Value):</span>
+                                    <span className="font-mono text-xs text-gray-500">$0.00</span>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
