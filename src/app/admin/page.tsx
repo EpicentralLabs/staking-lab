@@ -20,9 +20,10 @@ import { Footer } from "@/components/footer"
 import { ADMIN_PANEL_ACCESS_ADDRESS, STAKE_APY } from "@/lib/constants"
 import { Transition } from '@headlessui/react'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import bs58 from 'bs58'
 
 export default function AdminPanelPage() {
-  const { publicKey } = useWallet()
+  const { publicKey, signMessage } = useWallet()
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -61,10 +62,10 @@ export default function AdminPanelPage() {
   const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
 
   const handleSetApy = async () => {
-    if (!isAdmin) {
+    if (!isAdmin || !publicKey || !signMessage) {
       setUpdateMessage({
         type: 'error',
-        text: 'Authorization failed. Please ensure the admin wallet is connected.',
+        text: 'Authorization failed. Please ensure the admin wallet is connected and supports message signing.',
       });
       setIsDialogOpen(false);
       return;
@@ -74,13 +75,23 @@ export default function AdminPanelPage() {
     console.log("Setting APY to:", apy)
     
     try {
+      const message = `Update APY to ${apy}%`;
+      const encodedMessage = new TextEncoder().encode(message);
+      const signature = await signMessage(encodedMessage);
+      const encodedSignature = bs58.encode(signature);
+
       // Update APY via API
       const response = await fetch('/api/admin/update-apy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ apy: parseFloat(apy) }),
+        body: JSON.stringify({
+          apy: parseFloat(apy),
+          publicKey: publicKey.toBase58(),
+          message,
+          signature: encodedSignature
+        }),
       })
       
       const data = await response.json()
