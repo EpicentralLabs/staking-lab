@@ -64,6 +64,7 @@ export function Navbar({ onTitleClick }: NavbarProps) {
               </Button>
             </div>
 
+            <Button className="bg-zinc-800 text-zinc-50 hover:bg-zinc-700">Admin Panel</Button>
             {mounted && <WalletMultiButton />}
           </div>
         </div>
