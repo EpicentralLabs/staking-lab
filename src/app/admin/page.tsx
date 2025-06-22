@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog"
 import { FlowingBackground } from "@/components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -15,6 +23,7 @@ export default function AdminPanelPage() {
   const { publicKey } = useWallet()
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -23,6 +32,7 @@ export default function AdminPanelPage() {
   const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
 
   const handleSetApy = async () => {
+    setIsDialogOpen(false)
     console.log("Setting APY to:", apy)
     // TODO: Implement actual logic to set APY on-chain
   }
@@ -113,7 +123,7 @@ export default function AdminPanelPage() {
                             </div>
                         </div>
                         <Button
-                            onClick={handleSetApy}
+                            onClick={() => setIsDialogOpen(true)}
                             className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
                         >
                             Set APY
@@ -202,6 +212,33 @@ export default function AdminPanelPage() {
         
         <Footer />
       </div>
+
+      {/* APY Confirmation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm APY Change</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to change the staking APY to {apy}%?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSetApy}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
