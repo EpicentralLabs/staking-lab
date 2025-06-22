@@ -24,6 +24,9 @@ export default function AdminPanelPage() {
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isInitProgramDialogOpen, setIsInitProgramDialogOpen] = useState(false)
+  const [isInitPoolDialogOpen, setIsInitPoolDialogOpen] = useState(false)
+  const [isInitMintDialogOpen, setIsInitMintDialogOpen] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -38,8 +41,21 @@ export default function AdminPanelPage() {
   }
 
   const handleInitializeStakeProgram = async () => {
+    setIsInitProgramDialogOpen(false)
     console.log("Initializing stake program...")
     // TODO: Implement actual logic to initialize the stake program
+  }
+
+  const handleInitializeStakePool = async () => {
+    setIsInitPoolDialogOpen(false)
+    console.log("Initializing stake pool...")
+    // TODO: Implement actual logic to initialize the stake pool
+  }
+
+  const handleInitializeXLabsMint = async () => {
+    setIsInitMintDialogOpen(false)
+    console.log("Initializing xLABS mint...")
+    // TODO: Implement actual logic to initialize the xLABS mint
   }
 
   if (!isMounted) {
@@ -126,7 +142,7 @@ export default function AdminPanelPage() {
                             onClick={() => setIsDialogOpen(true)}
                             className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
                         >
-                            Set APY
+                            Update Stake Config (APY % Change)
                         </Button>
                     </div>
                 </div>
@@ -142,10 +158,22 @@ export default function AdminPanelPage() {
                             </CardHeader>
                             <CardContent className="p-0 space-y-4">
                                 <Button 
-                                    onClick={handleInitializeStakeProgram} 
+                                    onClick={() => setIsInitProgramDialogOpen(true)} 
                                     className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
                                 >
                                     Initialize Staking Program
+                                </Button>
+                                <Button 
+                                    onClick={() => setIsInitPoolDialogOpen(true)} 
+                                    className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+                                >
+                                    Initialize Stake Pool
+                                </Button>
+                                <Button 
+                                    onClick={() => setIsInitMintDialogOpen(true)} 
+                                    className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+                                >
+                                    Initialize xLABS Mint
                                 </Button>
                             </CardContent>
                         </Card>
@@ -232,6 +260,87 @@ export default function AdminPanelPage() {
             </Button>
             <Button 
               onClick={handleSetApy}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Initialize Staking Program Confirmation Dialog */}
+      <Dialog open={isInitProgramDialogOpen} onOpenChange={setIsInitProgramDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Initialize Staking Program</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to initialize the staking program? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsInitProgramDialogOpen(false)}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleInitializeStakeProgram}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Initialize Stake Pool Confirmation Dialog */}
+      <Dialog open={isInitPoolDialogOpen} onOpenChange={setIsInitPoolDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Initialize Stake Pool</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to initialize the stake pool? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsInitPoolDialogOpen(false)}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleInitializeStakePool}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Initialize xLABS Mint Confirmation Dialog */}
+      <Dialog open={isInitMintDialogOpen} onOpenChange={setIsInitMintDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Initialize xLABS Mint</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to initialize the xLABS mint? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsInitMintDialogOpen(false)}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleInitializeXLabsMint}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
             >
               Confirm
