@@ -24,9 +24,9 @@ export default function AdminPanelPage() {
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isInitProgramDialogOpen, setIsInitProgramDialogOpen] = useState(false)
-  const [isInitPoolDialogOpen, setIsInitPoolDialogOpen] = useState(false)
-  const [isInitMintDialogOpen, setIsInitMintDialogOpen] = useState(false)
+  const [isCreateStakePoolConfigDialogOpen, setICreateStakePoolConfigDialogOpen] = useState(false)
+  const [isDeleteStakePoolConfigDialogOpen, setIsDeleteStakePoolConfigDialogOpen] = useState(false)
+  const [isCreateXLabsMintDialogOpen, setIsCreateXLabsMintDialogOpen] = useState(false)
   const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
 
   useEffect(() => {
@@ -101,45 +101,45 @@ export default function AdminPanelPage() {
     // TODO: Implement actual logic to set APY on-chain as well
   }
 
-  const handleInitializeStakeProgram = async () => {
+  const handleCreateStakePoolConfig = async () => {
     if (!isAdmin) {
       setUpdateMessage({
         type: 'error',
         text: 'Authorization failed. Please ensure the admin wallet is connected.',
       });
-      setIsInitProgramDialogOpen(false);
+      setICreateStakePoolConfigDialogOpen(false);
       return;
     }
-    setIsInitProgramDialogOpen(false)
-    console.log("Initializing stake program...")
+    setICreateStakePoolConfigDialogOpen(false)
+    console.log("Creating stake pool config...")
     // TODO: Implement actual logic to initialize the stake program
   }
 
-  const handleInitializeStakePool = async () => {
+  const handleDeleteStakePoolConfig = async () => {
     if (!isAdmin) {
       setUpdateMessage({
         type: 'error',
         text: 'Authorization failed. Please ensure the admin wallet is connected.',
       });
-      setIsInitPoolDialogOpen(false);
+      setIsDeleteStakePoolConfigDialogOpen(false);
       return;
     }
-    setIsInitPoolDialogOpen(false)
-    console.log("Initializing stake pool...")
+    setIsDeleteStakePoolConfigDialogOpen(false)
+    console.log("Deleting stake pool config...")
     // TODO: Implement actual logic to initialize the stake pool
   }
 
-  const handleInitializeXLabsMint = async () => {
+  const handleCreateXLabsMint = async () => {
     if (!isAdmin) {
       setUpdateMessage({
         type: 'error',
         text: 'Authorization failed. Please ensure the admin wallet is connected.',
       });
-      setIsInitMintDialogOpen(false);
+      setIsCreateXLabsMintDialogOpen(false);
       return;
     }
-    setIsInitMintDialogOpen(false)
-    console.log("Initializing xLABS mint...")
+    setIsCreateXLabsMintDialogOpen(false)
+    console.log("Creating xLABS mint...")
     // TODO: Implement actual logic to initialize the xLABS mint
   }
 
@@ -248,22 +248,22 @@ export default function AdminPanelPage() {
                             </CardHeader>
                             <CardContent className="p-0 space-y-4">
                                 <Button 
-                                    onClick={() => setIsInitProgramDialogOpen(true)} 
+                                    onClick={() => setICreateStakePoolConfigDialogOpen(true)} 
                                     className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
                                 >
-                                    Initialize Staking Program
+                                    create_stake_pool_config
                                 </Button>
                                 <Button 
-                                    onClick={() => setIsInitPoolDialogOpen(true)} 
-                                    className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+                                    onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)} 
+                                    className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
                                 >
-                                    Initialize Stake Pool
+                                    delete_stake_pool_config
                                 </Button>
                                 <Button 
-                                    onClick={() => setIsInitMintDialogOpen(true)} 
+                                    onClick={() => setIsCreateXLabsMintDialogOpen(true)} 
                                     className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
                                 >
-                                    Initialize xLABS Mint
+                                    create_x_labs_mint
                                 </Button>
                             </CardContent>
                         </Card>
@@ -359,24 +359,24 @@ export default function AdminPanelPage() {
       </Dialog>
 
       {/* Initialize Staking Program Confirmation Dialog */}
-      <Dialog open={isInitProgramDialogOpen} onOpenChange={setIsInitProgramDialogOpen}>
+      <Dialog open={isCreateStakePoolConfigDialogOpen} onOpenChange={setICreateStakePoolConfigDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Initialize Staking Program</DialogTitle>
+            <DialogTitle>Confirm Create Stake Pool Config</DialogTitle>
             <DialogDescription>
-              Are you sure you want to initialize the staking program? This action cannot be undone.
+              Are you sure you want to create the stake pool config?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
-              onClick={() => setIsInitProgramDialogOpen(false)}
+              onClick={() => setICreateStakePoolConfigDialogOpen(false)}
               className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
             >
               Cancel
             </Button>
             <Button 
-              onClick={handleInitializeStakeProgram}
+              onClick={handleCreateStakePoolConfig}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
             >
               Confirm
@@ -386,51 +386,51 @@ export default function AdminPanelPage() {
       </Dialog>
 
       {/* Initialize Stake Pool Confirmation Dialog */}
-      <Dialog open={isInitPoolDialogOpen} onOpenChange={setIsInitPoolDialogOpen}>
+      <Dialog open={isDeleteStakePoolConfigDialogOpen} onOpenChange={setIsDeleteStakePoolConfigDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Initialize Stake Pool</DialogTitle>
+            <DialogTitle>Confirm Delete Stake Pool Config</DialogTitle>
             <DialogDescription>
-              Are you sure you want to initialize the stake pool? This action cannot be undone.
+              Are you sure you want to delete the stake pool config? This action is destructive and cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
-              onClick={() => setIsInitPoolDialogOpen(false)}
+              onClick={() => setIsDeleteStakePoolConfigDialogOpen(false)}
               className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
             >
               Cancel
             </Button>
             <Button 
-              onClick={handleInitializeStakePool}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+              onClick={handleDeleteStakePoolConfig}
+              className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
             >
-              Confirm
+              Confirm Deletion
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Initialize xLABS Mint Confirmation Dialog */}
-      <Dialog open={isInitMintDialogOpen} onOpenChange={setIsInitMintDialogOpen}>
+      <Dialog open={isCreateXLabsMintDialogOpen} onOpenChange={setIsCreateXLabsMintDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Initialize xLABS Mint</DialogTitle>
+            <DialogTitle>Confirm Create xLABS Mint</DialogTitle>
             <DialogDescription>
-              Are you sure you want to initialize the xLABS mint? This action cannot be undone.
+              Are you sure you want to create the xLABS mint?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
-              onClick={() => setIsInitMintDialogOpen(false)}
+              onClick={() => setIsCreateXLabsMintDialogOpen(false)}
               className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
             >
               Cancel
             </Button>
             <Button 
-              onClick={handleInitializeXLabsMint}
+              onClick={handleCreateXLabsMint}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
             >
               Confirm
