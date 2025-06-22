@@ -51,11 +51,11 @@ export function Navbar({ onTitleClick }: NavbarProps) {
           </div>
 
           <nav className="flex items-center gap-8 flex-1 justify-center">
-            <a href="#" 
+            <Link href="/"
                className="text-gray-300 hover:text-white transition-colors cursor-pointer" 
                style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}>
               Stake
-            </a>
+            </Link>
             <a href="#" className="text-gray-300 hover:text-white transition-colors"
                style={{ textShadow: "0 0 10px rgba(255, 255, 255, 0.5)" }}>
               Docs
