@@ -1,44 +1,28 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
+import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { apy } = await request.json();
-    const numericApy = Number(apy);
-    
-    if (isNaN(numericApy) || numericApy < 0) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid APY value' },
-        { status: 400 }
-      );
+    const { apy } = await req.json();
+
+    if (typeof apy !== 'number' || apy < 0) {
+      return NextResponse.json({ error: 'Invalid APY value' }, { status: 400 });
     }
 
-    // Path to constants.ts file
-    const constantsFilePath = path.join(process.cwd(), 'src', 'lib', 'constants.ts');
-    
-    // Read the current file content
-    let fileContent = fs.readFileSync(constantsFilePath, 'utf8');
-    
-    // Replace the APY value using regex
-    const updatedContent = fileContent.replace(
-      /export const STAKE_APY = \d+(\.\d+)?;.*$/m,
-      `export const STAKE_APY = ${numericApy}; // ${numericApy}% APY`
+    const filePath = path.join(process.cwd(), 'src', 'lib', 'constants.ts');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+
+    const newContent = fileContent.replace(
+      /export const STAKE_APY = \d+(\.\d+)?;/,
+      `export const STAKE_APY = ${apy};`
     );
-    
-    // Write the updated content back to the file
-    fs.writeFileSync(constantsFilePath, updatedContent, 'utf8');
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'APY updated successfully',
-      newApy: numericApy 
-    });
+
+    await fs.writeFile(filePath, newContent, 'utf-8');
+
+    return NextResponse.json({ message: 'APY updated successfully' });
   } catch (error) {
     console.error('Error updating APY:', error);
-    return NextResponse.json(
-      { success: false, message: 'Failed to update APY' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update APY' }, { status: 500 });
   }
 } 

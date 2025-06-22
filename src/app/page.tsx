@@ -37,7 +37,7 @@ export default function SolanaStakingDApp() {
   const [currentRewards, setCurrentRewards] = useState(0)
   const [stakingStartTime, setStakingStartTime] = useState<Date | null>(null)
   const [totalValueLocked, setTotalValueLocked] = useState(0)
-  const [walletRewards, setWalletRewards] = useState<Map<string, number>>(new Map())
+  // const [walletRewards, setWalletRewards] = useState<Map<string, number>>(new Map())
 
   // Update current rewards based on staking time
   useEffect(() => {
@@ -50,12 +50,12 @@ export default function SolanaStakingDApp() {
         setCurrentRewards(newRewards)
         
         // Update total rewards earned for current wallet
-        setWalletRewards(prev => {
-          const newMap = new Map(prev)
-          const currentWalletRewards = newMap.get(publicKey.toString()) || 0
-          newMap.set(publicKey.toString(), currentWalletRewards + newRewards)
-          return newMap
-        })
+        // setWalletRewards(prev => {
+        //   const newMap = new Map(prev)
+        //   const currentWalletRewards = newMap.get(publicKey.toString()) || 0
+        //   newMap.set(publicKey.toString(), currentWalletRewards + newRewards)
+        //   return newMap
+        // })
       }
 
       updateRewards()
@@ -91,6 +91,7 @@ export default function SolanaStakingDApp() {
       }
 
       requestAnimationFrame(animate)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
 
     // Format number with fixed width and consistent decimal places

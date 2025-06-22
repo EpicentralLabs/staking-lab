@@ -85,18 +85,18 @@ export default function AdminPanelPage() {
       
       const data = await response.json()
       
-      if (data.success) {
-        console.log("APY updated successfully:", data.newApy)
+      if (response.ok) {
+        console.log("APY updated successfully:", apy)
         // Show success message
         setUpdateMessage({
           type: 'success',
-          text: `APY successfully updated to ${data.newApy}%`
+          text: `APY successfully updated to ${apy}%`
         })
       } else {
-        console.error("Failed to update APY:", data.message)
+        console.error("Failed to update APY:", data.error)
         setUpdateMessage({
           type: 'error',
-          text: `Failed to update APY: ${data.message}`
+          text: `Failed to update APY: ${data.error || 'Unknown error'}`
         })
       }
     } catch (error) {
