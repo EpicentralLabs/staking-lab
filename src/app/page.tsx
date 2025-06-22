@@ -234,9 +234,9 @@ export default function SolanaStakingDApp() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-8 md:gap-10">
             {/* Main Staking Interface */}
             <Card className="lg:col-span-3 bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-              <CardHeader className="pb-4 sm:pb-8">
-                <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">The Staking Lab</CardTitle>
-                <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
+              <CardHeader>
+                <CardTitle className="text-base sm:text-xl font-medium text-white">The Staking Lab</CardTitle>
+                <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
                   Stake your LABS tokens to earn xLABS revenue sharing tokens!
                 </CardDescription>
               </CardHeader>
@@ -393,27 +393,48 @@ export default function SolanaStakingDApp() {
 
             {/* Sidebar */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-8">
+              {/* Stake Pool Details */}
+              <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+                <CardHeader>
+                  <CardTitle className="text-base sm:text-xl font-medium text-white">Stake Pool Details</CardTitle>
+                  <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
+                    The current state of the stake pool.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Value Locked:</span>
+                    <span className="font-mono text-white">{totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Staking APY:</span>
+                    <span className="font-mono text-[#4a85ff]" style={{ textShadow: "0 0 8px #4a85ff" }}>{STAKE_APY}%</span>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Account Overview */}
               <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
                 <CardHeader>
                   <CardTitle className="text-base sm:text-xl font-medium text-white">Account Overview</CardTitle>
+                  <CardDescription className="text-gray-400 font-light text-xs sm:text-base">
+                    Your personal staking details.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2 sm:space-y-6">
-                  <div className="space-y-1 sm:space-y-4">
-                    <div className="flex justify-between items-center py-1 sm:py-2">
-                      <span className="text-xs sm:text-sm text-gray-400 font-light">Wallet Balance</span>
-                      <span className="font-medium text-base sm:text-lg text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 sm:py-2">
-                      <span className="text-xs sm:text-sm text-gray-400 font-light">Staked Amount</span>
-                      <span className="font-medium text-base sm:text-lg text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 sm:py-2">
-                      <span className="text-xs sm:text-sm text-gray-400 font-light">Total Rewards</span>
-                      <div className="font-medium text-base sm:text-lg text-[#4a85ff] flex items-center gap-1">
-                        <SmoothNumber value={totalRewardsEarned + currentRewards} />
-                        <span className="text-[#4a85ff]">xLABS</span>
-                      </div>
+                <CardContent className="text-sm space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Wallet Balance:</span>
+                    <span className="font-mono text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Staked Amount:</span>
+                    <span className="font-mono text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Rewards:</span>
+                    <div className="font-mono text-[#4a85ff] flex items-center gap-1">
+                      <span>{(totalRewardsEarned + currentRewards).toFixed(4)}</span>
+                      <span className="text-[#4a85ff]">xLABS</span>
                     </div>
                   </div>
                 </CardContent>
