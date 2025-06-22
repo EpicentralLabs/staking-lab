@@ -18,6 +18,8 @@ import { FlowingBackground } from "@/components/flowing-background"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ADMIN_PANEL_ACCESS_ADDRESS, STAKE_APY } from "@/lib/constants"
+import { Transition } from '@headlessui/react'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 export default function AdminPanelPage() {
   const { publicKey } = useWallet()
@@ -28,11 +30,22 @@ export default function AdminPanelPage() {
   const [isDeleteStakePoolConfigDialogOpen, setIsDeleteStakePoolConfigDialogOpen] = useState(false)
   const [isCreateXLabsMintDialogOpen, setIsCreateXLabsMintDialogOpen] = useState(false)
   const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
   
+  useEffect(() => {
+    if (updateMessage) {
+      setIsNotificationVisible(true)
+      const timer = setTimeout(() => {
+        setIsNotificationVisible(false)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [updateMessage])
+
   // Effect to refresh APY from constants when needed
   useEffect(() => {
     // This will re-import the STAKE_APY constant when updateMessage changes
@@ -79,10 +92,6 @@ export default function AdminPanelPage() {
           type: 'success',
           text: `APY successfully updated to ${data.newApy}%`
         })
-        // Clear message after 5 seconds
-        setTimeout(() => {
-          setUpdateMessage(null)
-        }, 5000)
       } else {
         console.error("Failed to update APY:", data.message)
         setUpdateMessage({
@@ -194,11 +203,37 @@ export default function AdminPanelPage() {
         <Navbar />
 
         <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
-          {updateMessage && (
-            <div className={`mb-4 p-4 rounded-lg text-white ${updateMessage.type === 'success' ? 'bg-green-600/70' : 'bg-red-600/70'} max-w-4xl mx-auto`}>
-              {updateMessage.text}
-            </div>
-          )}
+          <div className="max-w-4xl mx-auto">
+            <Transition
+              show={isNotificationVisible}
+              as="div"
+              className="mb-4"
+              enter="transition-all duration-300 ease-out"
+              enterFrom="max-h-0 opacity-0"
+              enterTo="max-h-40 opacity-100"
+              leave="transition-all duration-300 ease-in"
+              leaveFrom="max-h-40 opacity-100"
+              leaveTo="max-h-0 opacity-0"
+              afterLeave={() => setUpdateMessage(null)}
+            >
+              {updateMessage && (
+                <div 
+                  className={`p-4 rounded-lg flex items-center space-x-3 text-white border ${
+                    updateMessage.type === 'success' 
+                      ? 'bg-green-900/50 border-green-500/50' 
+                      : 'bg-red-900/50 border-red-500/50'
+                  }`}
+                >
+                  {updateMessage.type === 'success' ? (
+                    <CheckCircleIcon className="h-6 w-6 text-green-400" />
+                  ) : (
+                    <XCircleIcon className="h-6 w-6 text-red-400" />
+                  )}
+                  <span>{updateMessage.text}</span>
+                </div>
+              )}
+            </Transition>
+          </div>
           <div className="max-w-4xl mx-auto">
             <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
               <CardHeader>
