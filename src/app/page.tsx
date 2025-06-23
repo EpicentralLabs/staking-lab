@@ -277,7 +277,9 @@ export default function SolanaStakingDApp() {
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span
                           className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
-                          onClick={() => setStakeAmount(walletBalance.toString())}
+                          onClick={() => setStakeAmount(
+                            walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          )}
                           title="Click to use full available balance"
                         >
                           Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
@@ -346,7 +348,9 @@ export default function SolanaStakingDApp() {
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span
                           className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
-                          onClick={() => setUnstakeAmount(stakedAmount.toString())}
+                          onClick={() => setUnstakeAmount(
+                            stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          )}
                           title="Click to use full staked amount"
                         >
                           Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
