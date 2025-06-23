@@ -269,6 +269,7 @@ export default function SolanaStakingDApp() {
                         <Input
                           id="stake-amount"
                           type="text"
+                          autoComplete="off"
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
@@ -341,6 +342,7 @@ export default function SolanaStakingDApp() {
                         <Input
                           id="unstake-amount"
                           type="text"
+                          autoComplete="off"
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
