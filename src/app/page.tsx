@@ -134,6 +134,15 @@ export default function SolanaStakingDApp() {
     setTotalValueLocked(0)
   }
 
+  // Helper to format numbers with commas
+  const formatWithCommas = (value: string) => {
+    if (!value) return '';
+    // Remove all non-digit and non-decimal characters
+    const [intPart, decPart] = value.replace(/,/g, '').split('.');
+    const formattedInt = parseInt(intPart || '0', 10).toLocaleString();
+    return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+  };
+
   const handleStake = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
     if (!publicKey || !signTransaction) {
@@ -263,11 +272,12 @@ export default function SolanaStakingDApp() {
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
-                          value={stakeAmount}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/,/g, '')
-                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              setStakeAmount(value)
+                          value={formatWithCommas(stakeAmount)}
+                          onChange={e => {
+                            // Remove commas for storage
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+                              setStakeAmount(rawValue);
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -334,11 +344,11 @@ export default function SolanaStakingDApp() {
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
-                          value={unstakeAmount}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/,/g, '')
-                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              setUnstakeAmount(value)
+                          value={formatWithCommas(unstakeAmount)}
+                          onChange={e => {
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+                              setUnstakeAmount(rawValue);
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
