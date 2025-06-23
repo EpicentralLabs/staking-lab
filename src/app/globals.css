@@ -214,3 +214,15 @@
 .wallet-adapter-button[aria-expanded="true"]:hover {
   background-color: #3a75ef !important;
 }
+
+input::selection {
+  background: #4a85ff;
+  color: #fff;
+}
+
+/* Underline utility for clickable balances */
+.underline-balance {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

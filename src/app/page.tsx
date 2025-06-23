@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { STAKE_APY } from "@/lib/constants"
-import { calculateXLABSAccumulation } from "@/lib/utils"
+import { calculateXLABSAccumulation, cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -134,6 +134,15 @@ export default function SolanaStakingDApp() {
     setTotalValueLocked(0)
   }
 
+  // Helper to format numbers with commas
+  const formatWithCommas = (value: string) => {
+    if (!value) return '';
+    // Remove all non-digit and non-decimal characters
+    const [intPart, decPart] = value.replace(/,/g, '').split('.');
+    const formattedInt = parseInt(intPart || '0', 10).toLocaleString();
+    return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+  };
+
   const handleStake = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
     if (!publicKey || !signTransaction) {
@@ -219,6 +228,9 @@ export default function SolanaStakingDApp() {
     }
   }
 
+  // Utility to get available balance after staking
+  const availableBalance = Math.max(walletBalance - stakedAmount, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white relative overflow-x-hidden flex flex-col">
       <div className="absolute inset-0 pointer-events-none z-0 bg-black/40 backdrop-blur-2xl" style={{
@@ -260,18 +272,16 @@ export default function SolanaStakingDApp() {
                         <Input
                           id="stake-amount"
                           type="text"
+                          autoComplete="off"
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
-                          value={stakeAmount}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/,/g, '')
-                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                maximumFractionDigits: 9,
-                                useGrouping: true
-                              })
-                              setStakeAmount(formattedValue)
+                          value={formatWithCommas(stakeAmount)}
+                          onChange={e => {
+                            // Remove commas for storage
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+                              setStakeAmount(rawValue);
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -279,13 +289,15 @@ export default function SolanaStakingDApp() {
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-gray-400">Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                        <button
-                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
-                          onClick={() => setStakeAmount(walletBalance.toString())}
+                        <span
+                          className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
+                          onClick={() => setStakeAmount(
+                            availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          )}
+                          title="Click to use full available balance"
                         >
-                          Max
-                        </button>
+                          Available: {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                        </span>
                       </div>
                     </div>
 
@@ -333,18 +345,15 @@ export default function SolanaStakingDApp() {
                         <Input
                           id="unstake-amount"
                           type="text"
+                          autoComplete="off"
                           inputMode="decimal"
                           pattern="[0-9]*\.?[0-9]*"
                           placeholder="0.00"
-                          value={unstakeAmount}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/,/g, '')
-                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                maximumFractionDigits: 9,
-                                useGrouping: true
-                              })
-                              setUnstakeAmount(formattedValue)
+                          value={formatWithCommas(unstakeAmount)}
+                          onChange={e => {
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+                              setUnstakeAmount(rawValue);
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -352,13 +361,15 @@ export default function SolanaStakingDApp() {
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-gray-400">Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                        <button
-                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
-                          onClick={() => setUnstakeAmount(stakedAmount.toString())}
+                        <span
+                          className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
+                          onClick={() => setUnstakeAmount(
+                            stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          )}
+                          title="Click to use full staked amount"
                         >
-                          Max
-                        </button>
+                          Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                        </span>
                       </div>
                     </div>
 
@@ -404,7 +415,7 @@ export default function SolanaStakingDApp() {
                 </CardHeader>
                 <CardContent className="text-sm space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Total Value Locked:</span>
+                    <span className="text-gray-400">Total Value Locked (LABS):</span>
                     <span className="font-mono text-white">{totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -424,8 +435,8 @@ export default function SolanaStakingDApp() {
                 </CardHeader>
                 <CardContent className="text-sm space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Wallet Balance:</span>
-                    <span className="font-mono text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                    <span className="text-gray-400">Available Balance:</span  >
+                    <span className="font-mono text-white">{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Staked Amount:</span>
