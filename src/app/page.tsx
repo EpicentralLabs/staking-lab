@@ -436,7 +436,7 @@ export default function SolanaStakingDApp() {
                 <CardContent className="text-sm space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Available Balance:</span  >
-                    <span className="font-mono text-white">{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                    <span className="font-mono text-white">{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Staked Amount:</span>
