@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { STAKE_APY } from "@/lib/constants"
-import { calculateXLABSAccumulation } from "@/lib/utils"
+import { calculateXLABSAccumulation, cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -228,6 +228,9 @@ export default function SolanaStakingDApp() {
     }
   }
 
+  // Utility to get available balance after staking
+  const availableBalance = Math.max(walletBalance - stakedAmount, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white relative overflow-x-hidden flex flex-col">
       <div className="absolute inset-0 pointer-events-none z-0 bg-black/40 backdrop-blur-2xl" style={{
@@ -289,11 +292,11 @@ export default function SolanaStakingDApp() {
                         <span
                           className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
                           onClick={() => setStakeAmount(
-                            walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
                           title="Click to use full available balance"
                         >
-                          Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                          Available: {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
                         </span>
                       </div>
                     </div>
