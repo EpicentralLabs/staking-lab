@@ -267,11 +267,7 @@ export default function SolanaStakingDApp() {
                           onChange={(e) => {
                             const value = e.target.value.replace(/,/g, '')
                             if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                maximumFractionDigits: 9,
-                                useGrouping: true
-                              })
-                              setStakeAmount(formattedValue)
+                              setStakeAmount(value)
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -279,13 +275,13 @@ export default function SolanaStakingDApp() {
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-gray-400">Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                        <button
-                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                        <span
+                          className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
                           onClick={() => setStakeAmount(walletBalance.toString())}
+                          title="Click to use full available balance"
                         >
-                          Max
-                        </button>
+                          Available: {walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                        </span>
                       </div>
                     </div>
 
@@ -340,11 +336,7 @@ export default function SolanaStakingDApp() {
                           onChange={(e) => {
                             const value = e.target.value.replace(/,/g, '')
                             if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                              const formattedValue = value === '' ? '' : Number(value).toLocaleString('en-US', {
-                                maximumFractionDigits: 9,
-                                useGrouping: true
-                              })
-                              setUnstakeAmount(formattedValue)
+                              setUnstakeAmount(value)
                             }
                           }}
                           className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-16 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -352,13 +344,13 @@ export default function SolanaStakingDApp() {
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-gray-400">Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-                        <button
-                          className="text-[#4a85ff] hover:text-[#3a75ef] font-medium transition-colors"
+                        <span
+                          className="text-gray-400 underline-balance hover:text-[#4a85ff] transition-colors"
                           onClick={() => setUnstakeAmount(stakedAmount.toString())}
+                          title="Click to use full staked amount"
                         >
-                          Max
-                        </button>
+                          Staked: {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                        </span>
                       </div>
                     </div>
 
