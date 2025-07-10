@@ -2,39 +2,37 @@ import { createSolanaClient, getMinimumBalanceForRentExemption } from "gill";
 import { generateKeyPairSigner } from "gill";
 import { createTransaction } from "gill";
 import {
-  getTokenMetadataAddress, 
   getCreateAccountInstruction, 
   getInitializeMintInstruction, 
-  getCreateMetadataAccountV3Instruction, 
 } from "gill/programs";
 import { getMintSize } from "gill/programs/token";
 import { type KeyPairSigner } from "gill";
 import { loadKeypairSignerFromFile } from "gill/node";
-
 import { TOKEN_2022_PROGRAM_ADDRESS } from "gill/programs/token";
+import { DEVNET_RPC_URL } from "@/lib/constants";
 
-const tokenProgram = TOKEN_2022_PROGRAM_ADDRESS; // get the token program address
+const tokenProgram = TOKEN_2022_PROGRAM_ADDRESS; // Token-2022 program
 
 const { rpc, sendAndConfirmTransaction } = createSolanaClient({
-    urlOrMoniker: process.env.NEXT_PUBLIC_TRITON_DEVNET_RPC_URL as any, // `mainnet`, `localnet`, etc
+    urlOrMoniker: DEVNET_RPC_URL as any,
   });
 
-// This defaults to the file path used by the Solana CLI: `~/.config/solana/id.json`
+// Load the signer from the default Solana CLI keypair file
 const signer: KeyPairSigner = await loadKeypairSignerFromFile();
-console.log("signer:", signer.address); // get the signer address
+console.log("signer:", signer.address);
 
 const mint = await generateKeyPairSigner(); // generate a new mint account
-const metadataAddress = await getTokenMetadataAddress(mint);
 
-const { value: latestBlockhash } = await rpc.getLatestBlockhash().send(); // get latest blockhash
+const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
 
-const space = getMintSize(); // get the mint size
+const space = getMintSize(); // get the basic mint size
 
-// Create a transaction to create a token with metadata
+// Create a simple Token-2022 mint without metadata
 const transaction = createTransaction({
   feePayer: signer,
   version: "legacy",
   instructions: [
+    // 1. Create the mint account
     getCreateAccountInstruction({
       space,
       lamports: getMinimumBalanceForRentExemption(space),
@@ -42,6 +40,8 @@ const transaction = createTransaction({
       payer: signer,
       programAddress: tokenProgram,
     }),
+    
+    // 2. Initialize the mint
     getInitializeMintInstruction(
       {
         mint: mint.address,
@@ -53,27 +53,16 @@ const transaction = createTransaction({
         programAddress: tokenProgram,
       },
     ),
-    getCreateMetadataAccountV3Instruction({
-      collectionDetails: null,
-      isMutable: true,
-      updateAuthority: signer,
-      mint: mint.address,
-      metadata: metadataAddress,
-      mintAuthority: signer,
-      payer: signer,
-      data: {
-        sellerFeeBasisPoints: 0,
-        collection: null,
-        creators: null,
-        uses: null,
-        name: "",
-        symbol: "",
-        uri: "",
-      },
-    }),
   ],
   latestBlockhash,
 });
 
 const signature = await sendAndConfirmTransaction(transaction);
-console.log("signature:", signature);
+console.log("✅ Token mint created successfully!");
+console.log("📝 Transaction signature:", signature);
+console.log("🏦 Mint address:", mint.address);
+console.log("🔗 View on Solscan:", `https://solscan.io/token/${mint.address}?cluster=devnet`);
+
+// Optional: You can add metadata later using Metaplex if needed
+console.log("\n💡 Note: This creates a basic Token-2022 mint without metadata.");
+console.log("   You can add metadata later using Metaplex if needed.");
