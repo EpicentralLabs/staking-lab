@@ -3,15 +3,17 @@ import { generateKeyPairSigner } from "gill";
 import { createTransaction } from "gill";
 import {
   getCreateAccountInstruction, 
-  getInitializeMintInstruction, 
+  getCreateMetadataAccountV3Instruction, 
+  getInitializeMintInstruction,
+  getTokenMetadataAddress, 
 } from "gill/programs";
 import { getMintSize } from "gill/programs/token";
 import { type KeyPairSigner } from "gill";
 import { loadKeypairSignerFromFile } from "gill/node";
-import { TOKEN_2022_PROGRAM_ADDRESS } from "gill/programs/token";
+import { TOKEN_PROGRAM_ADDRESS } from "gill/programs/token";
 import { DEVNET_RPC_URL } from "@/lib/constants";
 
-const tokenProgram = TOKEN_2022_PROGRAM_ADDRESS; // Token-2022 program
+const tokenProgram = TOKEN_PROGRAM_ADDRESS; // Token-2022 program
 
 const { rpc, sendAndConfirmTransaction } = createSolanaClient({
     urlOrMoniker: DEVNET_RPC_URL as any,
@@ -22,6 +24,7 @@ const signer: KeyPairSigner = await loadKeypairSignerFromFile();
 console.log("signer:", signer.address);
 
 const mint = await generateKeyPairSigner(); // generate a new mint account
+const metadataAddress = await getTokenMetadataAddress(mint);
 
 const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
 
@@ -53,6 +56,24 @@ const transaction = createTransaction({
         programAddress: tokenProgram,
       },
     ),
+    getCreateMetadataAccountV3Instruction({
+      collectionDetails: null,
+      isMutable: true,
+      updateAuthority: signer,
+      mint: mint.address,
+      metadata: metadataAddress,
+      mintAuthority: signer,
+      payer: signer,
+      data: {
+        sellerFeeBasisPoints: 0,
+        collection: null,
+        creators: null,
+        uses: null,
+        name: "super sweet token",
+        symbol: "SST",
+        uri: "https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/Climate/metadata.json",
+      },
+    }),
   ],
   latestBlockhash,
 });
