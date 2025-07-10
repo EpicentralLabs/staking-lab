@@ -79,11 +79,7 @@ const transaction = createTransaction({
 });
 
 const signature = await sendAndConfirmTransaction(transaction);
-console.log("✅ Token mint created successfully!");
-console.log("📝 Transaction signature:", signature);
-console.log("🏦 Mint address:", mint.address);
-console.log("🔗 View on Solscan:", `https://solscan.io/token/${mint.address}?cluster=devnet`);
-
-// Optional: You can add metadata later using Metaplex if needed
-console.log("\n💡 Note: This creates a basic Token-2022 mint without metadata.");
-console.log("   You can add metadata later using Metaplex if needed.");
+console.log("Token mint created successfully!");
+console.log("Transaction signature:", signature);
+console.log("Mint address:", mint.address);
+console.log("View on Solscan:", `https://solscan.io/token/${mint.address}?cluster=devnet`);
