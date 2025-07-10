@@ -58,7 +58,7 @@ const transaction = createTransaction({
     ),
     getCreateMetadataAccountV3Instruction({
       collectionDetails: null,
-      isMutable: true,
+      isMutable: false,
       updateAuthority: signer,
       mint: mint.address,
       metadata: metadataAddress,
