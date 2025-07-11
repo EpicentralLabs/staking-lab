@@ -99,7 +99,6 @@ export async function createXLabsTokenMint(
   console.log("xLABS Token mint created successfully!");
   console.log("Transaction signature:", signature);
   console.log("Mint address:", mintKeypair.publicKey.toBase58());
-  console.log("View on Solscan:", `https://solscan.io/token/${mintKeypair.publicKey.toBase58()}?cluster=devnet`);
 
   return {
     signature,
