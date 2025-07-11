@@ -63,9 +63,9 @@ export async function createXLabsTokenMint(
       {
         metadata: metadataAddress,
         mint: mintKeypair.publicKey,
-        mintAuthority: walletPublicKey,
+        mintAuthority: walletPublicKey, // TODO: Change to deployed Solana Staking Program
         payer: walletPublicKey,
-        updateAuthority: walletPublicKey,
+        updateAuthority: walletPublicKey, // TODO: Change to deployed Solana Staking Program
       },
       {
         createMetadataAccountArgsV3: {
