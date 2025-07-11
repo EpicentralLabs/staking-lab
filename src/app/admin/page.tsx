@@ -34,6 +34,7 @@ export default function AdminPanelPage() {
   const [isCreateXLabsMintDialogOpen, setIsCreateXLabsMintDialogOpen] = useState(false)
   const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string, explorerUrl?: string} | null>(null)
   const [isNotificationVisible, setIsNotificationVisible] = useState(false)
+  const [xLabsMintAddress, setXLabsMintAddress] = useState<string | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -61,6 +62,11 @@ export default function AdminPanelPage() {
 
   const handleCloseNotification = () => {
     setIsNotificationVisible(false)
+  }
+
+  const abbreviateAddress = (address: string) => {
+    if (!address) return 'NULL'
+    return `${address.slice(0, 4)}...${address.slice(-4)}`
   }
 
   const handleSetApy = async () => {
@@ -167,6 +173,9 @@ export default function AdminPanelPage() {
     try {
       const result = await createTokenMint()
       console.log("xLABS mint created successfully:", result)
+      
+      // Store the mint address for display in the status section
+      setXLabsMintAddress(result.mintAddress)
       
       // Show success message with mint address and clickable link
       setUpdateMessage({
@@ -376,19 +385,23 @@ export default function AdminPanelPage() {
                                         rel="noopener noreferrer"
                                         className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
                                     >
-                                        LABS...pxR
+                                        LABS...GpxR
                                     </a>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">xLABS Token Address:</span>
-                                    <a 
-                                        href="https://solscan.io/token/11111111111111111111111111111111" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                                    >
-                                        NULL
-                                    </a>
+                                    {xLabsMintAddress ? (
+                                        <a 
+                                            href={`https://solscan.io/token/${xLabsMintAddress}?cluster=devnet`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                        >
+                                            {abbreviateAddress(xLabsMintAddress)}
+                                        </a>
+                                    ) : (
+                                        <span className="font-mono text-xs text-gray-500">NULL</span>
+                                    )}
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>
