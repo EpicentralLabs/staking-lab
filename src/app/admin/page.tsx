@@ -19,19 +19,22 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ADMIN_PANEL_ACCESS_ADDRESS, STAKE_APY } from "@/lib/constants"
 import { Transition } from '@headlessui/react'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import bs58 from 'bs58'
+import { useCreateXLabsTokenMint } from "@/components/solana-rpc-methods/create-token-mint"
 
 export default function AdminPanelPage() {
   const { publicKey, signMessage } = useWallet()
+  const { createTokenMint } = useCreateXLabsTokenMint()
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isCreateStakePoolConfigDialogOpen, setICreateStakePoolConfigDialogOpen] = useState(false)
   const [isDeleteStakePoolConfigDialogOpen, setIsDeleteStakePoolConfigDialogOpen] = useState(false)
   const [isCreateXLabsMintDialogOpen, setIsCreateXLabsMintDialogOpen] = useState(false)
-  const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [updateMessage, setUpdateMessage] = useState<{type: 'success' | 'error', text: string, explorerUrl?: string} | null>(null)
   const [isNotificationVisible, setIsNotificationVisible] = useState(false)
+  const [xLabsMintAddress, setXLabsMintAddress] = useState<string | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -40,10 +43,6 @@ export default function AdminPanelPage() {
   useEffect(() => {
     if (updateMessage) {
       setIsNotificationVisible(true)
-      const timer = setTimeout(() => {
-        setIsNotificationVisible(false)
-      }, 5000)
-      return () => clearTimeout(timer)
     }
   }, [updateMessage])
 
@@ -60,6 +59,15 @@ export default function AdminPanelPage() {
   }, [updateMessage])
 
   const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
+
+  const handleCloseNotification = () => {
+    setIsNotificationVisible(false)
+  }
+
+  const abbreviateAddress = (address: string) => {
+    if (!address) return 'NULL'
+    return `${address.slice(0, 4)}...${address.slice(-4)}`
+  }
 
   const handleSetApy = async () => {
     if (!isAdmin || !publicKey || !signMessage) {
@@ -158,9 +166,30 @@ export default function AdminPanelPage() {
       setIsCreateXLabsMintDialogOpen(false);
       return;
     }
+    
     setIsCreateXLabsMintDialogOpen(false)
     console.log("Creating xLABS mint...")
-    // TODO: Implement actual logic to initialize the xLABS mint
+    
+    try {
+      const result = await createTokenMint()
+      console.log("xLABS mint created successfully:", result)
+      
+      // Store the mint address for display in the status section
+      setXLabsMintAddress(result.mintAddress)
+      
+      // Show success message with mint address and clickable link
+      setUpdateMessage({
+        type: 'success',
+        text: `xLABS mint created successfully! Mint address: ${result.mintAddress}`,
+        explorerUrl: result.explorerUrl
+      })
+    } catch (error) {
+      console.error("Error creating xLABS mint:", error)
+      setUpdateMessage({
+        type: 'error',
+        text: `Failed to create xLABS mint: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
+    }
   }
 
   if (!isMounted) {
@@ -229,18 +258,39 @@ export default function AdminPanelPage() {
             >
               {updateMessage && (
                 <div 
-                  className={`p-4 rounded-lg flex items-center space-x-3 text-white border ${
+                  className={`p-4 rounded-lg flex items-start space-x-3 text-white border ${
                     updateMessage.type === 'success' 
                       ? 'bg-green-900/50 border-green-500/50' 
                       : 'bg-red-900/50 border-red-500/50'
                   }`}
                 >
                   {updateMessage.type === 'success' ? (
-                    <CheckCircleIcon className="h-6 w-6 text-green-400" />
+                    <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
                   ) : (
-                    <XCircleIcon className="h-6 w-6 text-red-400" />
+                    <XCircleIcon className="h-6 w-6 text-red-400 flex-shrink-0" />
                   )}
-                  <span>{updateMessage.text}</span>
+                  <div className="flex-1">
+                    <span>{updateMessage.text}</span>
+                    {updateMessage.explorerUrl && (
+                      <div className="mt-2">
+                        <a 
+                          href={updateMessage.explorerUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 underline transition-colors text-sm"
+                        >
+                          View on Solscan →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleCloseNotification}
+                    className="flex-shrink-0 text-gray-400 hover:text-white transition-colors"
+                    aria-label="Close notification"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
                 </div>
               )}
             </Transition>
@@ -335,19 +385,23 @@ export default function AdminPanelPage() {
                                         rel="noopener noreferrer"
                                         className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
                                     >
-                                        LABS...pxR
+                                        LABS...GpxR
                                     </a>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">xLABS Token Address:</span>
-                                    <a 
-                                        href="https://solscan.io/token/11111111111111111111111111111111" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                                    >
-                                        NULL
-                                    </a>
+                                    {xLabsMintAddress ? (
+                                        <a 
+                                            href={`https://solscan.io/token/${xLabsMintAddress}?cluster=devnet`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                        >
+                                            {abbreviateAddress(xLabsMintAddress)}
+                                        </a>
+                                    ) : (
+                                        <span className="font-mono text-xs text-gray-500">NULL</span>
+                                    )}
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>

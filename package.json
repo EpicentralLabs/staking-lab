@@ -1,16 +1,18 @@
 {
   "name": "xlabs-stake",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "create-token": "esrun src/components/solana-rpc-methods/create-token-mint.tsx"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
@@ -30,7 +32,7 @@
     "dotenv": "^16.4.7",
     "esrun": "^3.2.26",
     "framer-motion": "^12.18.1",
-    "gill": "^0.9.0",
+    "gill": "^0.10.2",
     "lucide-react": "^0.511.0",
     "next": "15.3.2",
     "react": "^19.0.0",
