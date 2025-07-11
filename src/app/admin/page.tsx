@@ -21,9 +21,11 @@ import { ADMIN_PANEL_ACCESS_ADDRESS, STAKE_APY } from "@/lib/constants"
 import { Transition } from '@headlessui/react'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import bs58 from 'bs58'
+import { useCreateXLabsTokenMint } from "@/components/solana-rpc-methods/create-token-mint"
 
 export default function AdminPanelPage() {
   const { publicKey, signMessage } = useWallet()
+  const { createTokenMint } = useCreateXLabsTokenMint()
   const [isMounted, setIsMounted] = useState(false)
   const [apy, setApy] = useState(STAKE_APY.toString())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -158,9 +160,31 @@ export default function AdminPanelPage() {
       setIsCreateXLabsMintDialogOpen(false);
       return;
     }
+    
     setIsCreateXLabsMintDialogOpen(false)
     console.log("Creating xLABS mint...")
-    // TODO: Implement actual logic to initialize the xLABS mint
+    
+    try {
+      const result = await createTokenMint()
+      console.log("xLABS mint created successfully:", result)
+      
+      // Show success message with mint address
+      setUpdateMessage({
+        type: 'success',
+        text: `xLABS mint created successfully! Mint address: ${result.mintAddress}`
+      })
+      
+      // Optionally open the explorer URL
+      if (result.explorerUrl) {
+        window.open(result.explorerUrl, '_blank')
+      }
+    } catch (error) {
+      console.error("Error creating xLABS mint:", error)
+      setUpdateMessage({
+        type: 'error',
+        text: `Failed to create xLABS mint: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
+    }
   }
 
   if (!isMounted) {

@@ -1,85 +1,129 @@
-import { createSolanaClient, getMinimumBalanceForRentExemption } from "gill";
-import { generateKeyPairSigner } from "gill";
-import { createTransaction } from "gill";
-import {
-  getCreateAccountInstruction, 
-  getCreateMetadataAccountV3Instruction, 
-  getInitializeMintInstruction,
-  getTokenMetadataAddress, 
-} from "gill/programs";
-import { getMintSize } from "gill/programs/token";
-import { type KeyPairSigner } from "gill";
-import { loadKeypairSignerFromFile } from "gill/node";
-import { TOKEN_PROGRAM_ADDRESS } from "gill/programs/token";
-import { DEVNET_RPC_URL } from "@/lib/constants";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { 
+  Transaction, 
+  PublicKey, 
+  Keypair, 
+  SystemProgram,
+  Connection
+} from "@solana/web3.js";
+import { 
+  createInitializeMintInstruction, 
+  getMinimumBalanceForRentExemptMint,
+  MINT_SIZE,
+  TOKEN_PROGRAM_ID
+} from "@solana/spl-token";
+import { 
+  createCreateMetadataAccountV3Instruction,
+  PROGRAM_ID as METADATA_PROGRAM_ID 
+} from "@metaplex-foundation/mpl-token-metadata";
 
-const tokenProgram = TOKEN_PROGRAM_ADDRESS; // Token-2022 program
+export async function createXLabsTokenMint(
+  walletPublicKey: PublicKey,
+  sendTransaction: (transaction: Transaction, connection: Connection) => Promise<string>,
+  connection: Connection
+) {
+  // Generate a new keypair for the mint
+  const mintKeypair = Keypair.generate();
+  
+  // Calculate rent exemption
+  const lamports = await getMinimumBalanceForRentExemptMint(connection);
+  
+  // Create metadata account address
+  const [metadataAddress] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("metadata"),
+      METADATA_PROGRAM_ID.toBuffer(),
+      mintKeypair.publicKey.toBuffer(),
+    ],
+    METADATA_PROGRAM_ID
+  );
 
-const { rpc, sendAndConfirmTransaction } = createSolanaClient({
-    urlOrMoniker: DEVNET_RPC_URL as any,
-  });
-
-// Load the signer from the default Solana CLI keypair file
-const signer: KeyPairSigner = await loadKeypairSignerFromFile();
-console.log("signer:", signer.address);
-
-const mint = await generateKeyPairSigner(); // generate a new mint account
-const metadataAddress = await getTokenMetadataAddress(mint);
-
-const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
-
-const space = getMintSize(); // get the basic mint size
-
-// Create a simple Token-2022 mint without metadata
-const transaction = createTransaction({
-  feePayer: signer,
-  version: "legacy",
-  instructions: [
-    // 1. Create the mint account
-    getCreateAccountInstruction({
-      space,
-      lamports: getMinimumBalanceForRentExemption(space),
-      newAccount: mint,
-      payer: signer,
-      programAddress: tokenProgram,
+  // Create the transaction
+  const transaction = new Transaction().add(
+    // Create mint account
+    SystemProgram.createAccount({
+      fromPubkey: walletPublicKey,
+      newAccountPubkey: mintKeypair.publicKey,
+      space: MINT_SIZE,
+      lamports,
+      programId: TOKEN_PROGRAM_ID,
     }),
     
-    // 2. Initialize the mint
-    getInitializeMintInstruction(
-      {
-        mint: mint.address,
-        mintAuthority: signer.address,
-        freezeAuthority: signer.address,
-        decimals: 9,
-      },
-      {
-        programAddress: tokenProgram,
-      },
+    // Initialize mint
+    createInitializeMintInstruction(
+      mintKeypair.publicKey,
+      9, // decimals
+      walletPublicKey, // mint authority
+      walletPublicKey, // freeze authority
+      TOKEN_PROGRAM_ID
     ),
-    getCreateMetadataAccountV3Instruction({
-      collectionDetails: null,
-      isMutable: false,
-      updateAuthority: signer,
-      mint: mint.address,
-      metadata: metadataAddress,
-      mintAuthority: signer,
-      payer: signer,
-      data: {
-        sellerFeeBasisPoints: 0,
-        collection: null,
-        creators: null,
-        uses: null,
-        name: "xTEST",
-        symbol: "xTEST",
-        uri: "https://raw.githubusercontent.com/EpicentralLabs/media-kit/refs/heads/master/misc/uri.json",
+    
+    // Create metadata account
+    createCreateMetadataAccountV3Instruction(
+      {
+        metadata: metadataAddress,
+        mint: mintKeypair.publicKey,
+        mintAuthority: walletPublicKey,
+        payer: walletPublicKey,
+        updateAuthority: walletPublicKey,
       },
-    }),
-  ],
-  latestBlockhash,
-});
+      {
+        createMetadataAccountArgsV3: {
+          data: {
+            name: "xLABS",
+            symbol: "xLABS",
+            uri: "https://raw.githubusercontent.com/EpicentralLabs/media-kit/refs/heads/master/misc/uri.json",
+            sellerFeeBasisPoints: 0,
+            creators: null,
+            collection: null,
+            uses: null,
+          },
+          isMutable: false,
+          collectionDetails: null,
+        },
+      }
+    )
+  );
 
-const signature = await sendAndConfirmTransaction(transaction);
-console.log("Token mint created successfully!");
-console.log("Transaction signature:", signature);
-console.log("Mint address:", mint.address);
-console.log("View on Solscan:", `https://solscan.io/token/${mint.address}?cluster=devnet`);
+  // Get recent blockhash
+  const { blockhash } = await connection.getLatestBlockhash();
+  transaction.recentBlockhash = blockhash;
+  transaction.feePayer = walletPublicKey;
+
+  // Partially sign with the mint keypair
+  transaction.partialSign(mintKeypair);
+
+  // Send transaction (wallet will sign with user's key)
+  const signature = await sendTransaction(transaction, connection);
+
+  console.log("xLABS Token mint created successfully!");
+  console.log("Transaction signature:", signature);
+  console.log("Mint address:", mintKeypair.publicKey.toBase58());
+  console.log("View on Solscan:", `https://solscan.io/token/${mintKeypair.publicKey.toBase58()}?cluster=devnet`);
+
+  return {
+    signature,
+    mintAddress: mintKeypair.publicKey.toBase58(),
+    explorerUrl: `https://solscan.io/token/${mintKeypair.publicKey.toBase58()}?cluster=devnet`
+  };
+}
+
+// React hook for using the create token mint function
+export function useCreateXLabsTokenMint() {
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
+
+  const createTokenMint = async () => {
+    if (!publicKey || !sendTransaction) {
+      throw new Error("Wallet not connected");
+    }
+
+    return await createXLabsTokenMint(
+      publicKey,
+      sendTransaction,
+      connection
+    );
+  };
+
+  return { createTokenMint };
+}

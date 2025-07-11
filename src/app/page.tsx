@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 import { TokenBalance } from "@/components/solana-rpc-methods/get-user-token-balance"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { STAKE_APY } from "@/lib/constants"
-import { calculateXLABSAccumulation, cn } from "@/lib/utils"
+import { calculateXLABSAccumulation } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
