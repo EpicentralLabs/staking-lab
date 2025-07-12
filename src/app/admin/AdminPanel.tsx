@@ -8,6 +8,45 @@ import { StakePoolStatus } from './StakePoolStatus'
 import { AdminDialog } from './AdminDialog'
 import { FlowingBackground } from '@/components/flowing-background'
 
+interface StakePoolStatusType {
+  programAddress: string;
+  stakePoolAddress: string;
+  configAddress: string;
+  currentOnChainApy: string;
+  labsTokenAddress: string;
+  xLabsTokenAddress: string;
+  unclaimedRewards: string;
+  claimedRewards: string;
+  totalStaked: string;
+  tvlStaked: string;
+}
+
+interface AdminPanelProps {
+  apy: string;
+  setApy: (apy: string) => void;
+  isNotificationVisible: boolean;
+  updateMessage: { type: 'success' | 'error', text: string } | null;
+  setUpdateMessage: (message: { type: 'success' | 'error', text: string } | null) => void;
+  handleSetApy: () => Promise<void>;
+  handleCreateStakePoolConfig: () => Promise<void>;
+  handleDeleteStakePoolConfig: () => Promise<void>;
+  handleCreateXLabsMint: () => Promise<void>;
+  handleCreateStakePool: () => Promise<void>;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
+  isCreateStakePoolConfigDialogOpen: boolean;
+  setICreateStakePoolConfigDialogOpen: (open: boolean) => void;
+  isDeleteStakePoolConfigDialogOpen: boolean;
+  setIsDeleteStakePoolConfigDialogOpen: (open: boolean) => void;
+  isCreateXLabsMintDialogOpen: boolean;
+  setIsCreateXLabsMintDialogOpen: (open: boolean) => void;
+  isCreateStakePoolDialogOpen: boolean;
+  setIsCreateStakePoolDialogOpen: (open: boolean) => void;
+  stakePoolStatus: StakePoolStatusType;
+  refreshStakePoolStatus: () => Promise<void>;
+  isRefreshing: boolean;
+}
+
 export function AdminPanel({
   apy,
   setApy,
@@ -18,6 +57,7 @@ export function AdminPanel({
   handleCreateStakePoolConfig,
   handleDeleteStakePoolConfig,
   handleCreateXLabsMint,
+  handleCreateStakePool,
   isDialogOpen,
   setIsDialogOpen,
   isCreateStakePoolConfigDialogOpen,
@@ -25,8 +65,13 @@ export function AdminPanel({
   isDeleteStakePoolConfigDialogOpen,
   setIsDeleteStakePoolConfigDialogOpen,
   isCreateXLabsMintDialogOpen,
-  setIsCreateXLabsMintDialogOpen
-}: any) {
+  setIsCreateXLabsMintDialogOpen,
+  isCreateStakePoolDialogOpen,
+  setIsCreateStakePoolDialogOpen,
+  stakePoolStatus,
+  refreshStakePoolStatus,
+  isRefreshing
+}: AdminPanelProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white flex flex-col">
       <FlowingBackground />
@@ -64,6 +109,7 @@ export function AdminPanel({
                           onCreateConfig={() => setICreateStakePoolConfigDialogOpen(true)}
                           onDeleteConfig={() => setIsDeleteStakePoolConfigDialogOpen(true)}
                           onCreateXLabsMint={() => setIsCreateXLabsMintDialogOpen(true)}
+                          onCreateStakePool={() => setIsCreateStakePoolDialogOpen(true)}
                         />
                       </CardContent>
                     </Card>
@@ -74,14 +120,18 @@ export function AdminPanel({
                       </CardHeader>
                       <CardContent className="p-0">
                         <StakePoolStatus
-                          programAddress={"Not Initialized Yet"}
-                          stakePoolAddress={"Not Initialized Yet"}
-                          labsTokenAddress={"LABSh5DTebUcUbEoLzXKCiXFJLecDFiDWiBGUU1GpxR"}
-                          xLabsTokenAddress={"11111111111111111111111111111111"}
-                          unclaimedRewards={"0"}
-                          claimedRewards={"0"}
-                          totalStaked={"0"}
-                          tvlStaked={"$0.00"}
+                          programAddress={stakePoolStatus.programAddress}
+                          stakePoolAddress={stakePoolStatus.stakePoolAddress}
+                          configAddress={stakePoolStatus.configAddress}
+                          currentOnChainApy={stakePoolStatus.currentOnChainApy}
+                          labsTokenAddress={stakePoolStatus.labsTokenAddress}
+                          xLabsTokenAddress={stakePoolStatus.xLabsTokenAddress}
+                          unclaimedRewards={stakePoolStatus.unclaimedRewards}
+                          claimedRewards={stakePoolStatus.claimedRewards}
+                          totalStaked={stakePoolStatus.totalStaked}
+                          tvlStaked={stakePoolStatus.tvlStaked}
+                          refreshStakePoolStatus={refreshStakePoolStatus}
+                          isRefreshing={isRefreshing}
                         />
                       </CardContent>
                     </Card>
@@ -133,7 +183,17 @@ export function AdminPanel({
           confirmText="Confirm"
           cancelText="Cancel"
         />
+        <AdminDialog
+          open={isCreateStakePoolDialogOpen}
+          onOpenChange={setIsCreateStakePoolDialogOpen}
+          title="Confirm Create Stake Pool"
+          description="Are you sure you want to create the stake pool?"
+          onConfirm={handleCreateStakePool}
+          onCancel={() => setIsCreateStakePoolDialogOpen(false)}
+          confirmText="Confirm"
+          cancelText="Cancel"
+        />
       </div>
     </div>
   )
-} 
+}

@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button'
 export function StakeProgramActions({
   onCreateConfig,
   onDeleteConfig,
-  onCreateXLabsMint
+  onCreateXLabsMint,
+  onCreateStakePool
 }: {
   onCreateConfig: () => void,
   onDeleteConfig: () => void,
-  onCreateXLabsMint: () => void
+  onCreateXLabsMint: () => void,
+  onCreateStakePool: () => void
 }) {
   return (
     <div className="space-y-4">
@@ -29,6 +31,12 @@ export function StakeProgramActions({
       >
         create_x_labs_mint
       </Button>
+      <Button
+        onClick={onCreateStakePool}
+        className="w-full bg-blue-900/70 text-blue-100 hover:bg-blue-800/70"
+      >
+        create_stake_pool
+      </Button>
     </div>
   )
-} 
+}

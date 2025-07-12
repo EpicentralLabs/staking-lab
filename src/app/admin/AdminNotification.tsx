@@ -35,4 +35,4 @@ export function AdminNotification({ type, text, show, onClose }: {
       </div>
     </Transition>
   )
-} 
+}

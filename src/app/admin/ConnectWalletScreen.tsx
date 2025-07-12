@@ -18,4 +18,4 @@ export function ConnectWalletScreen() {
       </div>
     </div>
   )
-} 
+}

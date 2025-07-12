@@ -6,7 +6,7 @@
  * IDL can be found at `target/idl/staking_program.json`.
  */
 export type StakingProgram = {
-  "address": "5iDkrsEtGrbUxuD86ccSBez2GnnW9hqMYiNmqMmSkipd",
+  "address": "HV1trVkZxjaVd4fFPD77gKPdAjvj3WsSzA4wR5oHiLuQ",
   "metadata": {
     "name": "stakingProgram",
     "version": "0.1.0",
@@ -1039,7 +1039,7 @@ export type StakingProgram = {
 };
 
 export const IDL = {
-  "address": "5iDkrsEtGrbUxuD86ccSBez2GnnW9hqMYiNmqMmSkipd",
+  "address": "HV1trVkZxjaVd4fFPD77gKPdAjvj3WsSzA4wR5oHiLuQ",
   "metadata": {
     "name": "staking_program",
     "version": "0.1.0",
