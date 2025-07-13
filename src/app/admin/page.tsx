@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { ADMIN_PANEL_ACCESS_ADDRESS, rpcUrl, LABS_TOKEN_MINT } from "@/lib/constants"
-import { StakingProgram, IDL } from "@/programs/staking_program/staking_program"
+import { StakingProgram } from "@/programs/staking_program/staking_program"
 import { Connection, PublicKey, SystemProgram, Transaction, VersionedTransaction } from "@solana/web3.js"
 import { AnchorProvider, Program, BN } from "@coral-xyz/anchor"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
