@@ -18,7 +18,7 @@ interface UnstakeSectionProps {
   stakedAmount: number;
   isUnstaking: boolean;
   isPoolActive: boolean;
-  onUnstake: (amount: number) => void;
+  onUnstake: (amount: bigint) => void;
 }
 
 export function UnstakeSection({ stakedAmount, isUnstaking, isPoolActive, onUnstake }: UnstakeSectionProps) {
@@ -37,8 +37,8 @@ export function UnstakeSection({ stakedAmount, isUnstaking, isPoolActive, onUnst
   };
 
   const handleUnstake = () => {
-    const amount = Number(unstakeAmount);
-    if (amount > 0) {
+    const amount = BigInt(Math.floor(Number(unstakeAmount) * 1e6));
+    if (amount > 0n) {
       onUnstake(amount);
       setUnstakeAmount('');
       setIsDialogOpen(false);

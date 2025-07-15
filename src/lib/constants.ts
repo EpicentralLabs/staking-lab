@@ -1,4 +1,5 @@
 
+import { PublicKey } from "@solana/web3.js";
 import { createSolanaClient } from "gill";
 
 // Network Configuration
@@ -11,7 +12,6 @@ const getValidCluster = (cluster?: string): SolanaCluster => {
   }
   return "devnet"; // default fallback
 };
-
 const CLUSTER = getValidCluster(process.env.NEXT_PUBLIC_SOLANA_CLUSTER);
 
 // RPC URLs
@@ -44,7 +44,6 @@ const currentConfig = NETWORK_CONFIG[CLUSTER] || NETWORK_CONFIG.devnet;
 
 // Export current network values
 export const LABS_TOKEN_MINT = currentConfig.LABS_TOKEN_MINT;
-export const XLABS_TOKEN_MINT = currentConfig.XLABS_TOKEN_MINT;
 export const rpcUrl = currentConfig.rpcUrl;
 
 // Staking program ID from IDL

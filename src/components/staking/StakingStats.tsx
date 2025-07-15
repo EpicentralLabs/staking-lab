@@ -9,7 +9,7 @@ interface PoolStatsProps {
 }
 
 interface AccountStatsProps {
-  userBalance: number;
+  userBalance: bigint;
   stakedAmount: number;
   totalRewardsEarned: number;
   lastUpdated: Date | null;
@@ -61,7 +61,7 @@ export function AccountStats({
       <CardContent className="text-sm space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Available Balance:</span>
-          <span className="font-mono text-white">{userBalance.toFixed(2)} LABS</span>
+          <span className="font-mono text-white">{(Number(userBalance) / 1e6).toFixed(2)} LABS</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Staked Amount:</span>

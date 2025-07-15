@@ -15,10 +15,10 @@ import {
 } from '@/components/ui/dialog';
 
 interface StakeSectionProps {
-  userBalance: number;
+  userBalance: bigint;
   isStaking: boolean;
   isPoolActive: boolean;
-  onStake: (amount: number) => void;
+  onStake: (amount: bigint) => void;
 }
 
 export function StakeSection({ userBalance, isStaking, isPoolActive, onStake }: StakeSectionProps) {
@@ -33,19 +33,19 @@ export function StakeSection({ userBalance, isStaking, isPoolActive, onStake }: 
   };
 
   const handleMaxClick = () => {
-    setStakeAmount(userBalance.toString());
+    setStakeAmount((Number(userBalance) / 1e6).toString());
   };
 
   const handleStake = () => {
-    const amount = Number(stakeAmount);
-    if (amount > 0) {
+    const amount = BigInt(Math.floor(Number(stakeAmount) * 1e6));
+    if (amount > 0n) {
       onStake(amount);
       setStakeAmount('');
       setIsDialogOpen(false);
     }
   };
 
-  const isValidAmount = stakeAmount && Number(stakeAmount) > 0 && Number(stakeAmount) <= userBalance;
+  const isValidAmount = stakeAmount && Number(stakeAmount) > 0 && BigInt(Math.floor(Number(stakeAmount) * 1e6)) <= userBalance;
   const isDisabled = !isValidAmount || isStaking || !isPoolActive;
 
   return (
@@ -82,7 +82,7 @@ export function StakeSection({ userBalance, isStaking, isPoolActive, onStake }: 
             className="text-gray-400 hover:text-[#4a85ff] transition-colors cursor-pointer underline"
             onClick={handleMaxClick}
           >
-            Available: {userBalance.toFixed(2)} LABS
+            Available: {(Number(userBalance) / 1e6).toFixed(2)} LABS
           </span>
         </div>
       </div>
