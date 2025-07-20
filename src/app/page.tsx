@@ -10,6 +10,7 @@ import { useStaking } from "@/hooks/useStaking";
 import { StakeSection } from "@/components/staking/StakeSection";
 import { UnstakeSection } from "@/components/staking/UnstakeSection";
 import { ClaimRewardsSection } from "@/components/staking/ClaimRewardsSection";
+import { InitializationAlert } from "@/components/staking/InitializationAlert";
 import { PoolStats, AccountStats } from "@/components/staking/StakingStats";
 
 export default function SolanaStakingDApp() {
@@ -21,14 +22,17 @@ export default function SolanaStakingDApp() {
     userBalance,
     isLoading,
     isInitialized,
+    initializationStatus,
     // Transaction states
     isStaking,
     isUnstaking,
     isClaiming,
+    isUpdatingRewards,
     // Actions
     stakeTokens,
     unstakeTokens,
     claimRewards,
+    initializeStakePool,
     refreshData,
   } = useStaking();
 
@@ -69,10 +73,16 @@ export default function SolanaStakingDApp() {
                   <div className="text-center py-12">
                     <p className="text-gray-400 text-lg">Connect your wallet to start staking</p>
                   </div>
-                ) : !isInitialized ? (
+                ) : isLoading ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-400 text-lg">{isLoading ? 'Loading...' : 'Failed to load staking data'}</p>
+                    <p className="text-gray-400 text-lg">Loading staking data...</p>
                   </div>
+                ) : !isInitialized ? (
+                  <InitializationAlert
+                    initializationStatus={initializationStatus}
+                    onInitialize={initializeStakePool}
+                    isInitializing={isUpdatingRewards}
+                  />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-10">
                     <StakeSection
@@ -99,7 +109,7 @@ export default function SolanaStakingDApp() {
                 apy={poolData.apy}
                 isActive={poolData.isActive}
               />
-              
+
               <AccountStats
                 userBalance={userBalance}
                 stakedAmount={stakeData.stakedAmount}

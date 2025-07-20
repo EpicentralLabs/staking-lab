@@ -1,5 +1,5 @@
 {
-    "address": "HV1trVkZxjaVd4fFPD77gKPdAjvj3WsSzA4wR5oHiLuQ",
+    "address": "4KPEcrcGTbpne8NsXsC6ZsAXofCsLz17pJRir5w6s4ds",
     "metadata": {
         "name": "staking_program",
         "version": "0.1.0",
@@ -418,10 +418,56 @@
                 },
                 {
                     "name": "authority",
+                    "writable": true,
                     "signer": true,
                     "relations": [
                         "stake_pool"
                     ]
+                },
+                {
+                    "name": "vault",
+                    "writable": true
+                },
+                {
+                    "name": "vault_authority",
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    118,
+                                    97,
+                                    117,
+                                    108,
+                                    116,
+                                    95,
+                                    97,
+                                    117,
+                                    116,
+                                    104,
+                                    111,
+                                    114,
+                                    105,
+                                    116,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "stake_pool"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "authority_token_account",
+                    "writable": true
+                },
+                {
+                    "name": "token_mint"
+                },
+                {
+                    "name": "token_program"
                 }
             ],
             "args": []

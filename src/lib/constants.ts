@@ -1,5 +1,4 @@
 
-import { PublicKey } from "@solana/web3.js";
 import { createSolanaClient } from "gill";
 
 // Network Configuration
@@ -47,7 +46,7 @@ export const LABS_TOKEN_MINT = currentConfig.LABS_TOKEN_MINT;
 export const rpcUrl = currentConfig.rpcUrl;
 
 // Staking program ID from IDL
-export const STAKING_PROGRAM_ID = "HV1trVkZxjaVd4fFPD77gKPdAjvj3WsSzA4wR5oHiLuQ";
+export const STAKING_PROGRAM_ID = "4KPEcrcGTbpne8NsXsC6ZsAXofCsLz17pJRir5w6s4ds";
 
 // Admin panel access addresses
 export const ADMIN_PANEL_ACCESS_ADDRESS = ["3zxtSkehQA7Dtknwkt95FMnp4h4MDWYHM1epj9xeRsof", "3sNBfwUbxx7LAibq2CpN8zSQsvocnuGCJ9ivACRH6Vkg", "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT"]

@@ -1,5 +1,11 @@
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/staking_program.json`.
+ */
 export type StakingProgram = {
-  "address": "HV1trVkZxjaVd4fFPD77gKPdAjvj3WsSzA4wR5oHiLuQ",
+  "address": "4KPEcrcGTbpne8NsXsC6ZsAXofCsLz17pJRir5w6s4ds",
   "metadata": {
     "name": "stakingProgram",
     "version": "0.1.0",
@@ -418,10 +424,56 @@ export type StakingProgram = {
         },
         {
           "name": "authority",
+          "writable": true,
           "signer": true,
           "relations": [
             "stakePool"
           ]
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "vaultAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stakePool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authorityTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenMint"
+        },
+        {
+          "name": "tokenProgram"
         }
       ],
       "args": []

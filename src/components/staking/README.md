@@ -13,6 +13,25 @@ This directory contains modular React components for the staking interface. Each
 
 ## Components
 
+### `InitializationAlert.tsx`
+**Purpose**: Displays initialization status and guides users to properly initialize missing components.
+
+**Props**:
+```typescript
+interface InitializationAlertProps {
+  initializationStatus: InitializationStatus;
+  onInitialize?: () => void;
+  isInitializing?: boolean;
+}
+```
+
+**Features**:
+- Clear status indication (initialized vs not initialized)
+- Lists missing components that need to be created
+- Direct link to admin panel for initialization
+- Auto-initialization for admin users
+- Proper visual feedback with warning/success states
+
 ### `StakeSection.tsx`
 **Purpose**: Handles token staking interface with amount input and confirmation dialog.
 
