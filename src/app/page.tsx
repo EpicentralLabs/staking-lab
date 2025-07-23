@@ -32,6 +32,7 @@ export default function SolanaStakingDApp() {
     stakeTokens,
     unstakeTokens,
     claimRewards,
+    updatePendingRewards,
     initializeStakePool,
     refreshData,
   } = useStaking();
@@ -129,6 +130,8 @@ export default function SolanaStakingDApp() {
                     isClaiming={isClaiming}
                     isPoolActive={poolData.isActive}
                     onClaim={claimRewards}
+                    isUpdatingRewards={isUpdatingRewards}
+                    onUpdateRewards={updatePendingRewards}
                   />
                 </CardContent>
               </Card>

@@ -354,12 +354,8 @@ export function useStaking() {
     }
   }, [connected, publicKey, wallet, connection, fetchStakingData, toast]);
 
-  // Auto-update rewards every time the component mounts (page load)
-  useEffect(() => {
-    if (connected && publicKey && stakingState.isInitialized) {
-      updatePendingRewards();
-    }
-  }, [connected, publicKey, stakingState.isInitialized, updatePendingRewards]);
+  // Note: Removed automatic reward updates to prevent unwanted transaction prompts
+  // Users can manually update rewards using the updatePendingRewards function
 
   return {
     // State

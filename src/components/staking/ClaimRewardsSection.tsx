@@ -16,6 +16,8 @@ interface ClaimRewardsSectionProps {
   isClaiming: boolean;
   isPoolActive: boolean;
   onClaim: () => void;
+  isUpdatingRewards: boolean;
+  onUpdateRewards: () => void;
 }
 
 // Smooth number animation component
@@ -53,7 +55,9 @@ export function ClaimRewardsSection({
   pendingRewards, 
   isClaiming, 
   isPoolActive, 
-  onClaim 
+  onClaim,
+  isUpdatingRewards,
+  onUpdateRewards
 }: ClaimRewardsSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -72,6 +76,16 @@ export function ClaimRewardsSection({
         </p>
         <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">xLABS</p>
       </div>
+
+      {/* Update Rewards Button */}
+      <Button
+        onClick={onUpdateRewards}
+        disabled={isUpdatingRewards || !isPoolActive}
+        variant="outline"
+        className="w-full border-[#4a85ff]/30 text-[#4a85ff] hover:bg-[#4a85ff]/10 py-2 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl transition-all hover:scale-[1.02] font-medium disabled:opacity-50 disabled:hover:scale-100"
+      >
+        {isUpdatingRewards ? 'Updating...' : 'Update Rewards'}
+      </Button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
