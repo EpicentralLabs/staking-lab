@@ -46,10 +46,10 @@ export const LABS_TOKEN_MINT = currentConfig.LABS_TOKEN_MINT;
 export const rpcUrl = currentConfig.rpcUrl;
 
 // Staking program ID from IDL
-export const STAKING_PROGRAM_ID = "4KPEcrcGTbpne8NsXsC6ZsAXofCsLz17pJRir5w6s4ds";
+export const STAKING_PROGRAM_ID = "D3fVZKwQaTjyTZNzUTSdJtcHnp1qM4VdYeQt4HUZdAWD";
 
 // Admin panel access addresses
-export const ADMIN_PANEL_ACCESS_ADDRESS = ["3zxtSkehQA7Dtknwkt95FMnp4h4MDWYHM1epj9xeRsof", "3sNBfwUbxx7LAibq2CpN8zSQsvocnuGCJ9ivACRH6Vkg", "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT"]
+export const ADMIN_PANEL_ACCESS_ADDRESS = ["3zxtSkehQA7Dtknwkt95FMnp4h4MDWYHM1epj9xeRsof", "3sNBfwUbxx7LAibq2CpN8zSQsvocnuGCJ9ivACRH6Vkg", "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT", "2R5FHfQPPpc14HQai13UWKjqz3GDJ4cG1wYAafaGysqi"]
 
 
 // Export current cluster for debugging
