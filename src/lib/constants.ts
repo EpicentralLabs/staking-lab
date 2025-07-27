@@ -15,7 +15,7 @@ const CLUSTER = getValidCluster(process.env.NEXT_PUBLIC_SOLANA_CLUSTER);
 
 // RPC URLs
 export const LOCALHOST_RPC_URL = "http://127.0.0.1:8899";
-export const DEVNET_RPC_URL = "https://api.devnet.solana.com";
+export const DEVNET_RPC_URL = process.env.NEXT_PUBLIC_TRITON_DEVNET_RPC_URL || "https://api.devnet.solana.com";
 export const MAINNET_RPC_URL = "https://api.mainnet-beta.solana.com";
 
 // Token configurations by network
