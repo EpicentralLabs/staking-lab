@@ -501,7 +501,7 @@ async function sendCreateStakePoolConfigTransaction(publicKey: PublicKey, connec
   const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "processed" });
   const program = new Program<StakingProgram>(idl, provider);
 
-  const txSignature = await program.methods.createStakePoolConfig(new BN(10000)) // 100% APY initial
+  const txSignature = await program.methods.createStakePoolConfig(new BN(1000)) // 10% APY initial
     .accountsPartial({
       signer: publicKey,
       config,
