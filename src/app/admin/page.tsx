@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useWallet } from "@solana/wallet-adapter-react"
+
 import { ConnectWalletScreen } from './ConnectWalletScreen'
 import { AccessDeniedScreen } from './AccessDeniedScreen'
 import { useAdminPanel } from '@/hooks/useAdminPanel'
@@ -15,11 +16,9 @@ import { AdminStatsSection } from '@/components/admin/AdminStatsSection'
 import { AdminNotificationSection } from '@/components/admin/AdminNotificationSection'
 import { AdminDialogsSection } from '@/components/admin/AdminDialogsSection'
 
-
 export default function AdminPanelPage() {
   const { publicKey } = useWallet();
   const [isMounted, setIsMounted] = useState(false);
-  
   const {
     apy,
     stakePoolStatus,
@@ -41,9 +40,11 @@ export default function AdminPanelPage() {
     closeDialog,
   } = useAdminPanel();
 
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
 
   if (!isMounted) return null;
   if (!publicKey) return <ConnectWalletScreen />;
@@ -64,6 +65,7 @@ export default function AdminPanelPage() {
         
         <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
           <div className="max-w-4xl mx-auto">
+
             <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
               <CardHeader>
                 <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Admin Panel</CardTitle>
