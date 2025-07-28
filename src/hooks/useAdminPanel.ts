@@ -13,6 +13,7 @@ export interface StakePoolStatus {
   programAddress: string;
   stakePoolAddress: string;
   configAddress: string;
+  configAuthority: string;
   vaultAddress: string;
   currentOnChainApy: string;
   labsTokenAddress: string;
@@ -55,6 +56,7 @@ export function useAdminPanel() {
       programAddress: idl.address,
       stakePoolAddress: "",
       configAddress: "",
+      configAuthority: "",
       vaultAddress: "",
       currentOnChainApy: "Not Set",
       labsTokenAddress: LABS_TOKEN_MINT as string,
@@ -369,6 +371,7 @@ export function useAdminPanel() {
 async function sendFetchStakePoolStatusRequest(connection: Connection, programId: PublicKey, labsTokenAddress: string): Promise<StakePoolStatus> {
   let stakePoolAddress = "";
   let configAddress = "";
+  let configAuthority = "";
   let vaultAddress = "";
   let currentOnChainApy = "Not Set";
   let xLabsTokenAddress = "";
@@ -378,12 +381,9 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
   let tvlStaked = "$0.00";
 
   try {
-    stakePoolAddress = findPda([Buffer.from("stake_pool")], programId).toBase58();
     const configPda = findPda([Buffer.from("config")], programId);
-    configAddress = configPda.toBase58();
     const stakePoolPda = findPda([Buffer.from("stake_pool")], programId);
     const vaultPda = findPda([Buffer.from("vault"), stakePoolPda.toBuffer()], programId);
-    vaultAddress = vaultPda.toBase58();
 
     // Set up a mock provider for read-only operations
     const mockWallet = {
@@ -397,11 +397,15 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
     // Fetch and parse config account
     try {
       const configAccount = await program.account.stakePoolConfig.fetch(configPda);
+      // Only set config address and authority if we successfully fetch the account
+      configAddress = configPda.toBase58();
+      configAuthority = configAccount.authority.toBase58();
       xLabsTokenAddress = configAccount.rewardMint.toBase58();
       const apyBasisPoints = Number(configAccount.apy);
       currentOnChainApy = `${(apyBasisPoints / 100).toFixed(2)}%`;
     } catch (err) {
       console.warn('Config account not found:', err);
+      // Leave configAddress and configAuthority as empty strings when not found
       xLabsTokenAddress = findPda([Buffer.from("xlabs_mint")], programId).toBase58();
       currentOnChainApy = "Config not created";
     }
@@ -409,6 +413,10 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
     // Fetch and parse stake pool account, including aggregated stats
     try {
       await program.account.stakePool.fetch(stakePoolPda);
+      
+      // Only set the stake pool address and vault address if we successfully fetch the account
+      stakePoolAddress = stakePoolPda.toBase58();
+      vaultAddress = vaultPda.toBase58();
 
       const stakeAccounts = await program.account.stakeAccount.all([
         {
@@ -439,8 +447,7 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
       tvlStaked = `$${totalStakedNum.toFixed(2)}`; // Update with actual token price multiplication
     } catch (err) {
       console.warn('Stake pool or accounts not found:', err);
-      // Clear the stake pool address when it's not found
-      stakePoolAddress = "";
+      // Leave stakePoolAddress as empty string when not found
     }
   } catch (err) {
     console.error('Failed to fetch stake pool status:', err);
@@ -451,6 +458,7 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
     programAddress: programId.toBase58(),
     stakePoolAddress,
     configAddress,
+    configAuthority,
     vaultAddress,
     currentOnChainApy,
     labsTokenAddress,

@@ -12,6 +12,7 @@ interface StakePoolStatusType {
   programAddress: string;
   stakePoolAddress: string;
   configAddress: string;
+  configAuthority: string;
   currentOnChainApy: string;
   labsTokenAddress: string;
   xLabsTokenAddress: string;
@@ -123,6 +124,7 @@ export function AdminPanel({
                           programAddress={stakePoolStatus.programAddress}
                           stakePoolAddress={stakePoolStatus.stakePoolAddress}
                           configAddress={stakePoolStatus.configAddress}
+                          configAuthority={stakePoolStatus.configAuthority}
                           currentOnChainApy={stakePoolStatus.currentOnChainApy}
                           labsTokenAddress={stakePoolStatus.labsTokenAddress}
                           xLabsTokenAddress={stakePoolStatus.xLabsTokenAddress}

@@ -2,6 +2,7 @@ export function StakePoolStatus({
   programAddress,
   stakePoolAddress,
   configAddress,
+  configAuthority,
   currentOnChainApy,
   labsTokenAddress,
   xLabsTokenAddress,
@@ -15,6 +16,7 @@ export function StakePoolStatus({
   programAddress: string,
   stakePoolAddress: string,
   configAddress: string,
+  configAuthority: string,
   currentOnChainApy: string,
   labsTokenAddress: string,
   xLabsTokenAddress: string,
@@ -111,6 +113,11 @@ export function StakePoolStatus({
       <div className="flex justify-between">
         <span className="text-gray-400">Config Address:</span>
         {renderAddressLink(configAddress)}
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-gray-400">Config Authority:</span>
+        {configAuthority ? renderAddressLink(configAuthority) : <span className="text-gray-400">Inactive</span>}
       </div>
 
       <div className="flex justify-between">

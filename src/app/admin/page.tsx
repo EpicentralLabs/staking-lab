@@ -94,6 +94,7 @@ export default function AdminPanelPage() {
                     programAddress={stakePoolStatus.programAddress}
                     stakePoolAddress={stakePoolStatus.stakePoolAddress}
                     configAddress={stakePoolStatus.configAddress}
+                    configAuthority={stakePoolStatus.configAuthority}
                     vaultAddress={stakePoolStatus.vaultAddress}
                     currentOnChainApy={stakePoolStatus.currentOnChainApy}
                     labsTokenAddress={stakePoolStatus.labsTokenAddress}

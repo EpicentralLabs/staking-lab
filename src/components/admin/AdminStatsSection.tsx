@@ -7,6 +7,7 @@ interface AdminStatsSectionProps {
   programAddress: string;
   stakePoolAddress: string;
   configAddress: string;
+  configAuthority: string;
   vaultAddress: string;
   currentOnChainApy: string;
   labsTokenAddress: string;
@@ -23,6 +24,7 @@ export function AdminStatsSection({
   programAddress,
   stakePoolAddress,
   configAddress,
+  configAuthority,
   vaultAddress,
   currentOnChainApy,
   labsTokenAddress,
@@ -100,6 +102,16 @@ export function AdminStatsSection({
                   <CopyableAddress address={configAddress} label="config address" className="min-w-0 flex-shrink" />
                   <div className="flex-shrink-0">
                     {getStatusBadge(configAddress)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col space-y-1">
+                <span className="text-gray-400">Config Authority</span>
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <CopyableAddress address={configAuthority} label="config authority" className="min-w-0 flex-shrink" />
+                  <div className="flex-shrink-0">
+                    {getStatusBadge(configAuthority)}
                   </div>
                 </div>
               </div>
