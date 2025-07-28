@@ -439,6 +439,8 @@ async function sendFetchStakePoolStatusRequest(connection: Connection, programId
       tvlStaked = `$${totalStakedNum.toFixed(2)}`; // Update with actual token price multiplication
     } catch (err) {
       console.warn('Stake pool or accounts not found:', err);
+      // Clear the stake pool address when it's not found
+      stakePoolAddress = "";
     }
   } catch (err) {
     console.error('Failed to fetch stake pool status:', err);

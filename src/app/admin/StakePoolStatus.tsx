@@ -100,7 +100,7 @@ export function StakePoolStatus({
 
       <div className="flex justify-between">
         <span className="text-gray-400">Stake Pool Address:</span>
-        {stakePoolAddress ? renderAddressLink(stakePoolAddress) : <span className="text-red-400">Not Created</span>}
+        {stakePoolAddress ? renderAddressLink(stakePoolAddress) : <span className="text-gray-400">Inactive</span>}
       </div>
       {!isStakePoolInitialized && (
         <div className="text-xs text-yellow-400 bg-yellow-900/20 p-2 rounded border border-yellow-500/30">
