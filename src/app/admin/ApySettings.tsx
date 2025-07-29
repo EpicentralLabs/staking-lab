@@ -29,9 +29,11 @@ export function ApySettings({ apy, setApy, onUpdate }: {
         </div>
         <Button
           onClick={onUpdate}
+          disabled={isLoading || !apy || parseFloat(apy) < 0 || parseFloat(apy) > 100}
+          aria-label="Update Annual Percentage Yield on blockchain"
           className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
         >
-          Update APY (Constants + On-Chain)
+          {isLoading ? 'Updating...' : 'Update APY (Constants + On-Chain)'}
         </Button>
       </div>
     </div>
