@@ -37,7 +37,9 @@ export function UnstakeSection({ stakedAmount, isUnstaking, isPoolActive, onUnst
   };
 
   const handleUnstake = () => {
-    const amount = BigInt(Math.floor(Number(unstakeAmount) * 1e6));
+    // Convert to fixed decimal string to avoid floating point precision issues
+    const decimalAmount = parseFloat(unstakeAmount).toFixed(6);
+    const amount = BigInt(Math.round(parseFloat(decimalAmount) * 1e6));
     if (amount > 0n) {
       onUnstake(amount);
       setUnstakeAmount('');
