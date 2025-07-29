@@ -36,7 +36,7 @@ interface AdminPanelProps {
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   isCreateStakePoolConfigDialogOpen: boolean;
-  setICreateStakePoolConfigDialogOpen: (open: boolean) => void;
+  setIsCreateStakePoolConfigDialogOpen: (open: boolean) => void;
   isDeleteStakePoolConfigDialogOpen: boolean;
   setIsDeleteStakePoolConfigDialogOpen: (open: boolean) => void;
   isCreateXLabsMintDialogOpen: boolean;
