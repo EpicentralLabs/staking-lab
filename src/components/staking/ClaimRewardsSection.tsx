@@ -20,11 +20,17 @@ interface ClaimRewardsSectionProps {
   onUpdateRewards: () => void;
 }
 
-// Smooth number animation component
 function SmoothNumber({ value, decimals = 4 }: { value: number; decimals?: number }) {
   const [displayValue, setDisplayValue] = useState(value);
+  const animationRef = useRef<number>();
 
   useEffect(() => {
+    // Skip animation for very small changes
+    if (Math.abs(value - displayValue) < 0.0001) {
+      setDisplayValue(value);
+      return;
+    }
+
     const startValue = displayValue;
     const endValue = value;
     const duration = 100;
@@ -36,11 +42,19 @@ function SmoothNumber({ value, decimals = 4 }: { value: number; decimals?: numbe
       const easeOutQuad = (t: number) => t * (2 - t);
       const currentValue = startValue + (endValue - startValue) * easeOutQuad(progress);
       setDisplayValue(currentValue);
-      if (progress < 1) requestAnimationFrame(animate);
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
     };
 
-    requestAnimationFrame(animate);
-  }, [value, displayValue]);
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [value]);
 
   const formatted = displayValue.toLocaleString(undefined, {
     minimumFractionDigits: decimals,
