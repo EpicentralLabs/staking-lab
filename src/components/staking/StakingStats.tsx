@@ -65,11 +65,11 @@ export function AccountStats({
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Staked Amount:</span>
-          <span className="font-mono text-white">{stakedAmount.toFixed(2)} LABS</span>
+          <span className="font-mono text-white">{(Number(stakedAmount) || 0).toFixed(2)} LABS</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Total Rewards Earned:</span>
-          <span className="font-mono text-[#4a85ff]">{totalRewardsEarned.toFixed(4)} xLABS</span>
+          <span className="font-mono text-[#4a85ff]">{(Number(totalRewardsEarned) || 0).toFixed(4)} xLABS</span>
         </div>
         {lastUpdated && (
           <div className="flex justify-between items-center text-xs">
