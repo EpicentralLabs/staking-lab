@@ -1,11 +1,10 @@
-import { DEVNET_RPC_URL } from "@/lib/constants";
+import { rpc, rpcSubscriptions, rpcUrl, CURRENT_CLUSTER, LABS_TOKEN_MINT } from "@/lib/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect } from "react";
-import { createSolanaRpc, createSolanaRpcSubscriptions, sendAndConfirmTransactionFactory } from "@solana/kit";
+import { sendAndConfirmTransactionFactory } from "@solana/kit";
 
 // Create and export RPC connection
-export const rpc = createSolanaRpc(DEVNET_RPC_URL);
-export const rpcSubscriptions = createSolanaRpcSubscriptions(DEVNET_RPC_URL.replace('http', 'ws'));
+// Use the shared rpc and rpcSubscriptions from constants
 export const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
 
 export function SolanaClusterConnect() {
@@ -13,9 +12,13 @@ export function SolanaClusterConnect() {
   const { publicKey } = useWallet();
 
   useEffect(() => {
-    console.log("Wallet connection status:", connected);
-    console.log("Current RPC URL:", DEVNET_RPC_URL);
-    console.log("Current Public Key:", publicKey?.toString());
+    console.log("=== Solana Network Configuration ===");
+    console.log("Current Cluster:", CURRENT_CLUSTER);
+    console.log("RPC URL:", rpcUrl);
+    console.log("LABS Token Mint:", LABS_TOKEN_MINT);
+    console.log("Wallet Connected:", connected);
+    console.log("Public Key:", publicKey?.toString());
+    console.log("=====================================");
   }, [connected, publicKey]);
 
   return null;

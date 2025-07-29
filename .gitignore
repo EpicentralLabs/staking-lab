@@ -26,6 +26,7 @@ dist
 # misc
 .DS_Store
 *.pem
+keypair
 
 # debug
 npm-debug.log*

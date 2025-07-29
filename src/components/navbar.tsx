@@ -23,7 +23,7 @@ export function Navbar({ onTitleClick }: NavbarProps) {
   }, [])
 
   const isAdmin = publicKey
-    ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS
+    ? ADMIN_PANEL_ACCESS_ADDRESS.includes(publicKey.toBase58())
     : false
 
   return (

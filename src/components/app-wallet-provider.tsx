@@ -6,7 +6,7 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { DEVNET_RPC_URL } from "@/lib/constants";
+import { rpcUrl } from "@/lib/constants";
 // import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -16,7 +16,7 @@ export default function AppWalletProvider({
   }: {
     children: React.ReactNode;
   }) {
-    const endpoint = useMemo(() => DEVNET_RPC_URL, []);
+    const endpoint = useMemo(() => rpcUrl, []); // Use the selected cluster's URL
     const wallets = useMemo(
       () => [
         // manually add any legacy wallet adapters here
