@@ -156,11 +156,11 @@ export function AdminPanel({
         />
         <AdminDialog
           open={isCreateStakePoolConfigDialogOpen}
-          onOpenChange={setICreateStakePoolConfigDialogOpen}
+          onOpenChange={setIsCreateStakePoolConfigDialogOpen}
           title="Confirm Create Stake Pool Config"
           description="Are you sure you want to create the stake pool config?"
           onConfirm={handleCreateStakePoolConfig}
-          onCancel={() => setICreateStakePoolConfigDialogOpen(false)}
+          onCancel={() => setIsCreateStakePoolConfigDialogOpen(false)}
           confirmText="Confirm"
           cancelText="Cancel"
         />
