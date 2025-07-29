@@ -7,6 +7,20 @@ interface MintManagementSectionProps {
   onCreateXLabsMint: () => void;
   onCreateStakePool: () => void;
   onDeleteStakePool: () => void;
+  isLoading?: {
+    createStakePoolConfig?: boolean;
+    deleteStakePoolConfig?: boolean;
+    createXLabsMint?: boolean;
+    createStakePool?: boolean;
+    deleteStakePool?: boolean;
+  };
+  disabled?: {
+    createStakePoolConfig?: boolean;
+    deleteStakePoolConfig?: boolean;
+    createXLabsMint?: boolean;
+    createStakePool?: boolean;
+    deleteStakePool?: boolean;
+  };
 }
 
 export function MintManagementSection({
