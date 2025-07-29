@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,7 +22,7 @@ interface ClaimRewardsSectionProps {
 
 function SmoothNumber({ value, decimals = 4 }: { value: number; decimals?: number }) {
   const [displayValue, setDisplayValue] = useState(value);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // Skip animation for very small changes
@@ -54,7 +54,7 @@ function SmoothNumber({ value, decimals = 4 }: { value: number; decimals?: numbe
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [value]);
+  }, [value, displayValue]);
 
   const formatted = displayValue.toLocaleString(undefined, {
     minimumFractionDigits: decimals,

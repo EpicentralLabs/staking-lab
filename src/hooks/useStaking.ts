@@ -953,8 +953,7 @@ export function getInitializationInstructions(missingComponents: string[]): stri
 }
 
 // Debug function to manually check initialization status - can be called from browser console
-(globalThis as any).debugStakePoolStatus = async () => {
-  const connection = new Connection("https://api.devnet.solana.com", "processed");
+(globalThis as unknown as Record<string, unknown>).debugStakePoolStatus = async () => {
   // You'll need to provide a wallet for this to work
   console.log('To use this debug function, call it with a wallet:');
   console.log('debugStakePoolStatus(wallet, connection)');
@@ -962,7 +961,7 @@ export function getInitializationInstructions(missingComponents: string[]): stri
 
 // Add to window for browser console access
 if (typeof window !== 'undefined') {
-  (window as any).debugInitStatus = async (wallet?: AnchorWallet, connection?: Connection) => {
+  (window as unknown as Record<string, unknown>).debugInitStatus = async (wallet?: AnchorWallet, connection?: Connection) => {
     const conn = connection || new Connection("https://api.devnet.solana.com", "processed");
 
     try {
@@ -982,7 +981,7 @@ if (typeof window !== 'undefined') {
   };
 
   // Also expose the read-only version directly
-  (window as any).checkInitStatusReadOnly = async (connection?: Connection) => {
+  (window as unknown as Record<string, unknown>).checkInitStatusReadOnly = async (connection?: Connection) => {
     const conn = connection || new Connection("https://api.devnet.solana.com", "processed");
     return await checkStakePoolInitializationReadOnly(conn);
   };

@@ -2,10 +2,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
-export function ApySettings({ apy, setApy, onUpdate }: {
+export function ApySettings({ apy, setApy, onUpdate, isLoading }: {
   apy: string,
   setApy: (v: string) => void,
-  onUpdate: () => void
+  onUpdate: () => void,
+  isLoading?: boolean
 }) {
   return (
     <div className="space-y-4">

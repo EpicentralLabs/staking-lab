@@ -62,7 +62,7 @@ export function AdminPanel({
   isDialogOpen,
   setIsDialogOpen,
   isCreateStakePoolConfigDialogOpen,
-  setICreateStakePoolConfigDialogOpen,
+  setIsCreateStakePoolConfigDialogOpen,
   isDeleteStakePoolConfigDialogOpen,
   setIsDeleteStakePoolConfigDialogOpen,
   isCreateXLabsMintDialogOpen,
@@ -96,7 +96,7 @@ export function AdminPanel({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
-                <ApySettings apy={apy} setApy={setApy} onUpdate={() => setIsDialogOpen(true)} />
+                <ApySettings apy={apy} setApy={setApy} onUpdate={() => setIsDialogOpen(true)} isLoading={isRefreshing} />
                 <div className="space-y-4">
                   <h3 className="text-base sm:text-xl font-medium text-white">Stake Program</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -107,7 +107,7 @@ export function AdminPanel({
                       </CardHeader>
                       <CardContent className="p-0 space-y-4">
                         <StakeProgramActions
-                          onCreateConfig={() => setICreateStakePoolConfigDialogOpen(true)}
+                          onCreateConfig={() => setIsCreateStakePoolConfigDialogOpen(true)}
                           onDeleteConfig={() => setIsDeleteStakePoolConfigDialogOpen(true)}
                           onCreateXLabsMint={() => setIsCreateXLabsMintDialogOpen(true)}
                           onCreateStakePool={() => setIsCreateStakePoolDialogOpen(true)}
