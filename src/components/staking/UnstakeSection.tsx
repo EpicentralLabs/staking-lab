@@ -27,7 +27,7 @@ export function UnstakeSection({ stakedAmount, isUnstaking, isPoolActive, onUnst
 
   const handleAmountChange = (value: string) => {
     const rawValue = value.replace(/,/g, '');
-    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+    if (rawValue === '' || /^(?:\d+\.?\d*|\.\d+)$/.test(rawValue)) {
       setUnstakeAmount(rawValue);
     }
   };
