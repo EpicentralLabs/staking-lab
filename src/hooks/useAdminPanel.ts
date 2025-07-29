@@ -601,13 +601,20 @@ async function sendDeleteStakePoolTransaction(publicKey: PublicKey, connection: 
   if (!wallet) {
     throw new Error("Wallet not connected!");
   }
-  const provider = new AnchorProvider(connection, wallet)
-  setProvider(provider)
-  const program = new Program<StakingProgram>(idl as StakingProgram, provider)
-  program.methods
-    .deleteStakePoolConfig()
-    .signers([])
-    .rpc()
-  return 'success'
+
+  const programId = new PublicKey(idl.address);
+  const stakePool = findPda([Buffer.from("stake_pool")], programId);
+
+  const provider = new AnchorProvider(connection, wallet, { preflightCommitment: "processed" });
+  const program = new Program<StakingProgram>(idl, provider);
+
+  const txSignature = await program.methods.deleteStakePool()
+    .accountsPartial({
+      stakePool,
+      authority: publicKey
+    })
+    .rpc();
+
+  return txSignature;
 }
 
