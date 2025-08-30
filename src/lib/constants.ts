@@ -10,7 +10,7 @@ export const xTEST_TOKEN_MINT = "11111111111111111111111111111111";
 
 export const DEVNET_RPC_URL = "https://api.devnet.solana.com";
 
-export const ADMIN_PANEL_ACCESS_ADDRESS = "3zxtSkehQA7Dtknwkt95FMnp4h4MDWYHM1epj9xeRsof"
+export const ADMIN_PANEL_ACCESS_ADDRESS = "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT"
 // APY configuration (in percentage)
 export const STAKE_APY = 10; // 12.5% APY
 
