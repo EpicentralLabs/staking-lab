@@ -2,7 +2,7 @@
 
 export function FlowingBackground() {
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
       <svg
         className="absolute left-1/2 top-0 min-w-[200vw] w-[200vw] h-full -translate-x-1/2"
         viewBox="0 0 2880 900"

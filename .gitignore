@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-node_modules
-.pnp
+/node_modules
+/.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -14,13 +14,11 @@ node_modules
 /coverage
 
 # next.js
-.next
-out
+/.next/
+/out/
 
 # production
-build
-dist
-.cursor
+/build
 
 # misc
 .DS_Store
@@ -41,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Anchor
+/anchor/.anchor
+/anchor/target/debug
+/anchor/target/deploy
+/anchor/target/release
+/anchor/target/sbf-solana-solana
+/anchor/target/test-ledger
+/anchor/target/.rustc_info.json
+test-ledger
+**/*.rs.bk

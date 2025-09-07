@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useWallet } from "@solana/wallet-adapter-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,383 +13,479 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
-import { FlowingBackground } from "@/components/flowing-background"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { ADMIN_PANEL_ACCESS_ADDRESS, STAKE_APY } from "@/lib/constants"
-import { Transition } from '@headlessui/react'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import bs58 from 'bs58'
-import * as programClient from "../../program-client";;
-import { connect } from 'solana-kite';
+import { CheckCircleIcon, XCircleIcon } from "lucide-react"
+import { useInitializeStakePoolConfigMutation, useInitializeXLabsMutation, useInitializeStakePoolMutation, useDeleteStakePoolConfigMutation, useDeleteStakePoolMutation, useUpdateStakePoolConfigMutation } from "@/components/admin/admin-data-access"
+import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
+import { useXLabsMintAddress, useLabsMintAddress, useVaultAddress, useStakePoolAddress, useStakingProgramProgramId, useStakePoolConfigAddress, useStakePoolConfigData } from "@/components/shared/data-access"
+import { isAdminWallet } from "@/lib/admin-config"
+import { ellipsify } from "@/lib/utils"
 
 export default function AdminPanelPage() {
-  const { publicKey, signMessage } = useWallet()
-  const [isMounted, setIsMounted] = useState(false)
-  const [apy, setApy] = useState(STAKE_APY.toString())
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isCreateStakePoolConfigDialogOpen, setICreateStakePoolConfigDialogOpen] = useState(false)
-  const [isDeleteStakePoolConfigDialogOpen, setIsDeleteStakePoolConfigDialogOpen] = useState(false)
-  const [isCreateXLabsMintDialogOpen, setIsCreateXLabsMintDialogOpen] = useState(false)
-  const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [isNotificationVisible, setIsNotificationVisible] = useState(false)
-  // == SOLANA STUFF == 
-  const connection = connect('devnet');
-  const { pda: stakePoolAddress, bump: stakePoolBump } =
-    connection
-      .getPDAAndBump(programClient.STAKING_PROGRAM_PROGRAM_ADDRESS, ["stake_pool"]);
-  // ==================
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-  useEffect(() => {
-    if (updateMessage) {
-      setIsNotificationVisible(true)
-      const timer = setTimeout(() => {
-        setIsNotificationVisible(false)
-      }, 5000)
-      return () => clearTimeout(timer)
-    }
-  }, [updateMessage])
+  const { account } = useWalletUi()
 
-  // Effect to refresh APY from constants when needed
-  useEffect(() => {
-    // This will re-import the STAKE_APY constant when updateMessage changes
-    // and it's a success message about APY update
-    if (updateMessage?.type === 'success' && updateMessage.text.includes('APY')) {
-      // Dynamic import to get the fresh value
-      import('@/lib/constants').then(constants => {
-        setApy(constants.STAKE_APY.toString())
-      })
-    }
-  }, [updateMessage])
-
-  const isAdmin = publicKey ? publicKey.toBase58() === ADMIN_PANEL_ACCESS_ADDRESS : false
-
-  const handleSetApy = async () => {
-    if (!isAdmin || !publicKey || !signMessage) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Authorization failed. Please ensure the admin wallet is connected and supports message signing.',
-      });
-      setIsDialogOpen(false);
-      return;
-    }
-
-    setIsDialogOpen(false)
-    console.log("Setting APY to:", apy)
-
-    try {
-      const message = `Update APY to ${apy}%`;
-      const encodedMessage = new TextEncoder().encode(message);
-      const signature = await signMessage(encodedMessage);
-      const encodedSignature = bs58.encode(signature);
-
-      // Update APY via API
-      const response = await fetch('/api/admin/update-apy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          apy: parseFloat(apy),
-          publicKey: publicKey.toBase58(),
-          message,
-          signature: encodedSignature
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        console.log("APY updated successfully:", apy)
-        // Show success message
-        setUpdateMessage({
-          type: 'success',
-          text: `APY successfully updated to ${apy}%`
-        })
-      } else {
-        console.error("Failed to update APY:", data.error)
-        setUpdateMessage({
-          type: 'error',
-          text: `Failed to update APY: ${data.error || 'Unknown error'}`
-        })
-      }
-    } catch (error) {
-      console.error("Error updating APY:", error)
-      setUpdateMessage({
-        type: 'error',
-        text: "An error occurred while updating the APY. Please try again."
-      })
-    }
-
-    // TODO: Implement actual logic to set APY on-chain as well
-  }
-
-  const handleCreateStakePoolConfig = async () => {
-    if (!isAdmin) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Authorization failed. Please ensure the admin wallet is connected.',
-      });
-      setICreateStakePoolConfigDialogOpen(false);
-      return;
-    }
-    setICreateStakePoolConfigDialogOpen(false)
-    console.log("Creating stake pool config...")
-    // TODO: Implement actual logic to initialize the stake program
-  }
-
-  const handleDeleteStakePoolConfig = async () => {
-    if (!isAdmin) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Authorization failed. Please ensure the admin wallet is connected.',
-      });
-      setIsDeleteStakePoolConfigDialogOpen(false);
-      return;
-    }
-    setIsDeleteStakePoolConfigDialogOpen(false)
-    console.log("Deleting stake pool config...")
-    // TODO: Implement actual logic to initialize the stake pool
-  }
-
-  const handleCreateXLabsMint = async () => {
-    if (!isAdmin) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Authorization failed. Please ensure the admin wallet is connected.',
-      });
-      setIsCreateXLabsMintDialogOpen(false);
-      return;
-    }
-    setIsCreateXLabsMintDialogOpen(false)
-    console.log("Creating xLABS mint...")
-    // TODO: Implement actual logic to initialize the xLABS mint
-  }
-
-  if (!isMounted) {
-    return null // or a loading spinner
-  }
-
-  if (!publicKey) {
+  if (!account) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white flex flex-col">
-        <FlowingBackground />
-        <div className="relative z-10 flex flex-col min-h-screen">
-          <Navbar />
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
-              <p>Please connect your wallet to access the admin panel.</p>
-            </div>
-          </div>
-          <Footer />
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Admin Access</h1>
+          <p className="mb-4">Connect your wallet to access the admin panel</p>
+          <WalletUiDropdown />
         </div>
       </div>
     )
   }
 
-  if (!isAdmin) {
+  if (!isAdminWallet(account.address)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white flex flex-col">
-        <FlowingBackground />
-        <div className="relative z-10 flex flex-col min-h-screen">
-          <Navbar />
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-              <p>You are not authorized to view this page.</p>
-            </div>
-          </div>
-          <Footer />
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="mb-2">You are not authorized to view this page.</p>
+          <p className="text-sm text-gray-400">Connected wallet: {account.publicKey}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#050810] via-[#0a0f1a] to-[#050810] text-white relative overflow-x-hidden flex flex-col">
-      <div className="absolute inset-0 pointer-events-none z-0 bg-black/40 backdrop-blur-2xl" style={{
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(74,133,255,0.03) 0%, transparent 70%)'
-      }} />
-      <FlowingBackground />
+    <AdminPanelPageConnected />
+  );
+}
+function AdminPanelPageConnected() {
+  const [apy, setApy] = useState("12.5")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isInitializeStakePoolConfigDialogOpen, setIsInitializeStakePoolConfigDialogOpen] = useState(false)
+  const [isDeleteStakePoolConfigDialogOpen, setIsDeleteStakePoolConfigDialogOpen] = useState(false)
+  const [isInitializeXLabsMintDialogOpen, setIsInitializeXLabsMintDialogOpen] = useState(false)
+  const [isInitializeStakePoolDialogOpen, setIsInitializeStakePoolDialogOpen] = useState(false)
+  const [isDeleteStakePoolDialogOpen, setIsDeleteStakePoolDialogOpen] = useState(false)
+  const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false)
+  const initializeXLabsMutation = useInitializeXLabsMutation()
+  const xLabsMintAddressQuery = useXLabsMintAddress()
+  const labsMintAddress = useLabsMintAddress()
+  const vaultAddressQuery = useVaultAddress()
+  const stakePoolAddressQuery = useStakePoolAddress()
+  const stakePoolConfigAddressQuery = useStakePoolConfigAddress()
+  const stakePoolConfigDataQuery = useStakePoolConfigData()
+  const programId = useStakingProgramProgramId();
+  const initializeStakePoolConfigMutation = useInitializeStakePoolConfigMutation()
+  const initializeStakePoolMutation = useInitializeStakePoolMutation()
+  const deleteStakePoolConfigMutation = useDeleteStakePoolConfigMutation()
+  const deleteStakePoolMutation = useDeleteStakePoolMutation()
+  const updateStakePoolConfigMutation = useUpdateStakePoolConfigMutation()
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+  const handleSetApy = async () => {
+    setIsDialogOpen(false)
 
-        <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
-          <div className="max-w-4xl mx-auto">
-            <Transition
-              show={isNotificationVisible}
-              as="div"
-              className="mb-4"
-              enter="transition-all duration-300 ease-out"
-              enterFrom="max-h-0 opacity-0"
-              enterTo="max-h-40 opacity-100"
-              leave="transition-all duration-300 ease-in"
-              leaveFrom="max-h-40 opacity-100"
-              leaveTo="max-h-0 opacity-0"
-              afterLeave={() => setUpdateMessage(null)}
-            >
-              {updateMessage && (
-                <div
-                  className={`p-4 rounded-lg flex items-center space-x-3 text-white border ${updateMessage.type === 'success'
-                    ? 'bg-green-900/50 border-green-500/50'
-                    : 'bg-red-900/50 border-red-500/50'
-                    }`}
-                >
-                  {updateMessage.type === 'success' ? (
-                    <CheckCircleIcon className="h-6 w-6 text-green-400" />
-                  ) : (
-                    <XCircleIcon className="h-6 w-6 text-red-400" />
-                  )}
-                  <span>{updateMessage.text}</span>
-                </div>
-              )}
-            </Transition>
-          </div>
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Admin Panel</CardTitle>
-                <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
-                  Manage staking contract settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                {/* APY Settings */}
-                <div className="space-y-4">
-                  <h3 className="text-base sm:text-xl font-medium text-white">Staking APY</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                    <div className="space-y-2">
-                      <Label htmlFor="apy-input" className="text-gray-300 font-medium text-xs sm:text-base">
-                        Set Annual Percentage Yield (APY)
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="apy-input"
-                          type="number"
-                          placeholder="e.g., 10"
-                          value={apy}
-                          onChange={(e) => setApy(e.target.value)}
-                          className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-12 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">%</span>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => setIsDialogOpen(true)}
-                      className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
-                    >
-                      update_stake_pool_config (Change APY %)
-                    </Button>
-                  </div>
-                </div>
+    // Convert percentage to basis points (1% = 100 basis points)
+    const aprBps = Math.round(parseFloat(apy) * 100)
 
-                {/* Staking Vault Management */}
-                <div className="space-y-4">
-                  <h3 className="text-base sm:text-xl font-medium text-white">Stake Program</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
-                      <CardHeader className="p-0 mb-4">
-                        <CardTitle className="text-lg font-semibold text-white">Initialize Stake Program</CardTitle>
-                        <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-0 space-y-4">
-                        <Button
-                          onClick={() => setICreateStakePoolConfigDialogOpen(true)}
-                          className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                        >
-                          create_stake_pool_config
-                        </Button>
-                        <Button
-                          onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
-                          className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
-                        >
-                          delete_stake_pool_config
-                        </Button>
-                        <Button
-                          onClick={() => setIsCreateXLabsMintDialogOpen(true)}
-                          className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                        >
-                          create_x_labs_mint
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
-                      <CardHeader className="p-0 mb-4">
-                        <CardTitle className="text-lg font-semibold text-white">Stake Pool Status</CardTitle>
-                        <CardDescription className="text-gray-400 text-sm">Current state of the stake pool.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-0 space-y-3 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Program Address:</span>
-                          {/* TODO make this a link to solscan: */}
-                          <span className="font-mono text-xs truncate text-gray-500">
-                            {programClient.STAKING_PROGRAM_PROGRAM_ADDRESS}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Stake Pool Address:</span>
-                          <span className="font-mono text-xs truncate text-gray-500">{stakePoolAddress.toString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">LABS Token Address:</span>
-                          <a
-                            href="https://solscan.io/token/LABSh5DTebUcUbEoLzXKCiXFJLecDFiDWiBGUU1GpxR"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                          >
-                            LABS...pxR
-                          </a>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">xLABS Token Address:</span>
-                          <a
-                            href="https://solscan.io/token/11111111111111111111111111111111"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                          >
-                            NULL
-                          </a>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>
-                          <span className="font-mono text-xs text-gray-500">0</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Claimed Rewards (xLABS Minted):</span>
-                          <span className="font-mono text-xs text-gray-500">0</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Total LABS Staked:</span>
-                          <span className="font-mono text-xs text-gray-500">0</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">TVL Staked (USDC Value):</span>
-                          <span className="font-mono text-xs text-gray-500">$0.00</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    try {
+      await updateStakePoolConfigMutation.mutateAsync(aprBps)
+      setUpdateMessage({
+        type: 'success',
+        text: `APY successfully updated to ${apy}% (${aprBps} basis points)`
+      })
+    } catch (error) {
+      console.error('Failed to update APY:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to update APY'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  const handleInitializeStakePoolConfig = async () => {
+    setIsInitializeStakePoolConfigDialogOpen(false)
+
+    // Convert percentage to basis points (1% = 100 basis points)
+    const aprBps = Math.round(parseFloat(apy) * 100)
+
+    try {
+      await initializeStakePoolConfigMutation.mutateAsync(aprBps)
+      setUpdateMessage({
+        type: 'success',
+        text: `Stake pool config initialized successfully with APY: ${apy}% (${aprBps} basis points)`
+      })
+    } catch (error) {
+      console.error('Failed to initialize stake pool config:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to initialize stake pool config'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  const handleDeleteStakePoolConfig = async () => {
+    setIsDeleteStakePoolConfigDialogOpen(false)
+
+    try {
+      await deleteStakePoolConfigMutation.mutateAsync()
+      setUpdateMessage({
+        type: 'success',
+        text: 'Stake pool config deleted successfully'
+      })
+    } catch (error) {
+      console.error('Failed to delete stake pool config:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to delete stake pool config'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  const handleInitializeXLabsMint = async () => {
+    setIsInitializeXLabsMintDialogOpen(false)
+
+    try {
+      await initializeXLabsMutation.mutateAsync()
+      setUpdateMessage({
+        type: 'success',
+        text: 'xLABS mint initialized successfully'
+      })
+    } catch (error) {
+      console.error('Failed to initialize xLABS mint:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to initialize xLABS mint'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  const handleInitializeStakePool = async () => {
+    setIsInitializeStakePoolDialogOpen(false)
+
+    try {
+      await initializeStakePoolMutation.mutateAsync()
+      setUpdateMessage({
+        type: 'success',
+        text: 'Stake pool initialized successfully'
+      })
+    } catch (error) {
+      console.error('Failed to initialize stake pool:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to initialize stake pool'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  const handleDeleteStakePool = async () => {
+    setIsDeleteStakePoolDialogOpen(false)
+
+    try {
+      await deleteStakePoolMutation.mutateAsync()
+      setUpdateMessage({
+        type: 'success',
+        text: 'Stake pool deleted successfully'
+      })
+    } catch (error) {
+      console.error('Failed to delete stake pool:', error)
+      setUpdateMessage({
+        type: 'error',
+        text: 'Failed to delete stake pool'
+      })
+    }
+
+    setIsNotificationVisible(true)
+    setTimeout(() => {
+      setIsNotificationVisible(false)
+      setTimeout(() => setUpdateMessage(null), 300)
+    }, 3000)
+  }
+
+  return (
+    <>
+      <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
+        <div className="max-w-4xl mx-auto">
+          {/* Notification */}
+          <div
+            className={`mb-4 transition-all duration-300 ease-out overflow-hidden ${isNotificationVisible ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+              }`}
+          >
+            {updateMessage && (
+              <div
+                className={`p-4 rounded-lg flex items-center space-x-3 text-white border ${updateMessage.type === 'success'
+                  ? 'bg-green-900/50 border-green-500/50'
+                  : 'bg-red-900/50 border-red-500/50'
+                  }`}
+              >
+                {updateMessage.type === 'success' ? (
+                  <CheckCircleIcon className="h-6 w-6 text-green-400" />
+                ) : (
+                  <XCircleIcon className="h-6 w-6 text-red-400" />
+                )}
+                <span>{updateMessage.text}</span>
+              </div>
+            )}
           </div>
         </div>
+        <div className="max-w-4xl mx-auto">
+          <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Admin Panel</CardTitle>
+              <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
+                Manage staking contract settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* APY Settings */}
+              <div className="space-y-4">
+                <h3 className="text-base sm:text-xl font-medium text-white">Staking APY</h3>
 
-        <Footer />
+                {/* Current APY Display */}
+                {stakePoolConfigDataQuery.data && (
+                  <div className="p-3 sm:p-4 bg-gray-800/30 rounded-lg border border-gray-700/40">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300 text-sm sm:text-base">Current APY:</span>
+                      <span className="text-[#4a85ff] font-semibold text-lg sm:text-xl">
+                        {(Number(stakePoolConfigDataQuery.data.data.aprBps) / 100).toFixed(2)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-gray-400 text-xs sm:text-sm">Basis Points:</span>
+                      <span className="text-gray-400 text-xs sm:text-sm">
+                        {stakePoolConfigDataQuery.data.data.aprBps.toString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                  <div className="space-y-2">
+                    <Label htmlFor="apy-input" className="text-gray-300 font-medium text-xs sm:text-base">
+                      Set Annual Percentage Yield (APY)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="apy-input"
+                        type="number"
+                        placeholder="e.g., 10"
+                        value={apy}
+                        onChange={(e) => setApy(e.target.value)}
+                        className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-12 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">%</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => setIsDialogOpen(true)}
+                    disabled={updateStakePoolConfigMutation.isPending}
+                    className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
+                  >
+                    {updateStakePoolConfigMutation.isPending ? 'Updating...' : 'Update Stake Pool Config (Change APY %)'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Staking Vault Management */}
+              <div className="space-y-4">
+                <h3 className="text-base sm:text-xl font-medium text-white">Stake Program</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
+                    <CardHeader className="p-0 mb-4">
+                      <CardTitle className="text-lg font-semibold text-white">Initialize Stake Program</CardTitle>
+                      <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0 space-y-4">
+                      <Button
+                        onClick={() => setIsInitializeStakePoolConfigDialogOpen(true)}
+                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+                      >
+                        Initialize Stake Pool Config
+                      </Button>
+                      <Button
+                        onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
+                        className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
+                      >
+                        Delete Stake Pool Config
+                      </Button>
+                      <Button
+                        onClick={() => setIsInitializeStakePoolDialogOpen(true)}
+                        disabled={initializeStakePoolMutation.isPending}
+                        className="w-full bg-blue-800 text-blue-50 hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {initializeStakePoolMutation.isPending ? 'Initializing...' : 'Initialize Stake Pool'}
+                      </Button>
+                      <Button
+                        onClick={() => setIsDeleteStakePoolDialogOpen(true)}
+                        className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
+                      >
+                        Delete Stake Pool
+                      </Button>
+                      <Button
+                        onClick={() => setIsInitializeXLabsMintDialogOpen(true)}
+                        disabled={initializeXLabsMutation.isPending}
+                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700 disabled:opacity-50"
+                      >
+                        {initializeXLabsMutation.isPending ? 'Initializing...' : 'Initialize X Labs Mint'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
+                    <CardHeader className="p-0 mb-4">
+                      <CardTitle className="text-lg font-semibold text-white">Stake Pool Status</CardTitle>
+                      <CardDescription className="text-gray-400 text-sm">Current state of the stake pool.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0 space-y-3 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Program Address:</span>
+                        <a
+                          href={`https://solscan.io/account/${programId}?cluster=devnet`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                          title={programId}
+                        >
+                          {ellipsify(programId, 6)}
+                        </a>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Stake Pool Address:</span>
+                        {stakePoolAddressQuery.isLoading ? (
+                          <span className="font-mono text-xs text-gray-500">Loading...</span>
+                        ) : stakePoolAddressQuery.data?.[0] ? (
+                          <a
+                            href={`https://solscan.io/account/${stakePoolAddressQuery.data[0]}?cluster=devnet`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                            title={stakePoolAddressQuery.data[0]}
+                          >
+                            {ellipsify(stakePoolAddressQuery.data[0], 6)}
+                          </a>
+                        ) : (
+                          <span className="font-mono text-xs text-gray-500">Not found</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Stake Pool Config Address:</span>
+                        {stakePoolConfigAddressQuery.isLoading ? (
+                          <span className="font-mono text-xs text-gray-500">Loading...</span>
+                        ) : stakePoolConfigAddressQuery.data?.[0] ? (
+                          <a
+                            href={`https://solscan.io/account/${stakePoolConfigAddressQuery.data[0]}?cluster=devnet`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                            title={stakePoolConfigAddressQuery.data[0]}
+                          >
+                            {ellipsify(stakePoolConfigAddressQuery.data[0], 6)}
+                          </a>
+                        ) : (
+                          <span className="font-mono text-xs text-gray-500">Not found</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">LABS Token Address:</span>
+                        <a
+                          href={`https://solscan.io/token/${labsMintAddress}?cluster=devnet`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                          title={labsMintAddress}
+                        >
+                          {ellipsify(labsMintAddress, 6)}
+                        </a>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">xLABS Token Address:</span>
+                        {xLabsMintAddressQuery.isLoading ? (
+                          <span className="font-mono text-xs text-gray-500">Loading...</span>
+                        ) : xLabsMintAddressQuery.data?.[0] ? (
+                          <a
+                            href={`https://solscan.io/token/${xLabsMintAddressQuery.data[0]}?cluster=devnet`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                            title={xLabsMintAddressQuery.data[0]}
+                          >
+                            {ellipsify(xLabsMintAddressQuery.data[0], 6)}
+                          </a>
+                        ) : (
+                          <span className="font-mono text-xs text-gray-500">Not found</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Vault Address:</span>
+                        {vaultAddressQuery.isLoading ? (
+                          <span className="font-mono text-xs text-gray-500">Loading...</span>
+                        ) : vaultAddressQuery.data?.[0] ? (
+                          <a
+                            href={`https://solscan.io/account/${vaultAddressQuery.data}?cluster=devnet`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                            title={vaultAddressQuery.data}
+                          >
+                            {ellipsify(vaultAddressQuery.data, 6)}
+                          </a>
+                        ) : (
+                          <span className="font-mono text-xs text-gray-500">Not found</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>
+                        <span className="font-mono text-xs text-gray-500">1,234.56</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Claimed Rewards (xLABS Minted):</span>
+                        <span className="font-mono text-xs text-gray-500">5,678.90</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Total LABS Staked:</span>
+                        <span className="font-mono text-xs text-gray-500">50,000.00</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">TVL Staked (USDC Value):</span>
+                        <span className="font-mono text-xs text-gray-500">$75,000.00</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* APY Confirmation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
             <DialogTitle>Confirm APY Change</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-400">
               Are you sure you want to change the staking APY to {apy}%?
             </DialogDescription>
           </DialogHeader>
@@ -413,24 +508,24 @@ export default function AdminPanelPage() {
       </Dialog>
 
       {/* Initialize Staking Program Confirmation Dialog */}
-      <Dialog open={isCreateStakePoolConfigDialogOpen} onOpenChange={setICreateStakePoolConfigDialogOpen}>
-        <DialogContent>
+      <Dialog open={isInitializeStakePoolConfigDialogOpen} onOpenChange={setIsInitializeStakePoolConfigDialogOpen}>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
-            <DialogTitle>Confirm Create Stake Pool Config</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to create the stake pool config?
+            <DialogTitle>Confirm Initialize Stake Pool Config</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to initialize the stake pool config with APY: <span className="font-semibold text-white">{apy}%</span> ({Math.round(parseFloat(apy) * 100)} <span className="font-semibold text-white">basis points</span>)?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
-              onClick={() => setICreateStakePoolConfigDialogOpen(false)}
+              onClick={() => setIsInitializeStakePoolConfigDialogOpen(false)}
               className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleCreateStakePoolConfig}
+              onClick={handleInitializeStakePoolConfig}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
             >
               Confirm
@@ -439,12 +534,12 @@ export default function AdminPanelPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Initialize Stake Pool Confirmation Dialog */}
+      {/* Delete Stake Pool Confirmation Dialog */}
       <Dialog open={isDeleteStakePoolConfigDialogOpen} onOpenChange={setIsDeleteStakePoolConfigDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
             <DialogTitle>Confirm Delete Stake Pool Config</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-400">
               Are you sure you want to delete the stake pool config? This action is destructive and cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -467,31 +562,89 @@ export default function AdminPanelPage() {
       </Dialog>
 
       {/* Initialize xLABS Mint Confirmation Dialog */}
-      <Dialog open={isCreateXLabsMintDialogOpen} onOpenChange={setIsCreateXLabsMintDialogOpen}>
-        <DialogContent>
+      <Dialog open={isInitializeXLabsMintDialogOpen} onOpenChange={setIsInitializeXLabsMintDialogOpen}>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
-            <DialogTitle>Confirm Create xLABS Mint</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to create the xLABS mint?
+            <DialogTitle>Confirm Initialize xLABS Mint</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to initialize the xLABS mint?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
-              onClick={() => setIsCreateXLabsMintDialogOpen(false)}
+              onClick={() => setIsInitializeXLabsMintDialogOpen(false)}
+              disabled={initializeXLabsMutation.isPending}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white disabled:opacity-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleInitializeXLabsMint}
+              disabled={initializeXLabsMutation.isPending}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50"
+            >
+              {initializeXLabsMutation.isPending ? 'Initializing...' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Initialize Stake Pool Confirmation Dialog */}
+      <Dialog open={isInitializeStakePoolDialogOpen} onOpenChange={setIsInitializeStakePoolDialogOpen}>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirm Initialize Stake Pool</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to initialize the stake pool?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsInitializeStakePoolDialogOpen(false)}
+              disabled={initializeStakePoolMutation.isPending}
+              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white disabled:opacity-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleInitializeStakePool}
+              disabled={initializeStakePoolMutation.isPending}
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50"
+            >
+              {initializeStakePoolMutation.isPending ? 'Initializing...' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Stake Pool Confirmation Dialog */}
+      <Dialog open={isDeleteStakePoolDialogOpen} onOpenChange={setIsDeleteStakePoolDialogOpen}>
+        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirm Delete Stake Pool</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to delete the stake pool? This action is destructive and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteStakePoolDialogOpen(false)}
               className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleCreateXLabsMint}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+              onClick={handleDeleteStakePool}
+              className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
             >
-              Confirm
+              Confirm Deletion
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   )
 }

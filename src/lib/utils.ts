@@ -1,17 +1,31 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { STAKE_APY } from "./constants"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import { address } from 'gill'
+import { SolanaClusterId } from '@wallet-ui/react'
+// Legacy imports removed
+import StakingProgramIDL from '@program-idl/staking_program.json'
+import {
+  STAKING_PROGRAM_PROGRAM_ADDRESS
+} from '@program-client'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Utility function to calculate xLABS accumulation
-export const calculateXLABSAccumulation = (
-  stakedAmount: number,
-  daysStaked: number
-): number => {
-  const dailyRate = STAKE_APY / 100 / 365; // Convert APY to daily rate
-  const accumulatedXLABS = stakedAmount * (1 + dailyRate) ** daysStaked - stakedAmount;
-  return accumulatedXLABS;
-};
+export function ellipsify(str = '', len = 4, delimiter = '..') {
+  const strLen = str.length
+  const limit = len * 2 + delimiter.length
+
+  return strLen >= limit ? str.substring(0, len) + delimiter + str.substring(strLen - len, strLen) : str
+}
+
+export function getStakingProgramProgramId(cluster: SolanaClusterId) {
+  switch (cluster) {
+    case 'solana:devnet':
+    case 'solana:testnet':
+    case 'solana:mainnet':
+    default:
+      return STAKING_PROGRAM_PROGRAM_ADDRESS
+  }
+}
+

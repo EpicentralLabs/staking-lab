@@ -1,42 +1,37 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import AppWalletProvider from "@/components/app-wallet-provider";
+import type { Metadata } from 'next'
+import './globals.css'
+import { AppProviders } from '@/components/app-providers'
+import { DynamicAppLayout } from '@/components/dynamic-app-layout'
+import React from 'react'
+import { install as installEd25519 } from '@solana/webcrypto-ed25519-polyfill'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// polyfill ed25519 for browsers (to allow `generateKeyPairSigner` to work)
+installEd25519()
 
 export const metadata: Metadata = {
-  title: "Stake LABS | Epicentral Labs",
-  description: "Stake your LABS tokens with Epicentral Labs - Secure, efficient, and rewarding staking on Solana",
-  icons: {
-    icon: "/Original_LABS_LOGO.png",
-    shortcut: "/Original_LABS_LOGO.png",
-    apple: "/Original_LABS_LOGO.png",
-  },
-};
+  title: 'xLabs Staking',
+  description: 'Stake LABS tokens and earn xLABS rewards',
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <AppWalletProvider>
-          {children}
-        </AppWalletProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`antialiased`}>
+        <AppProviders>
+          <DynamicAppLayout>{children}</DynamicAppLayout>
+        </AppProviders>
       </body>
     </html>
-  );
+  )
+}
+
+// Patch BigInt so we can log it using JSON.stringify without any errors
+declare global {
+  interface BigInt {
+    toJSON(): string
+  }
+}
+
+BigInt.prototype.toJSON = function () {
+  return this.toString()
 }
