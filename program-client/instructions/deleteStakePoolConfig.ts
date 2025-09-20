@@ -43,20 +43,24 @@ export function getDeleteStakePoolConfigDiscriminatorBytes() {
 
 export type DeleteStakePoolConfigInstruction<
   TProgram extends string = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
-  TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountSigner extends string | AccountMeta<string> = string,
   TAccountConfig extends string | AccountMeta<string> = string,
+  TAccountStakePool extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountAuthority extends string
-        ? WritableSignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
-        : TAccountAuthority,
+      TAccountSigner extends string
+        ? WritableSignerAccount<TAccountSigner> &
+            AccountSignerMeta<TAccountSigner>
+        : TAccountSigner,
       TAccountConfig extends string
         ? WritableAccount<TAccountConfig>
         : TAccountConfig,
+      TAccountStakePool extends string
+        ? WritableAccount<TAccountStakePool>
+        : TAccountStakePool,
       ...TRemainingAccounts,
     ]
   >;
@@ -94,25 +98,33 @@ export function getDeleteStakePoolConfigInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type DeleteStakePoolConfigAsyncInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
+  TAccountStakePool extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  signer: TransactionSigner<TAccountSigner>;
   config?: Address<TAccountConfig>;
+  stakePool?: Address<TAccountStakePool>;
 };
 
 export async function getDeleteStakePoolConfigInstructionAsync<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
+  TAccountStakePool extends string,
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
-  input: DeleteStakePoolConfigAsyncInput<TAccountAuthority, TAccountConfig>,
+  input: DeleteStakePoolConfigAsyncInput<
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
+  >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
   DeleteStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >
 > {
   // Program address.
@@ -121,8 +133,9 @@ export async function getDeleteStakePoolConfigInstructionAsync<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
     config: { value: input.config ?? null, isWritable: true },
+    stakePool: { value: input.stakePool ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -138,43 +151,63 @@ export async function getDeleteStakePoolConfigInstructionAsync<
       ],
     });
   }
+  if (!accounts.stakePool.value) {
+    accounts.stakePool.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([115, 116, 97, 107, 101, 95, 112, 111, 111, 108])
+        ),
+      ],
+    });
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
+      getAccountMeta(accounts.stakePool),
     ],
     programAddress,
     data: getDeleteStakePoolConfigInstructionDataEncoder().encode({}),
   } as DeleteStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >;
 
   return instruction;
 }
 
 export type DeleteStakePoolConfigInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
+  TAccountStakePool extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  signer: TransactionSigner<TAccountSigner>;
   config: Address<TAccountConfig>;
+  stakePool: Address<TAccountStakePool>;
 };
 
 export function getDeleteStakePoolConfigInstruction<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
+  TAccountStakePool extends string,
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
-  input: DeleteStakePoolConfigInput<TAccountAuthority, TAccountConfig>,
+  input: DeleteStakePoolConfigInput<
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
+  >,
   config?: { programAddress?: TProgramAddress }
 ): DeleteStakePoolConfigInstruction<
   TProgramAddress,
-  TAccountAuthority,
-  TAccountConfig
+  TAccountSigner,
+  TAccountConfig,
+  TAccountStakePool
 > {
   // Program address.
   const programAddress =
@@ -182,8 +215,9 @@ export function getDeleteStakePoolConfigInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
     config: { value: input.config ?? null, isWritable: true },
+    stakePool: { value: input.stakePool ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -193,15 +227,17 @@ export function getDeleteStakePoolConfigInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
+      getAccountMeta(accounts.stakePool),
     ],
     programAddress,
     data: getDeleteStakePoolConfigInstructionDataEncoder().encode({}),
   } as DeleteStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >;
 
   return instruction;
@@ -213,8 +249,9 @@ export type ParsedDeleteStakePoolConfigInstruction<
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    authority: TAccountMetas[0];
+    signer: TAccountMetas[0];
     config: TAccountMetas[1];
+    stakePool: TAccountMetas[2];
   };
   data: DeleteStakePoolConfigInstructionData;
 };
@@ -227,7 +264,7 @@ export function parseDeleteStakePoolConfigInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedDeleteStakePoolConfigInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 2) {
+  if (instruction.accounts.length < 3) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -240,8 +277,9 @@ export function parseDeleteStakePoolConfigInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      authority: getNextAccount(),
+      signer: getNextAccount(),
       config: getNextAccount(),
+      stakePool: getNextAccount(),
     },
     data: getDeleteStakePoolConfigInstructionDataDecoder().decode(
       instruction.data

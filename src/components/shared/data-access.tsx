@@ -108,15 +108,6 @@ export function useStakeAccountAddress() {
     const query = useClusterVersion()
     const stakePoolAddress = useStakePoolAddress()
     const addressEncoder = getAddressEncoder();
-    // Debug logging
-    console.log('useStakeAccountAddress dependencies:', {
-        cluster: cluster.id,
-        hasAccount: !!account,
-        clusterVersion: query.data,
-        stakePoolData: stakePoolAddress.data,
-        stakePoolLoading: stakePoolAddress.isLoading,
-        enabled: !!stakePoolAddress.data?.[0] && !!query.data && !!account?.publicKey
-    })
 
     return useQuery({
         retry: false,

@@ -112,10 +112,8 @@ export function useTransferSolMutation({ address }: { address: Address }) {
         const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
         const signature = getBase58Decoder().decode(signatureBytes)
 
-        console.log(signature)
         return signature
       } catch (error: unknown) {
-        console.log('error', `Transaction failed! ${error}`)
 
         return
       }

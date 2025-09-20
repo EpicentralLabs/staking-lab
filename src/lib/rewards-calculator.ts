@@ -97,37 +97,73 @@ export function calculateRealtimePendingRewards(
     interestIndexAtDeposit: bigint,
     currentInterestIndex: bigint
 ): bigint | null {
-    // Mirror the Rust logic exactly
-    const stakedAmountPrecise = PreciseNumber.new(stakedAmount);
-    const interestIndexAtDepositPrecise = PreciseNumber.new(interestIndexAtDeposit);
-    const currentInterestIndexPrecise = PreciseNumber.new(currentInterestIndex);
+    console.log('🚨 calculateRealtimePendingRewards INPUT:', {
+        stakedAmount,
+        pendingRewards,
+        interestIndexAtDeposit,
+        currentInterestIndex,
+    });
 
-    if (!stakedAmountPrecise || !interestIndexAtDepositPrecise || !currentInterestIndexPrecise) {
-        return null;
-    }
+    // The interest index has 18 decimals of precision (same as PRECISION_FACTOR)
+    // When we multiply, we get double precision, so we need to divide by PRECISION_FACTOR
+    const PRECISION_FACTOR = 1000000000000000000n; // 18 decimal places
 
-    const rewardInterestIndex = currentInterestIndexPrecise.checkedSub(interestIndexAtDepositPrecise);
-    if (!rewardInterestIndex) return null;
+    // Calculate the interest difference
+    const interestDiff = currentInterestIndex - interestIndexAtDeposit;
+    console.log('🚨 Interest difference:', interestDiff);
 
-    const rewards = rewardInterestIndex.checkedMul(stakedAmountPrecise);
-    if (!rewards) return null;
+    // Calculate rewards: (stakedAmount * interestDiff) / PRECISION_FACTOR
+    const rewardsRaw = stakedAmount * interestDiff;
+    console.log('🚨 Rewards raw (before scaling):', rewardsRaw);
 
-    const currentPendingRewardsPrecise = PreciseNumber.new(pendingRewards);
-    if (!currentPendingRewardsPrecise) return null;
+    // Scale down by precision factor to get actual rewards
+    const newRewards = rewardsRaw / PRECISION_FACTOR;
+    console.log('🚨 New rewards (after scaling):', newRewards);
 
-    const newPendingRewards = currentPendingRewardsPrecise.checkedAdd(rewards);
-    if (!newPendingRewards) return null;
-
-    const newRewardsU128 = newPendingRewards.toImprecise();
-    if (!newRewardsU128) return null;
+    // Add to existing pending rewards
+    const totalRewards = pendingRewards + newRewards;
+    console.log('🚨 Total rewards:', totalRewards);
 
     // Check for overflow (u64::MAX)
     const U64_MAX = 18446744073709551615n;
-    if (newRewardsU128 > U64_MAX) {
+    if (totalRewards > U64_MAX) {
+        console.log('🚨 Overflow detected after scaling');
         return null;
     }
 
-    return newRewardsU128;
+    console.log('🚨 SUCCESS - Final result:', totalRewards);
+    return totalRewards;
+}
+
+/**
+ * Calculate the precise reward rate per millisecond for continuous animation
+ * Uses the same precision methodology as calculateCurrentInterestIndex
+ * Returns the amount of rewards that should be added per millisecond
+ */
+export function calculateRewardRatePerMillisecond(
+    stakedAmount: bigint,
+    aprBps: bigint
+): number {
+    if (stakedAmount === 0n || aprBps === 0n) {
+        return 0;
+    }
+
+    // Use the same precision methodology as the interest index calculation
+    const SECONDS_PER_YEAR = 365n * 24n * 60n * 60n; // 31,536,000
+    const PRECISION_FACTOR = 1000000000000000000n; // 18 decimal places for precision
+    const MILLISECONDS_PER_SECOND = 1000n;
+
+    // Calculate interest rate per second with precision (same as calculateCurrentInterestIndex)
+    const interestPerSecond = (aprBps * PRECISION_FACTOR) / (10000n * SECONDS_PER_YEAR);
+
+    // Convert to per millisecond
+    const interestPerMillisecond = interestPerSecond / MILLISECONDS_PER_SECOND;
+
+    // Calculate rewards per millisecond: stakedAmount * interestRate
+    const rewardsPerMillisecondBigInt = (stakedAmount * interestPerMillisecond) / PRECISION_FACTOR;
+
+    // Convert to number for animation (this is already in lamports)
+    return Number(rewardsPerMillisecondBigInt);
 }
 
 /**

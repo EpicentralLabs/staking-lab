@@ -26,7 +26,7 @@ import {
 } from '../instructions';
 
 export const STAKING_PROGRAM_PROGRAM_ADDRESS =
-  '8wmNrYnWiVbj1keNp76txp1xPGGd5YRqJKmQF9wB7ipM' as Address<'8wmNrYnWiVbj1keNp76txp1xPGGd5YRqJKmQF9wB7ipM'>;
+  '5BzVKnqRHDzPUiX8AZmqqSPxpTVuB7TXdoRZSFdNq1dm' as Address<'5BzVKnqRHDzPUiX8AZmqqSPxpTVuB7TXdoRZSFdNq1dm'>;
 
 export enum StakingProgramAccount {
   StakeAccount,
@@ -173,7 +173,7 @@ export function identifyStakingProgramInstruction(
 }
 
 export type ParsedStakingProgramInstruction<
-  TProgram extends string = '8wmNrYnWiVbj1keNp76txp1xPGGd5YRqJKmQF9wB7ipM',
+  TProgram extends string = '5BzVKnqRHDzPUiX8AZmqqSPxpTVuB7TXdoRZSFdNq1dm',
 > =
   | ({
       instructionType: StakingProgramInstruction.ClaimRewards;

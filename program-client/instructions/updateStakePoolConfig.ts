@@ -45,20 +45,24 @@ export function getUpdateStakePoolConfigDiscriminatorBytes() {
 
 export type UpdateStakePoolConfigInstruction<
   TProgram extends string = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
-  TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountSigner extends string | AccountMeta<string> = string,
   TAccountConfig extends string | AccountMeta<string> = string,
+  TAccountStakePool extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountAuthority extends string
-        ? WritableSignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
-        : TAccountAuthority,
+      TAccountSigner extends string
+        ? WritableSignerAccount<TAccountSigner> &
+            AccountSignerMeta<TAccountSigner>
+        : TAccountSigner,
       TAccountConfig extends string
         ? WritableAccount<TAccountConfig>
         : TAccountConfig,
+      TAccountStakePool extends string
+        ? WritableAccount<TAccountStakePool>
+        : TAccountStakePool,
       ...TRemainingAccounts,
     ]
   >;
@@ -103,26 +107,34 @@ export function getUpdateStakePoolConfigInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type UpdateStakePoolConfigAsyncInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
+  TAccountStakePool extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  signer: TransactionSigner<TAccountSigner>;
   config?: Address<TAccountConfig>;
+  stakePool?: Address<TAccountStakePool>;
   aprBps: UpdateStakePoolConfigInstructionDataArgs['aprBps'];
 };
 
 export async function getUpdateStakePoolConfigInstructionAsync<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
+  TAccountStakePool extends string,
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
-  input: UpdateStakePoolConfigAsyncInput<TAccountAuthority, TAccountConfig>,
+  input: UpdateStakePoolConfigAsyncInput<
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
+  >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
   UpdateStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >
 > {
   // Program address.
@@ -131,8 +143,9 @@ export async function getUpdateStakePoolConfigInstructionAsync<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
     config: { value: input.config ?? null, isWritable: true },
+    stakePool: { value: input.stakePool ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -151,12 +164,23 @@ export async function getUpdateStakePoolConfigInstructionAsync<
       ],
     });
   }
+  if (!accounts.stakePool.value) {
+    accounts.stakePool.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([115, 116, 97, 107, 101, 95, 112, 111, 111, 108])
+        ),
+      ],
+    });
+  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
+      getAccountMeta(accounts.stakePool),
     ],
     programAddress,
     data: getUpdateStakePoolConfigInstructionDataEncoder().encode(
@@ -164,33 +188,42 @@ export async function getUpdateStakePoolConfigInstructionAsync<
     ),
   } as UpdateStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >;
 
   return instruction;
 }
 
 export type UpdateStakePoolConfigInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
+  TAccountStakePool extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  signer: TransactionSigner<TAccountSigner>;
   config: Address<TAccountConfig>;
+  stakePool: Address<TAccountStakePool>;
   aprBps: UpdateStakePoolConfigInstructionDataArgs['aprBps'];
 };
 
 export function getUpdateStakePoolConfigInstruction<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
+  TAccountStakePool extends string,
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
-  input: UpdateStakePoolConfigInput<TAccountAuthority, TAccountConfig>,
+  input: UpdateStakePoolConfigInput<
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
+  >,
   config?: { programAddress?: TProgramAddress }
 ): UpdateStakePoolConfigInstruction<
   TProgramAddress,
-  TAccountAuthority,
-  TAccountConfig
+  TAccountSigner,
+  TAccountConfig,
+  TAccountStakePool
 > {
   // Program address.
   const programAddress =
@@ -198,8 +231,9 @@ export function getUpdateStakePoolConfigInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
     config: { value: input.config ?? null, isWritable: true },
+    stakePool: { value: input.stakePool ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -212,8 +246,9 @@ export function getUpdateStakePoolConfigInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
+      getAccountMeta(accounts.stakePool),
     ],
     programAddress,
     data: getUpdateStakePoolConfigInstructionDataEncoder().encode(
@@ -221,8 +256,9 @@ export function getUpdateStakePoolConfigInstruction<
     ),
   } as UpdateStakePoolConfigInstruction<
     TProgramAddress,
-    TAccountAuthority,
-    TAccountConfig
+    TAccountSigner,
+    TAccountConfig,
+    TAccountStakePool
   >;
 
   return instruction;
@@ -234,8 +270,9 @@ export type ParsedUpdateStakePoolConfigInstruction<
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    authority: TAccountMetas[0];
+    signer: TAccountMetas[0];
     config: TAccountMetas[1];
+    stakePool: TAccountMetas[2];
   };
   data: UpdateStakePoolConfigInstructionData;
 };
@@ -248,7 +285,7 @@ export function parseUpdateStakePoolConfigInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedUpdateStakePoolConfigInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 2) {
+  if (instruction.accounts.length < 3) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -261,8 +298,9 @@ export function parseUpdateStakePoolConfigInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      authority: getNextAccount(),
+      signer: getNextAccount(),
       config: getNextAccount(),
+      stakePool: getNextAccount(),
     },
     data: getUpdateStakePoolConfigInstructionDataDecoder().decode(
       instruction.data

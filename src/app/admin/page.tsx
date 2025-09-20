@@ -88,7 +88,6 @@ function AdminPanelPageConnected() {
         text: `APY successfully updated to ${apy}% (${aprBps} basis points)`
       })
     } catch (error) {
-      console.error('Failed to update APY:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to update APY'
@@ -115,7 +114,6 @@ function AdminPanelPageConnected() {
         text: `Stake pool config initialized successfully with APY: ${apy}% (${aprBps} basis points)`
       })
     } catch (error) {
-      console.error('Failed to initialize stake pool config:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to initialize stake pool config'
@@ -139,7 +137,6 @@ function AdminPanelPageConnected() {
         text: 'Stake pool config deleted successfully'
       })
     } catch (error) {
-      console.error('Failed to delete stake pool config:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to delete stake pool config'
@@ -163,7 +160,6 @@ function AdminPanelPageConnected() {
         text: 'xLABS mint initialized successfully'
       })
     } catch (error) {
-      console.error('Failed to initialize xLABS mint:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to initialize xLABS mint'
@@ -187,7 +183,6 @@ function AdminPanelPageConnected() {
         text: 'Stake pool initialized successfully'
       })
     } catch (error) {
-      console.error('Failed to initialize stake pool:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to initialize stake pool'
@@ -211,7 +206,6 @@ function AdminPanelPageConnected() {
         text: 'Stake pool deleted successfully'
       })
     } catch (error) {
-      console.error('Failed to delete stake pool:', error)
       setUpdateMessage({
         type: 'error',
         text: 'Failed to delete stake pool'

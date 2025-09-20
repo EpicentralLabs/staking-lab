@@ -50,7 +50,6 @@ export function getStakePoolDiscriminatorBytes() {
 export type StakePool = {
   discriminator: ReadonlyUint8Array;
   vault: Address;
-  authority: Address;
   config: Address;
   interestIndex: bigint;
   interestIndexLastUpdated: bigint;
@@ -59,7 +58,6 @@ export type StakePool = {
 
 export type StakePoolArgs = {
   vault: Address;
-  authority: Address;
   config: Address;
   interestIndex: number | bigint;
   interestIndexLastUpdated: number | bigint;
@@ -71,7 +69,6 @@ export function getStakePoolEncoder(): FixedSizeEncoder<StakePoolArgs> {
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 1)],
       ['vault', getAddressEncoder()],
-      ['authority', getAddressEncoder()],
       ['config', getAddressEncoder()],
       ['interestIndex', getU128Encoder()],
       ['interestIndexLastUpdated', getI64Encoder()],
@@ -85,7 +82,6 @@ export function getStakePoolDecoder(): FixedSizeDecoder<StakePool> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 1)],
     ['vault', getAddressDecoder()],
-    ['authority', getAddressDecoder()],
     ['config', getAddressDecoder()],
     ['interestIndex', getU128Decoder()],
     ['interestIndexLastUpdated', getI64Decoder()],
@@ -151,5 +147,5 @@ export async function fetchAllMaybeStakePool(
 }
 
 export function getStakePoolSize(): number {
-  return 122;
+  return 90;
 }

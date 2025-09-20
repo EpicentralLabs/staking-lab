@@ -20,14 +20,6 @@ export function useStakeToStakePoolMutation() {
     const vaultAddressQuery = useVaultAddress()
     const labsUserAtaQuery = useLabsUserAssociatedTokenAccount()
 
-    // Debug logging
-    console.log('Staking mutation dependencies:', {
-        stakeAccount: { loading: stakeAccountQuery.isLoading, hasData: !!stakeAccountQuery.data },
-        stakePool: { loading: stakePoolAddress.isLoading, hasData: !!stakePoolAddress.data },
-        stakePoolConfig: { loading: stakePoolConfig.isLoading, hasData: !!stakePoolConfig.data },
-        vault: { loading: vaultAddressQuery.isLoading, hasData: !!vaultAddressQuery.data },
-        labsUserAta: { loading: labsUserAtaQuery.isLoading, hasData: !!labsUserAtaQuery.data },
-    })
 
     return useMutation({
         onMutate: async (amount: number | bigint) => {
@@ -162,8 +154,6 @@ export function useStakeToStakePoolMutation() {
             if (context?.previousVaultAccount) {
                 queryClient.setQueryData(['vault-account'], context.previousVaultAccount)
             }
-            
-            console.error('Staking failed:', error)
             toast.error(`Staking failed: ${error.message}`)
         },
     })
@@ -343,8 +333,6 @@ export function useUnstakeFromStakePoolMutation() {
             if (context?.previousXLabsAccount) {
                 queryClient.setQueryData(['user-xlabs-account'], context.previousXLabsAccount)
             }
-            
-            console.error('Unstaking failed:', error)
             toast.error(`Unstaking failed: ${error.message}`)
         },
     })
@@ -474,11 +462,11 @@ export function useClaimFromStakePoolMutation() {
             if (xlabsAddress.isLoading) {
                 throw new Error('xLABS mint address is still loading')
             }
-            if (!xlabsAddress.isLoading) {
+            if (!xlabsAddress.data) {
                 throw new Error('xLABS mint address is not available')
             }
-            if (!userXLabsAccountQuery.isLoading) {
-                throw new Error('User xLABS account data is not available')
+            if (userXLabsAccountQuery.isLoading) {
+                throw new Error('User xLABS account data is still loading')
             }
             let ixs = []
             // If the xLabsUserAtaQuery.data is not initialized, we need to create it first
@@ -521,8 +509,6 @@ export function useClaimFromStakePoolMutation() {
             if (context?.previousStakeAccount) {
                 queryClient.setQueryData(['user-stake-account'], context.previousStakeAccount)
             }
-            
-            console.error('Claiming failed:', error)
             toast.error(`Claiming failed: ${error.message}`)
         },
     })

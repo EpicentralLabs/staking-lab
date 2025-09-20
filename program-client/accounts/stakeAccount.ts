@@ -55,7 +55,6 @@ export type StakeAccount = {
   stakePool: Address;
   stakedAmount: bigint;
   pendingRewards: bigint;
-  rewardsEarned: bigint;
   interestIndexAtDeposit: bigint;
   bump: number;
 };
@@ -65,7 +64,6 @@ export type StakeAccountArgs = {
   stakePool: Address;
   stakedAmount: number | bigint;
   pendingRewards: number | bigint;
-  rewardsEarned: number | bigint;
   interestIndexAtDeposit: number | bigint;
   bump: number;
 };
@@ -78,7 +76,6 @@ export function getStakeAccountEncoder(): FixedSizeEncoder<StakeAccountArgs> {
       ['stakePool', getAddressEncoder()],
       ['stakedAmount', getU64Encoder()],
       ['pendingRewards', getU64Encoder()],
-      ['rewardsEarned', getU64Encoder()],
       ['interestIndexAtDeposit', getU128Encoder()],
       ['bump', getU8Encoder()],
     ]),
@@ -93,7 +90,6 @@ export function getStakeAccountDecoder(): FixedSizeDecoder<StakeAccount> {
     ['stakePool', getAddressDecoder()],
     ['stakedAmount', getU64Decoder()],
     ['pendingRewards', getU64Decoder()],
-    ['rewardsEarned', getU64Decoder()],
     ['interestIndexAtDeposit', getU128Decoder()],
     ['bump', getU8Decoder()],
   ]);
@@ -160,5 +156,5 @@ export async function fetchAllMaybeStakeAccount(
 }
 
 export function getStakeAccountSize(): number {
-  return 106;
+  return 98;
 }

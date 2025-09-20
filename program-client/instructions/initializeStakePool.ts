@@ -49,7 +49,7 @@ export function getInitializeStakePoolDiscriminatorBytes() {
 
 export type InitializeStakePoolInstruction<
   TProgram extends string = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
-  TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountSigner extends string | AccountMeta<string> = string,
   TAccountConfig extends string | AccountMeta<string> = string,
   TAccountStakePool extends string | AccountMeta<string> = string,
   TAccountVault extends string | AccountMeta<string> = string,
@@ -68,12 +68,12 @@ export type InitializeStakePoolInstruction<
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountAuthority extends string
-        ? WritableSignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
-        : TAccountAuthority,
+      TAccountSigner extends string
+        ? WritableSignerAccount<TAccountSigner> &
+            AccountSignerMeta<TAccountSigner>
+        : TAccountSigner,
       TAccountConfig extends string
-        ? WritableAccount<TAccountConfig>
+        ? ReadonlyAccount<TAccountConfig>
         : TAccountConfig,
       TAccountStakePool extends string
         ? WritableAccount<TAccountStakePool>
@@ -130,7 +130,7 @@ export function getInitializeStakePoolInstructionDataCodec(): FixedSizeCodec<
 }
 
 export type InitializeStakePoolAsyncInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
   TAccountStakePool extends string = string,
   TAccountVault extends string = string,
@@ -139,8 +139,8 @@ export type InitializeStakePoolAsyncInput<
   TAccountTokenProgram extends string = string,
   TAccountAssociatedTokenProgram extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
-  config: Address<TAccountConfig>;
+  signer: TransactionSigner<TAccountSigner>;
+  config?: Address<TAccountConfig>;
   stakePool?: Address<TAccountStakePool>;
   vault?: Address<TAccountVault>;
   stakeMint: Address<TAccountStakeMint>;
@@ -150,7 +150,7 @@ export type InitializeStakePoolAsyncInput<
 };
 
 export async function getInitializeStakePoolInstructionAsync<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
   TAccountStakePool extends string,
   TAccountVault extends string,
@@ -161,7 +161,7 @@ export async function getInitializeStakePoolInstructionAsync<
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: InitializeStakePoolAsyncInput<
-    TAccountAuthority,
+    TAccountSigner,
     TAccountConfig,
     TAccountStakePool,
     TAccountVault,
@@ -174,7 +174,7 @@ export async function getInitializeStakePoolInstructionAsync<
 ): Promise<
   InitializeStakePoolInstruction<
     TProgramAddress,
-    TAccountAuthority,
+    TAccountSigner,
     TAccountConfig,
     TAccountStakePool,
     TAccountVault,
@@ -190,8 +190,8 @@ export async function getInitializeStakePoolInstructionAsync<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
-    config: { value: input.config ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
+    config: { value: input.config ?? null, isWritable: false },
     stakePool: { value: input.stakePool ?? null, isWritable: true },
     vault: { value: input.vault ?? null, isWritable: true },
     stakeMint: { value: input.stakeMint ?? null, isWritable: false },
@@ -208,6 +208,14 @@ export async function getInitializeStakePoolInstructionAsync<
   >;
 
   // Resolve default values.
+  if (!accounts.config.value) {
+    accounts.config.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103])),
+      ],
+    });
+  }
   if (!accounts.stakePool.value) {
     accounts.stakePool.value = await getProgramDerivedAddress({
       programAddress,
@@ -245,7 +253,7 @@ export async function getInitializeStakePoolInstructionAsync<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
       getAccountMeta(accounts.stakePool),
       getAccountMeta(accounts.vault),
@@ -258,7 +266,7 @@ export async function getInitializeStakePoolInstructionAsync<
     data: getInitializeStakePoolInstructionDataEncoder().encode({}),
   } as InitializeStakePoolInstruction<
     TProgramAddress,
-    TAccountAuthority,
+    TAccountSigner,
     TAccountConfig,
     TAccountStakePool,
     TAccountVault,
@@ -272,7 +280,7 @@ export async function getInitializeStakePoolInstructionAsync<
 }
 
 export type InitializeStakePoolInput<
-  TAccountAuthority extends string = string,
+  TAccountSigner extends string = string,
   TAccountConfig extends string = string,
   TAccountStakePool extends string = string,
   TAccountVault extends string = string,
@@ -281,7 +289,7 @@ export type InitializeStakePoolInput<
   TAccountTokenProgram extends string = string,
   TAccountAssociatedTokenProgram extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  signer: TransactionSigner<TAccountSigner>;
   config: Address<TAccountConfig>;
   stakePool: Address<TAccountStakePool>;
   vault: Address<TAccountVault>;
@@ -292,7 +300,7 @@ export type InitializeStakePoolInput<
 };
 
 export function getInitializeStakePoolInstruction<
-  TAccountAuthority extends string,
+  TAccountSigner extends string,
   TAccountConfig extends string,
   TAccountStakePool extends string,
   TAccountVault extends string,
@@ -303,7 +311,7 @@ export function getInitializeStakePoolInstruction<
   TProgramAddress extends Address = typeof STAKING_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: InitializeStakePoolInput<
-    TAccountAuthority,
+    TAccountSigner,
     TAccountConfig,
     TAccountStakePool,
     TAccountVault,
@@ -315,7 +323,7 @@ export function getInitializeStakePoolInstruction<
   config?: { programAddress?: TProgramAddress }
 ): InitializeStakePoolInstruction<
   TProgramAddress,
-  TAccountAuthority,
+  TAccountSigner,
   TAccountConfig,
   TAccountStakePool,
   TAccountVault,
@@ -330,8 +338,8 @@ export function getInitializeStakePoolInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
-    config: { value: input.config ?? null, isWritable: true },
+    signer: { value: input.signer ?? null, isWritable: true },
+    config: { value: input.config ?? null, isWritable: false },
     stakePool: { value: input.stakePool ?? null, isWritable: true },
     vault: { value: input.vault ?? null, isWritable: true },
     stakeMint: { value: input.stakeMint ?? null, isWritable: false },
@@ -364,7 +372,7 @@ export function getInitializeStakePoolInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.signer),
       getAccountMeta(accounts.config),
       getAccountMeta(accounts.stakePool),
       getAccountMeta(accounts.vault),
@@ -377,7 +385,7 @@ export function getInitializeStakePoolInstruction<
     data: getInitializeStakePoolInstructionDataEncoder().encode({}),
   } as InitializeStakePoolInstruction<
     TProgramAddress,
-    TAccountAuthority,
+    TAccountSigner,
     TAccountConfig,
     TAccountStakePool,
     TAccountVault,
@@ -396,7 +404,7 @@ export type ParsedInitializeStakePoolInstruction<
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    authority: TAccountMetas[0];
+    signer: TAccountMetas[0];
     config: TAccountMetas[1];
     stakePool: TAccountMetas[2];
     vault: TAccountMetas[3];
@@ -429,7 +437,7 @@ export function parseInitializeStakePoolInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      authority: getNextAccount(),
+      signer: getNextAccount(),
       config: getNextAccount(),
       stakePool: getNextAccount(),
       vault: getNextAccount(),

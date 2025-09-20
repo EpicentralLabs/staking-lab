@@ -49,7 +49,6 @@ export function getStakePoolConfigDiscriminatorBytes() {
 
 export type StakePoolConfig = {
   discriminator: ReadonlyUint8Array;
-  authority: Address;
   stakeMint: Address;
   rewardMint: Address;
   aprBps: bigint;
@@ -57,7 +56,6 @@ export type StakePoolConfig = {
 };
 
 export type StakePoolConfigArgs = {
-  authority: Address;
   stakeMint: Address;
   rewardMint: Address;
   aprBps: number | bigint;
@@ -68,7 +66,6 @@ export function getStakePoolConfigEncoder(): FixedSizeEncoder<StakePoolConfigArg
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 1)],
-      ['authority', getAddressEncoder()],
       ['stakeMint', getAddressEncoder()],
       ['rewardMint', getAddressEncoder()],
       ['aprBps', getU128Encoder()],
@@ -81,7 +78,6 @@ export function getStakePoolConfigEncoder(): FixedSizeEncoder<StakePoolConfigArg
 export function getStakePoolConfigDecoder(): FixedSizeDecoder<StakePoolConfig> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 1)],
-    ['authority', getAddressDecoder()],
     ['stakeMint', getAddressDecoder()],
     ['rewardMint', getAddressDecoder()],
     ['aprBps', getU128Decoder()],
@@ -160,5 +156,5 @@ export async function fetchAllMaybeStakePoolConfig(
 }
 
 export function getStakePoolConfigSize(): number {
-  return 114;
+  return 82;
 }

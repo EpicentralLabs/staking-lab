@@ -31,7 +31,6 @@ export function useInitializeXLabsMutation() {
             toastTx(tx)
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to run program: ${error.message}`)
         },
     })
@@ -39,6 +38,7 @@ export function useInitializeXLabsMutation() {
 export function useInitializeStakePoolConfigMutation() {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
+    const queryClient = useQueryClient()
     const xlabsMintAddress = useXLabsMintAddress()
     const labsMintAddress = useLabsMintAddress()
     const configAddressQuery = useStakePoolConfigAddress()
@@ -66,7 +66,6 @@ export function useInitializeStakePoolConfigMutation() {
             await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to run program: ${error.message}`)
         },
     })
@@ -75,15 +74,21 @@ export function useInitializeStakePoolConfigMutation() {
 export function useDeleteStakePoolConfigMutation() {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
+    const queryClient = useQueryClient()
     const configAddressQuery = useStakePoolConfigAddress()
+    const stakePoolAddressQuery = useStakePoolAddress()
     return useMutation({
         mutationFn: async () => {
             if (configAddressQuery.isLoading || !configAddressQuery.data) {
                 throw new Error('Stake pool config address not found')
             }
+            if (stakePoolAddressQuery.isLoading || !stakePoolAddressQuery.data) {
+                throw new Error('Stake pool address not found')
+            }
             return await signAndSend(getDeleteStakePoolConfigInstruction(
                 {
-                    authority: signer,
+                    stakePool: stakePoolAddressQuery.data[0],
+                    signer: signer,
                     config: configAddressQuery.data[0],
                 }),
                 signer)
@@ -96,7 +101,6 @@ export function useDeleteStakePoolConfigMutation() {
             await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to run program: ${error.message}`)
         },
     })
@@ -104,6 +108,7 @@ export function useDeleteStakePoolConfigMutation() {
 export function useInitializeStakePoolMutation() {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
+    const queryClient = useQueryClient()
     const xlabsMintAddress = useXLabsMintAddress()
     const labsMintAddress = useLabsMintAddress()
     const configAddressQuery = useStakePoolConfigAddress()
@@ -119,7 +124,7 @@ export function useInitializeStakePoolMutation() {
             }
             return await signAndSend(getInitializeStakePoolInstruction(
                 {
-                    authority: signer,
+                    signer: signer,
                     config: configAddressQuery.data[0],
                     stakePool: stakePoolAddressQuery.data[0],
                     vault: vaultAddressQuery.data,
@@ -135,7 +140,6 @@ export function useInitializeStakePoolMutation() {
             await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to run program: ${error.message}`)
         },
     })
@@ -144,6 +148,7 @@ export function useInitializeStakePoolMutation() {
 export function useDeleteStakePoolMutation() {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
+    const queryClient = useQueryClient()
     const xlabsMintAddress = useXLabsMintAddress()
     const labsMintAddress = useLabsMintAddress()
     const configAddressQuery = useStakePoolConfigAddress()
@@ -159,8 +164,7 @@ export function useDeleteStakePoolMutation() {
             }
             return await signAndSend(getDeleteStakePoolInstruction(
                 {
-                    authority: signer,
-                    config: configAddressQuery.data[0],
+                    signer: signer,
                     stakePool: stakePoolAddressQuery.data[0],
                     vault: vaultAddressQuery.data,
                     stakeMint: labsMintAddress,
@@ -175,7 +179,6 @@ export function useDeleteStakePoolMutation() {
             await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to run program: ${error.message}`)
         },
     })
@@ -186,16 +189,21 @@ export function useUpdateStakePoolConfigMutation() {
     const signAndSend = useWalletTransactionSignAndSend()
     const configAddressQuery = useStakePoolConfigAddress()
     const queryClient = useQueryClient()
+    const stakePoolAddressQuery = useStakePoolAddress()
     return useMutation({
         mutationFn: async (aprBps: number | bigint) => {
             if (configAddressQuery.isLoading || !configAddressQuery.data) {
                 throw new Error('Stake pool config address not found')
             }
+            if (stakePoolAddressQuery.isLoading || !stakePoolAddressQuery.data) {
+                throw new Error('Stake pool address not found')
+            }
             return await signAndSend(getUpdateStakePoolConfigInstruction(
                 {
-                    authority: signer,
+                    signer: signer,
+                    stakePool: stakePoolAddressQuery.data[0],
                     config: configAddressQuery.data[0],
-                    aprBps: aprBps
+                    aprBps: aprBps,
                 }),
                 signer)
         },
@@ -205,7 +213,6 @@ export function useUpdateStakePoolConfigMutation() {
             await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
         },
         onError: (error, variables, context) => {
-            console.error('Mutation failed:', error)
             toast.error(`Failed to update stake pool config: ${error.message}`)
         },
     })

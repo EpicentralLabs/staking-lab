@@ -17,8 +17,8 @@ import {
 import { useStakeToStakePoolMutation, useUnstakeFromStakePoolMutation, useClaimFromStakePoolMutation } from "@/components/staking/staking-data-access"
 import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolConfigData } from "@/components/shared/data-access"
-import { StakeAccount } from "@program-client"
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
+import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 export default function StakingPage() {
   const { account } = useWalletUi()
 
@@ -72,16 +72,31 @@ function StakingPageConnected() {
       return Number(tokenData.data.amount) / 1e9;
     }
 
-    // Log the actual structure for debugging
-    console.log('Token account structure:', tokenData);
     return 0;
   })();
 
   // Get actual staking data from stake account
   const stakedAmount = stakeAccountData ? Number(stakeAccountData.stakedAmount) / 1e9 : 0;
   const pendingRewards = realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
-  const totalRewardsEarned = stakeAccountData ? Number(stakeAccountData.rewardsEarned) / 1e9 : 0;
-  const currentRewards = pendingRewards; // Real-time calculated pending rewards
+  const totalRewardsEarned = pendingRewards; // Use pending rewards as total earned rewards
+  const currentRewards = pendingRewards; // Use real-time pending rewards for UI interactions
+
+  // Debug logging for rewards - you said you have staked tokens!
+  console.log('🚨 STAKED TOKENS DEBUG:', {
+    userStakeAccountQuery: {
+      isLoading: userStakeAccountQuery.isLoading,
+      error: userStakeAccountQuery.error?.message,
+      data: userStakeAccountQuery.data,
+      exists: userStakeAccountQuery.data?.exists,
+    },
+    stakeAccountData,
+    stakedAmountBigInt: stakeAccountData?.stakedAmount,
+    stakedAmountFormatted: stakedAmount,
+    existingPendingRewards: stakeAccountData?.pendingRewards,
+    realtimeRewards: realtimeRewardsQuery.realtimeRewards,
+    pendingRewards,
+    currentRewards,
+  });
 
   // Get TVL from vault account
   const totalValueLocked = (() => {
@@ -120,7 +135,7 @@ function StakingPageConnected() {
       setStakeAmount("");
       setIsStakeDialogOpen(false);
     } catch (error) {
-      console.error('Staking failed:', error);
+      // Error handled by mutation onError
     }
   };
 
@@ -134,7 +149,7 @@ function StakingPageConnected() {
       setUnstakeAmount("");
       setIsUnstakeDialogOpen(false);
     } catch (error) {
-      console.error('Unstaking failed:', error);
+      // Error handled by mutation onError
     }
   };
 
@@ -146,7 +161,7 @@ function StakingPageConnected() {
       // For claim, we don't need to pass an amount since it claims all available rewards
       await claimMutation.mutateAsync(0);
     } catch (error) {
-      console.error('Claiming failed:', error);
+      // Error handled by mutation onError
     }
   };
 
@@ -471,20 +486,11 @@ function StakingPageConnected() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 sm:space-y-6">
-              <div className="text-center py-2 sm:py-6">
-                <div className="relative">
-                  <p className="text-xl sm:text-4xl font-light text-[#4a85ff] mb-2 tabular-nums">
-                    {currentRewards.toFixed(4)}
-                  </p>
-                  {currentRewards > 0 && (
-                    <div className="absolute -top-1 -right-1">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider">
-                  xLABS {currentRewards > 0 && "(Live)"}
-                </p>
+              <div className="py-2 sm:py-6">
+                <AnimatedRewardCounter
+                  stakeAccountData={stakeAccountData}
+                  className=""
+                />
               </div>
               <Button
                 disabled={currentRewards <= 0 || claimMutation.isPending}

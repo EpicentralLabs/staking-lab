@@ -50,7 +50,10 @@ export function AccountBalanceCheck({ address }: { address: Address }) {
     return (
       <AppAlert
         action={
-          <Button variant="outline" onClick={() => mutation.mutateAsync(1).catch((err) => console.log(err))}>
+          <Button
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutateAsync(2)}
+          >
             Request Airdrop
           </Button>
         }
