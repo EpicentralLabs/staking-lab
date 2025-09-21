@@ -19,9 +19,10 @@ import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolC
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 import { TransactionButton } from "@/components/ui/transaction-button"
+import { BalanceDisplay, SkeletonBalanceDisplay } from "@/components/ui/balance-display"
 import { TransactionProgress } from "@/components/ui/transaction-progress"
 
-export default function StakingPage() {
+export default function EnhancedStakingPage() {
   const { account } = useWalletUi()
 
   if (!account) {
@@ -78,7 +79,7 @@ function StakingPageConnected() {
   const pendingRewards = realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
   const totalValueLocked = vaultAccountQuery.data?.data?.amount ? Number(vaultAccountQuery.data.data.amount) / 1e9 : 0;
   const stakeApy = stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
-  const availableBalance = walletBalance;
+  const availableBalance = Math.max(walletBalance - stakedAmount, 0);
 
   // Input validation
   const validateStakeAmount = (amount: string) => {
@@ -108,13 +109,13 @@ function StakingPageConnected() {
     if (stakeAmount) {
       setStakeError(validateStakeAmount(stakeAmount))
     }
-  }, [stakeAmount, availableBalance, validateStakeAmount])
+  }, [stakeAmount, availableBalance])
 
   useEffect(() => {
     if (unstakeAmount) {
       setUnstakeError(validateUnstakeAmount(unstakeAmount))
     }
-  }, [unstakeAmount, stakedAmount, validateUnstakeAmount])
+  }, [unstakeAmount, stakedAmount])
 
   // Helper to format numbers with commas
   const formatWithCommas = (value: string) => {
@@ -133,7 +134,7 @@ function StakingPageConnected() {
       await stakeMutation.mutateAsync(amount);
       setStakeAmount("");
       setIsStakeDialogOpen(false);
-    } catch {
+    } catch (error) {
       // Error handled by mutation
     }
   };
@@ -146,7 +147,7 @@ function StakingPageConnected() {
       await unstakeMutation.mutateAsync(amount);
       setUnstakeAmount("");
       setIsUnstakeDialogOpen(false);
-    } catch {
+    } catch (error) {
       // Error handled by mutation
     }
   };
@@ -156,7 +157,7 @@ function StakingPageConnected() {
 
     try {
       await claimMutation.mutateAsync();
-    } catch {
+    } catch (error) {
       // Error handled by mutation
     }
   };
@@ -226,24 +227,20 @@ function StakingPageConnected() {
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400">Available:</span>
-                    <span
-                      className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
-                      onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
-                        availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                      )}
-                      title="Click to use full available balance"
-                    >
-                      {userLabsAccountQuery.isLoading ? (
-                        "Loading..."
-                      ) : userLabsAccountQuery.error ? (
-                        "Error"
-                      ) : (
-                        `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                      )}
-                    </span>
-                  </div>
+                  {/* Enhanced balance display */}
+                  <BalanceDisplay
+                    label="Available"
+                    value={availableBalance}
+                    symbol="LABS"
+                    isLoading={userLabsAccountQuery.isLoading}
+                    error={userLabsAccountQuery.error?.message}
+                    variant="compact"
+                    clickable
+                    onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
+                      availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    )}
+                    clickHint="Click to use full available balance"
+                  />
 
                   {stakeError && (
                     <p className="text-red-400 text-xs">{stakeError}</p>
@@ -291,7 +288,7 @@ function StakingPageConnected() {
                         transactionState="idle"
                         idleText="Cancel"
                         variant="outline"
-                        className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+                        className="border-gray-600/60 text-black hover:bg-gray-800/60"
                         onClick={() => setIsStakeDialogOpen(false)}
                         disabled={stakeMutation.isPending}
                       />
@@ -343,18 +340,17 @@ function StakingPageConnected() {
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">LABS</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-400">Staked:</span>
-                    <span
-                      className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
-                      onClick={() => setUnstakeAmount(
-                        stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                      )}
-                      title="Click to use full staked amount"
-                    >
-                      {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
-                    </span>
-                  </div>
+                  <BalanceDisplay
+                    label="Staked"
+                    value={stakedAmount}
+                    symbol="LABS"
+                    variant="compact"
+                    clickable
+                    onClick={() => setUnstakeAmount(
+                      stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    )}
+                    clickHint="Click to use full staked amount"
+                  />
 
                   {unstakeError && (
                     <p className="text-red-400 text-xs">{unstakeError}</p>
@@ -401,7 +397,7 @@ function StakingPageConnected() {
                         transactionState="idle"
                         idleText="Cancel"
                         variant="outline"
-                        className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+                        className="border-gray-600/60 text-black hover:bg-gray-800/60"
                         onClick={() => setIsUnstakeDialogOpen(false)}
                         disabled={unstakeMutation.isPending}
                       />
@@ -434,18 +430,14 @@ function StakingPageConnected() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-sm space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Total Value Locked:</span>
-                <span className="font-mono text-white">
-                  {vaultAccountQuery.isLoading ? (
-                    "Loading..."
-                  ) : vaultAccountQuery.error ? (
-                    "Error"
-                  ) : (
-                    `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                  )}
-                </span>
-              </div>
+              <BalanceDisplay
+                label="Total Value Locked"
+                value={totalValueLocked}
+                symbol="LABS"
+                isLoading={vaultAccountQuery.isLoading}
+                error={vaultAccountQuery.error?.message}
+                variant="compact"
+              />
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Staking APY:</span>
                 <span className="font-mono text-[#4a85ff]" style={{ textShadow: "0 0 8px #4a85ff" }}>
@@ -464,18 +456,18 @@ function StakingPageConnected() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-sm space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Available Balance:</span>
-                <span className="font-mono text-white">
-                  {userLabsAccountQuery.isLoading ? (
-                    "Loading..."
-                  ) : userLabsAccountQuery.error ? (
-                    "Error"
-                  ) : (
-                    `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                  )}
-                </span>
-              </div>
+              {userLabsAccountQuery.isLoading ? (
+                <SkeletonBalanceDisplay variant="compact" />
+              ) : (
+                <BalanceDisplay
+                  label="Available Balance"
+                  value={availableBalance}
+                  symbol="LABS"
+                  isLoading={userLabsAccountQuery.isLoading}
+                  error={userLabsAccountQuery.error?.message}
+                  variant="compact"
+                />
+              )}
 
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Stake Account Status:</span>
@@ -490,24 +482,21 @@ function StakingPageConnected() {
                 </span>
               </div>
 
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Staked Amount:</span>
-                <span className="font-mono text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
-              </div>
+              <BalanceDisplay
+                label="Staked Amount"
+                value={stakedAmount}
+                symbol="LABS"
+                variant="compact"
+              />
 
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Total Rewards:</span>
-                <div className="font-mono text-[#4a85ff] flex items-center gap-1">
-                  {realtimeRewardsQuery.isLoading ? (
-                    <span>Loading...</span>
-                  ) : (
-                    <>
-                      <span>{pendingRewards.toFixed(4)}</span>
-                      <span className="text-[#4a85ff]">xLABS</span>
-                    </>
-                  )}
-                </div>
-              </div>
+              <BalanceDisplay
+                label="Total Rewards"
+                value={pendingRewards}
+                symbol="xLABS"
+                isLoading={realtimeRewardsQuery.isLoading}
+                variant="compact"
+                precision={4}
+              />
             </CardContent>
           </Card>
 

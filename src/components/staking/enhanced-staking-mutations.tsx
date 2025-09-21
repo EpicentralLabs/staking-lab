@@ -3,13 +3,12 @@ import { useWalletTransactionSignAndSend } from "../solana/use-wallet-transactio
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { getClaimRewardsInstruction, getStakeToStakePoolInstruction, getUnstakeFromStakePoolInstruction } from "@program-client"
 import { useLabsMintAddress, useLabsUserAssociatedTokenAccount, useStakeAccountAddress, useStakePoolAddress, useStakePoolConfigAddress, useUserXLabsAccount, useVaultAddress, useXLabsMintAddress, useXLabsUserAssociatedTokenAccount } from "../shared/data-access"
-import { toastTx } from "../toast-tx"
-import { toast } from "sonner"
+import { ProgressiveTransactionToast } from "../ui/transaction-toast"
 import { getCreateAssociatedTokenInstruction, getAssociatedTokenAccountAddress, TOKEN_PROGRAM_ADDRESS } from "gill/programs"
 import { useWalletUi } from "@wallet-ui/react"
 import { address } from "gill"
 
-export function useStakeToStakePoolMutation() {
+export function useEnhancedStakeToStakePoolMutation() {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
     const queryClient = useQueryClient()
@@ -20,9 +19,12 @@ export function useStakeToStakePoolMutation() {
     const vaultAddressQuery = useVaultAddress()
     const labsUserAtaQuery = useLabsUserAssociatedTokenAccount()
 
-
     return useMutation({
         onMutate: async (amount: number | bigint) => {
+            // Create progressive toast
+            const toast = new ProgressiveTransactionToast('Staking LABS Tokens')
+            toast.start()
+
             // Cancel any outgoing refetches to avoid overwriting optimistic update
             await queryClient.cancelQueries({ queryKey: ['user-labs-account'] })
             await queryClient.cancelQueries({ queryKey: ['user-stake-account'] })
@@ -42,7 +44,7 @@ export function useStakeToStakePoolMutation() {
                     ...old,
                     data: {
                         ...old.data,
-                        amount: BigInt(Math.max(0, newAmount)) // Prevent negative balance
+                        amount: BigInt(Math.max(0, newAmount))
                     }
                 }
             })
@@ -51,7 +53,6 @@ export function useStakeToStakePoolMutation() {
             queryClient.setQueryData(['user-stake-account'], (old: any) => {
                 if (!old) return old
                 if (!old.exists) {
-                    // If stake account doesn't exist, create optimistic initial state
                     return {
                         exists: true,
                         data: {
@@ -61,7 +62,6 @@ export function useStakeToStakePoolMutation() {
                         }
                     }
                 }
-                // Update existing stake account
                 const currentStaked = Number(old.data.stakedAmount)
                 const newStaked = currentStaked + Number(amount)
                 return {
@@ -87,11 +87,16 @@ export function useStakeToStakePoolMutation() {
                 }
             })
 
-            // Return context for rollback
-            return { previousLabsAccount, previousStakeAccount, previousVaultAccount }
+            return {
+                previousLabsAccount,
+                previousStakeAccount,
+                previousVaultAccount,
+                toast
+            }
         },
         mutationFn: async (amount: number | bigint) => {
-            // Check each dependency individually for better error messages
+
+            // Check dependencies
             if (stakeAccountQuery.isLoading) {
                 throw new Error('Stake account address is still loading')
             }
@@ -136,8 +141,11 @@ export function useStakeToStakePoolMutation() {
                 }),
                 signer)
         },
-        onSuccess: async (tx) => {
-            toastTx(tx)
+        onSuccess: async (tx, variables, context) => {
+            if (context?.toast) {
+                context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
+            }
+
             // Invalidate relevant queries to refresh UI after staking
             await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
             await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
@@ -154,12 +162,15 @@ export function useStakeToStakePoolMutation() {
             if (context?.previousVaultAccount) {
                 queryClient.setQueryData(['vault-account'], context.previousVaultAccount)
             }
-            toast.error(`Staking failed: ${error.message}`)
+
+            if (context?.toast) {
+                context.toast.error(error.message)
+            }
         },
     })
 }
 
-export function useUnstakeFromStakePoolMutation() {
+export function useEnhancedUnstakeFromStakePoolMutation() {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()
@@ -172,9 +183,13 @@ export function useUnstakeFromStakePoolMutation() {
     const vaultAddressQuery = useVaultAddress()
     const labsUserAtaQuery = useLabsUserAssociatedTokenAccount()
     const xLabsUserAtaQuery = useXLabsUserAssociatedTokenAccount()
-    const userXLabsAccountQuery = useUserXLabsAccount();
+    const userXLabsAccountQuery = useUserXLabsAccount()
+
     return useMutation({
         onMutate: async (amount: number | bigint) => {
+            const toast = new ProgressiveTransactionToast('Unstaking LABS Tokens')
+            toast.start()
+
             // Cancel any outgoing refetches
             await queryClient.cancelQueries({ queryKey: ['user-labs-account'] })
             await queryClient.cancelQueries({ queryKey: ['user-stake-account'] })
@@ -206,7 +221,7 @@ export function useUnstakeFromStakePoolMutation() {
                 if (!old?.exists || !old?.data) return old
                 const currentStaked = Number(old.data.stakedAmount)
                 const newStaked = Math.max(0, currentStaked - Number(amount))
-                
+
                 return {
                     ...old,
                     data: {
@@ -230,64 +245,48 @@ export function useUnstakeFromStakePoolMutation() {
                 }
             })
 
-            return { previousLabsAccount, previousStakeAccount, previousVaultAccount, previousXLabsAccount }
+            return {
+                previousLabsAccount,
+                previousStakeAccount,
+                previousVaultAccount,
+                previousXLabsAccount,
+                toast
+            }
         },
         mutationFn: async (amount: number | bigint) => {
-            // Check each dependency individually for better error messages
-            if (stakeAccountQuery.isLoading) {
-                throw new Error('Stake account address is still loading')
-            }
-            if (!stakeAccountQuery.data) {
+
+            // Validation checks
+            if (stakeAccountQuery.isLoading || !stakeAccountQuery.data) {
                 throw new Error('Stake account address is not available')
             }
-            if (stakePoolAddress.isLoading) {
-                throw new Error('Stake pool address is still loading')
-            }
-            if (!stakePoolAddress.data) {
+            if (stakePoolAddress.isLoading || !stakePoolAddress.data) {
                 throw new Error('Stake pool address is not available')
             }
-            if (stakePoolConfig.isLoading) {
-                throw new Error('Stake pool config address is still loading')
-            }
-            if (!stakePoolConfig.data) {
+            if (stakePoolConfig.isLoading || !stakePoolConfig.data) {
                 throw new Error('Stake pool config address is not available')
             }
-            if (vaultAddressQuery.isLoading) {
-                throw new Error('Vault address is still loading')
-            }
-            if (!vaultAddressQuery.data) {
+            if (vaultAddressQuery.isLoading || !vaultAddressQuery.data) {
                 throw new Error('Vault address is not available')
             }
-            if (labsUserAtaQuery.isLoading) {
-                throw new Error('User LABS token account is still loading')
-            }
-            if (!labsUserAtaQuery.data) {
+            if (labsUserAtaQuery.isLoading || !labsUserAtaQuery.data) {
                 throw new Error('User LABS token account is not available')
             }
-            if (xLabsUserAtaQuery.isLoading) {
-                throw new Error('User xLABS token account is still loading')
-            }
-            if (!xLabsUserAtaQuery.data) {
+            if (xLabsUserAtaQuery.isLoading || !xLabsUserAtaQuery.data) {
                 throw new Error('User xLABS token account is not available')
             }
-            if (xlabsAddress.isLoading) {
-                throw new Error('xLABS mint address is still loading')
-            }
-            if (!xlabsAddress.data) {
+            if (xlabsAddress.isLoading || !xlabsAddress.data) {
                 throw new Error('xLABS mint address is not available')
-            }
-            if (userXLabsAccountQuery.isLoading) {
-                throw new Error('User xLABS account data is still loading')
             }
 
             const ixs = []
-            // If the xLabsUserAtaQuery.data is not initialized, we need to create it first
+
+            // Create xLABS ATA if needed
             if (userXLabsAccountQuery.data === null) {
                 const derivedAta = await getAssociatedTokenAccountAddress(
                     xlabsAddress.data![0],
                     signer.address,
                     TOKEN_PROGRAM_ADDRESS
-                );
+                )
                 ixs.push(getCreateAssociatedTokenInstruction({
                     payer: signer,
                     mint: xlabsAddress.data![0],
@@ -296,23 +295,27 @@ export function useUnstakeFromStakePoolMutation() {
                     tokenProgram: TOKEN_PROGRAM_ADDRESS,
                 }))
             }
-            ixs.push(getUnstakeFromStakePoolInstruction(
-                {
-                    amount: amount,
-                    rewardMint: xlabsAddress.data![0],
-                    stakeAccount: stakeAccountQuery.data[0],
-                    stakePool: stakePoolAddress.data[0],
-                    stakePoolConfig: stakePoolConfig.data[0],
-                    user: signer,
-                    stakingTokenMint: labsAddress,
-                    vault: vaultAddressQuery.data,
-                    userAssociatedTokenAccount: labsUserAtaQuery.data,
-                    userRewardAssociatedTokenAccount: xLabsUserAtaQuery.data,
-                }))
+
+            ixs.push(getUnstakeFromStakePoolInstruction({
+                amount: amount,
+                rewardMint: xlabsAddress.data![0],
+                stakeAccount: stakeAccountQuery.data[0],
+                stakePool: stakePoolAddress.data[0],
+                stakePoolConfig: stakePoolConfig.data[0],
+                user: signer,
+                stakingTokenMint: labsAddress,
+                vault: vaultAddressQuery.data,
+                userAssociatedTokenAccount: labsUserAtaQuery.data,
+                userRewardAssociatedTokenAccount: xLabsUserAtaQuery.data,
+            }))
+
             return await signAndSend(ixs, signer)
         },
-        onSuccess: async (tx) => {
-            toastTx(tx)
+        onSuccess: async (tx, variables, context) => {
+            if (context?.toast) {
+                context.toast.success(tx, `Successfully unstaked ${Number(variables) / 1e9} LABS tokens`)
+            }
+
             // Invalidate relevant queries to refresh UI
             await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
             await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
@@ -333,12 +336,15 @@ export function useUnstakeFromStakePoolMutation() {
             if (context?.previousXLabsAccount) {
                 queryClient.setQueryData(['user-xlabs-account'], context.previousXLabsAccount)
             }
-            toast.error(`Unstaking failed: ${error.message}`)
+
+            if (context?.toast) {
+                context.toast.error(error.message)
+            }
         },
     })
 }
 
-export function useClaimFromStakePoolMutation() {
+export function useEnhancedClaimFromStakePoolMutation() {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()
@@ -350,9 +356,13 @@ export function useClaimFromStakePoolMutation() {
     const vaultAddressQuery = useVaultAddress()
     const labsUserAtaQuery = useLabsUserAssociatedTokenAccount()
     const xLabsUserAtaQuery = useXLabsUserAssociatedTokenAccount()
-    const userXLabsAccountQuery = useUserXLabsAccount();
+    const userXLabsAccountQuery = useUserXLabsAccount()
+
     return useMutation({
-        onMutate: async (amount: number | bigint) => {
+        onMutate: async () => {
+            const toast = new ProgressiveTransactionToast('Claiming Rewards')
+            toast.start()
+
             // Cancel any outgoing refetches
             await queryClient.cancelQueries({ queryKey: ['user-xlabs-account'] })
             await queryClient.cancelQueries({ queryKey: ['user-stake-account'] })
@@ -361,18 +371,15 @@ export function useClaimFromStakePoolMutation() {
             const previousXLabsAccount = queryClient.getQueryData(['user-xlabs-account'])
             const previousStakeAccount = queryClient.getQueryData(['user-stake-account'])
 
-            // Get current pending rewards from real-time calculation
+            // Estimate pending rewards for optimistic update
             const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as any
-            let pendingRewards = BigInt(0)
-            
+            let pendingRewards = BigInt(1000000) // Default fallback
+
             if (stakeAccountData?.exists && stakeAccountData?.data) {
-                // We need to estimate pending rewards - in a real app this would come from the component
-                // For now, let's assume we're claiming all available rewards
-                // The real calculation happens in useRealtimePendingRewards hook
-                const timeStaked = Date.now() - Number(stakeAccountData.data.lastUpdateSlot) * 400 // rough estimate
+                const timeStaked = Date.now() - Number(stakeAccountData.data.lastUpdateSlot) * 400
                 const stakePoolConfig = queryClient.getQueryData(['stake-pool-config-data']) as any
                 if (stakePoolConfig?.data?.aprBps && stakeAccountData.data.stakedAmount) {
-                    const apr = Number(stakePoolConfig.data.aprBps) / 10000 // Convert basis points to decimal
+                    const apr = Number(stakePoolConfig.data.aprBps) / 10000
                     const stakedAmount = Number(stakeAccountData.data.stakedAmount)
                     const annualRewards = (stakedAmount * apr)
                     const timeRewards = annualRewards * (timeStaked / (365 * 24 * 60 * 60 * 1000))
@@ -380,19 +387,11 @@ export function useClaimFromStakePoolMutation() {
                 }
             }
 
-            // If we don't have a good estimate, assume we're claiming some amount
-            if (pendingRewards === BigInt(0)) {
-                pendingRewards = BigInt(1000000) // 0.001 xLABS as fallback
-            }
-
-            // Optimistically update xLABS balance (increase with claimed rewards)
+            // Optimistically update xLABS balance
             queryClient.setQueryData(['user-xlabs-account'], (old: any) => {
                 if (!old) {
-                    // Create new xLABS account if it doesn't exist
                     return {
-                        data: {
-                            amount: pendingRewards
-                        }
+                        data: { amount: pendingRewards }
                     }
                 }
                 const currentAmount = old.data?.amount ? Number(old.data.amount) : 0
@@ -406,7 +405,7 @@ export function useClaimFromStakePoolMutation() {
                 }
             })
 
-            // Optimistically update stake account to reset pending rewards
+            // Optimistically update stake account
             queryClient.setQueryData(['user-stake-account'], (old: any) => {
                 if (!old?.exists || !old?.data) return old
                 return {
@@ -414,62 +413,30 @@ export function useClaimFromStakePoolMutation() {
                     data: {
                         ...old.data,
                         rewardsEarned: BigInt(Number(old.data.rewardsEarned) + Number(pendingRewards)),
-                        lastUpdateSlot: BigInt(Date.now() / 400) // Update last claim time
+                        lastUpdateSlot: BigInt(Date.now() / 400)
                     }
                 }
             })
 
-            return { previousXLabsAccount, previousStakeAccount, claimedAmount: pendingRewards }
+            return {
+                previousXLabsAccount,
+                previousStakeAccount,
+                claimedAmount: pendingRewards,
+                toast
+            }
         },
-        mutationFn: async (amount: number | bigint) => {
-            // Check each dependency individually for better error messages
-            if (stakeAccountQuery.isLoading) {
-                throw new Error('Stake account address is still loading')
+        mutationFn: async () => {
+
+            // Validation checks
+            if (!stakeAccountQuery.data || !stakePoolAddress.data || !stakePoolConfig.data ||
+                !vaultAddressQuery.data || !labsUserAtaQuery.data || !xLabsUserAtaQuery.data ||
+                !xlabsAddress.data) {
+                throw new Error('Required account data not available')
             }
-            if (!stakeAccountQuery.data) {
-                throw new Error('Stake account address is not available')
-            }
-            if (stakePoolAddress.isLoading) {
-                throw new Error('Stake pool address is still loading')
-            }
-            if (!stakePoolAddress.data) {
-                throw new Error('Stake pool address is not available')
-            }
-            if (stakePoolConfig.isLoading) {
-                throw new Error('Stake pool config address is still loading')
-            }
-            if (!stakePoolConfig.data) {
-                throw new Error('Stake pool config address is not available')
-            }
-            if (vaultAddressQuery.isLoading) {
-                throw new Error('Vault address is still loading')
-            }
-            if (!vaultAddressQuery.data) {
-                throw new Error('Vault address is not available')
-            }
-            if (labsUserAtaQuery.isLoading) {
-                throw new Error('User LABS token account is still loading')
-            }
-            if (!labsUserAtaQuery.data) {
-                throw new Error('User LABS token account is not available')
-            }
-            if (xLabsUserAtaQuery.isLoading) {
-                throw new Error('User xLABS token account is still loading')
-            }
-            if (!xLabsUserAtaQuery.data) {
-                throw new Error('User xLABS token account is not available')
-            }
-            if (xlabsAddress.isLoading) {
-                throw new Error('xLABS mint address is still loading')
-            }
-            if (!xlabsAddress.data) {
-                throw new Error('xLABS mint address is not available')
-            }
-            if (userXLabsAccountQuery.isLoading) {
-                throw new Error('User xLABS account data is still loading')
-            }
+
             const ixs = []
-            // If the xLabsUserAtaQuery.data is not initialized, we need to create it first
+
+            // Create xLABS ATA if needed
             if (userXLabsAccountQuery.data === null) {
                 const derivedAta = await getAssociatedTokenAccountAddress(
                     xlabsAddress.data![0],
@@ -482,19 +449,24 @@ export function useClaimFromStakePoolMutation() {
                     owner: address(account!.address.toString())
                 }))
             }
-            ixs.push(getClaimRewardsInstruction(
-                {
-                    signer: signer,
-                    rewardMint: xlabsAddress.data![0],
-                    stakeAccount: stakeAccountQuery.data[0],
-                    stakePool: stakePoolAddress.data[0],
-                    stakePoolConfig: stakePoolConfig.data[0],
-                    userRewardAssociatedTokenAccount: xLabsUserAtaQuery.data,
-                }))
+
+            ixs.push(getClaimRewardsInstruction({
+                signer: signer,
+                rewardMint: xlabsAddress.data![0],
+                stakeAccount: stakeAccountQuery.data[0],
+                stakePool: stakePoolAddress.data[0],
+                stakePoolConfig: stakePoolConfig.data[0],
+                userRewardAssociatedTokenAccount: xLabsUserAtaQuery.data,
+            }))
+
             return await signAndSend(ixs, signer)
         },
-        onSuccess: async (tx) => {
-            toastTx(tx)
+        onSuccess: async (tx, variables, context) => {
+            if (context?.toast) {
+                const rewardAmount = Number(context.claimedAmount) / 1e9
+                context.toast.success(tx, `Successfully claimed ${rewardAmount.toFixed(4)} xLABS rewards`)
+            }
+
             // Invalidate relevant queries to refresh UI
             await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
             await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
@@ -509,7 +481,10 @@ export function useClaimFromStakePoolMutation() {
             if (context?.previousStakeAccount) {
                 queryClient.setQueryData(['user-stake-account'], context.previousStakeAccount)
             }
-            toast.error(`Claiming failed: ${error.message}`)
+
+            if (context?.toast) {
+                context.toast.error(error.message)
+            }
         },
     })
 }

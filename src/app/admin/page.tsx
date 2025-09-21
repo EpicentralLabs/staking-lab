@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
-import { CheckCircleIcon, XCircleIcon } from "lucide-react"
-import { useInitializeStakePoolConfigMutation, useInitializeXLabsMutation, useInitializeStakePoolMutation, useDeleteStakePoolConfigMutation, useDeleteStakePoolMutation, useUpdateStakePoolConfigMutation } from "@/components/admin/admin-data-access"
+import { useEnhancedInitializeStakePoolConfigMutation, useEnhancedInitializeXLabsMutation, useEnhancedInitializeStakePoolMutation, useEnhancedDeleteStakePoolConfigMutation, useEnhancedDeleteStakePoolMutation, useEnhancedUpdateStakePoolConfigMutation } from "@/components/admin/enhanced-admin-mutations"
+import { TransactionButton } from "@/components/ui/transaction-button"
 import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useXLabsMintAddress, useLabsMintAddress, useVaultAddress, useStakePoolAddress, useStakingProgramProgramId, useStakePoolConfigAddress, useStakePoolConfigData } from "@/components/shared/data-access"
 import { isAdminWallet } from "@/lib/admin-config"
@@ -51,6 +50,7 @@ export default function AdminPanelPage() {
     <AdminPanelPageConnected />
   );
 }
+
 function AdminPanelPageConnected() {
   const [apy, setApy] = useState("12.5")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -59,192 +59,91 @@ function AdminPanelPageConnected() {
   const [isInitializeXLabsMintDialogOpen, setIsInitializeXLabsMintDialogOpen] = useState(false)
   const [isInitializeStakePoolDialogOpen, setIsInitializeStakePoolDialogOpen] = useState(false)
   const [isDeleteStakePoolDialogOpen, setIsDeleteStakePoolDialogOpen] = useState(false)
-  const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [isNotificationVisible, setIsNotificationVisible] = useState(false)
-  const initializeXLabsMutation = useInitializeXLabsMutation()
+
+  // Enhanced mutations
+  const initializeXLabsMutation = useEnhancedInitializeXLabsMutation()
+  const initializeStakePoolConfigMutation = useEnhancedInitializeStakePoolConfigMutation()
+  const initializeStakePoolMutation = useEnhancedInitializeStakePoolMutation()
+  const deleteStakePoolConfigMutation = useEnhancedDeleteStakePoolConfigMutation()
+  const deleteStakePoolMutation = useEnhancedDeleteStakePoolMutation()
+  const updateStakePoolConfigMutation = useEnhancedUpdateStakePoolConfigMutation()
+
+  // Query hooks
   const xLabsMintAddressQuery = useXLabsMintAddress()
   const labsMintAddress = useLabsMintAddress()
   const vaultAddressQuery = useVaultAddress()
   const stakePoolAddressQuery = useStakePoolAddress()
   const stakePoolConfigAddressQuery = useStakePoolConfigAddress()
   const stakePoolConfigDataQuery = useStakePoolConfigData()
-  const programId = useStakingProgramProgramId();
-  const initializeStakePoolConfigMutation = useInitializeStakePoolConfigMutation()
-  const initializeStakePoolMutation = useInitializeStakePoolMutation()
-  const deleteStakePoolConfigMutation = useDeleteStakePoolConfigMutation()
-  const deleteStakePoolMutation = useDeleteStakePoolMutation()
-  const updateStakePoolConfigMutation = useUpdateStakePoolConfigMutation()
+  const programId = useStakingProgramProgramId()
 
+  // Transaction state helpers
+  const getTransactionState = (mutation: { isPending: boolean; isSuccess: boolean; isError: boolean }) => {
+    if (mutation.isPending) return mutation.isSuccess ? 'success' : 'submitting'
+    if (mutation.isError) return 'error'
+    return 'idle'
+  }
+
+  // Simplified handlers
   const handleSetApy = async () => {
     setIsDialogOpen(false)
-
-    // Convert percentage to basis points (1% = 100 basis points)
     const aprBps = Math.round(parseFloat(apy) * 100)
-
     try {
       await updateStakePoolConfigMutation.mutateAsync(aprBps)
-      setUpdateMessage({
-        type: 'success',
-        text: `APY successfully updated to ${apy}% (${aprBps} basis points)`
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to update APY'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   const handleInitializeStakePoolConfig = async () => {
     setIsInitializeStakePoolConfigDialogOpen(false)
-
-    // Convert percentage to basis points (1% = 100 basis points)
     const aprBps = Math.round(parseFloat(apy) * 100)
-
     try {
       await initializeStakePoolConfigMutation.mutateAsync(aprBps)
-      setUpdateMessage({
-        type: 'success',
-        text: `Stake pool config initialized successfully with APY: ${apy}% (${aprBps} basis points)`
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to initialize stake pool config'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   const handleDeleteStakePoolConfig = async () => {
     setIsDeleteStakePoolConfigDialogOpen(false)
-
     try {
       await deleteStakePoolConfigMutation.mutateAsync()
-      setUpdateMessage({
-        type: 'success',
-        text: 'Stake pool config deleted successfully'
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to delete stake pool config'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   const handleInitializeXLabsMint = async () => {
     setIsInitializeXLabsMintDialogOpen(false)
-
     try {
       await initializeXLabsMutation.mutateAsync()
-      setUpdateMessage({
-        type: 'success',
-        text: 'xLABS mint initialized successfully'
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to initialize xLABS mint'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   const handleInitializeStakePool = async () => {
     setIsInitializeStakePoolDialogOpen(false)
-
     try {
       await initializeStakePoolMutation.mutateAsync()
-      setUpdateMessage({
-        type: 'success',
-        text: 'Stake pool initialized successfully'
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to initialize stake pool'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   const handleDeleteStakePool = async () => {
     setIsDeleteStakePoolDialogOpen(false)
-
     try {
       await deleteStakePoolMutation.mutateAsync()
-      setUpdateMessage({
-        type: 'success',
-        text: 'Stake pool deleted successfully'
-      })
-    } catch (error) {
-      setUpdateMessage({
-        type: 'error',
-        text: 'Failed to delete stake pool'
-      })
+    } catch {
+      // Error handled by enhanced mutation
     }
-
-    setIsNotificationVisible(true)
-    setTimeout(() => {
-      setIsNotificationVisible(false)
-      setTimeout(() => setUpdateMessage(null), 300)
-    }, 3000)
   }
 
   return (
     <>
       <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
-        <div className="max-w-4xl mx-auto">
-          {/* Notification */}
-          <div
-            className={`mb-4 transition-all duration-300 ease-out overflow-hidden ${isNotificationVisible ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-              }`}
-          >
-            {updateMessage && (
-              <div
-                className={`p-4 rounded-lg flex items-center space-x-3 text-white border ${updateMessage.type === 'success'
-                  ? 'bg-green-900/50 border-green-500/50'
-                  : 'bg-red-900/50 border-red-500/50'
-                  }`}
-              >
-                {updateMessage.type === 'success' ? (
-                  <CheckCircleIcon className="h-6 w-6 text-green-400" />
-                ) : (
-                  <XCircleIcon className="h-6 w-6 text-red-400" />
-                )}
-                <span>{updateMessage.text}</span>
-              </div>
-            )}
-          </div>
-        </div>
         <div className="max-w-4xl mx-auto">
           <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
             <CardHeader>
@@ -293,13 +192,17 @@ function AdminPanelPageConnected() {
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">%</span>
                     </div>
                   </div>
-                  <Button
+                  <TransactionButton
+                    transactionState={getTransactionState(updateStakePoolConfigMutation)}
+                    idleText="Update APY"
+                    submittingText="Updating..."
+                    confirmingText="Confirming..."
+                    successText="Updated!"
+                    errorText="Update Failed - Retry"
                     onClick={() => setIsDialogOpen(true)}
-                    disabled={updateStakePoolConfigMutation.isPending}
+                    onRetry={() => updateStakePoolConfigMutation.reset()}
                     className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
-                  >
-                    {updateStakePoolConfigMutation.isPending ? 'Updating...' : 'Update Stake Pool Config (Change APY %)'}
-                  </Button>
+                  />
                 </div>
               </div>
 
@@ -313,38 +216,61 @@ function AdminPanelPageConnected() {
                       <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0 space-y-4">
-                      <Button
+                      <TransactionButton
+                        transactionState={getTransactionState(initializeStakePoolConfigMutation)}
+                        idleText="Initialize Stake Pool Config"
+                        submittingText="Initializing..."
+                        confirmingText="Confirming..."
+                        successText="Initialized!"
+                        errorText="Failed - Retry"
                         onClick={() => setIsInitializeStakePoolConfigDialogOpen(true)}
+                        onRetry={() => initializeStakePoolConfigMutation.reset()}
                         className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                      >
-                        Initialize Stake Pool Config
-                      </Button>
-                      <Button
+                      />
+                      <TransactionButton
+                        transactionState={getTransactionState(deleteStakePoolConfigMutation)}
+                        idleText="Delete Stake Pool Config"
+                        submittingText="Deleting..."
+                        confirmingText="Confirming..."
+                        successText="Deleted!"
+                        errorText="Failed - Retry"
                         onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
+                        onRetry={() => deleteStakePoolConfigMutation.reset()}
                         className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
-                      >
-                        Delete Stake Pool Config
-                      </Button>
-                      <Button
+                      />
+                      <TransactionButton
+                        transactionState={getTransactionState(initializeStakePoolMutation)}
+                        idleText="Initialize Stake Pool"
+                        submittingText="Initializing..."
+                        confirmingText="Confirming..."
+                        successText="Initialized!"
+                        errorText="Failed - Retry"
                         onClick={() => setIsInitializeStakePoolDialogOpen(true)}
-                        disabled={initializeStakePoolMutation.isPending}
-                        className="w-full bg-blue-800 text-blue-50 hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {initializeStakePoolMutation.isPending ? 'Initializing...' : 'Initialize Stake Pool'}
-                      </Button>
-                      <Button
+                        onRetry={() => initializeStakePoolMutation.reset()}
+                        className="w-full bg-blue-800 text-blue-50 hover:bg-blue-700"
+                      />
+                      <TransactionButton
+                        transactionState={getTransactionState(deleteStakePoolMutation)}
+                        idleText="Delete Stake Pool"
+                        submittingText="Deleting..."
+                        confirmingText="Confirming..."
+                        successText="Deleted!"
+                        errorText="Failed - Retry"
                         onClick={() => setIsDeleteStakePoolDialogOpen(true)}
+                        onRetry={() => deleteStakePoolMutation.reset()}
                         className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
-                      >
-                        Delete Stake Pool
-                      </Button>
-                      <Button
+                      />
+                      <TransactionButton
+                        transactionState={getTransactionState(initializeXLabsMutation)}
+                        idleText="Initialize X Labs Mint"
+                        submittingText="Initializing..."
+                        confirmingText="Confirming..."
+                        successText="Initialized!"
+                        errorText="Failed - Retry"
                         onClick={() => setIsInitializeXLabsMintDialogOpen(true)}
-                        disabled={initializeXLabsMutation.isPending}
-                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700 disabled:opacity-50"
-                      >
-                        {initializeXLabsMutation.isPending ? 'Initializing...' : 'Initialize X Labs Mint'}
-                      </Button>
+                        onRetry={() => initializeXLabsMutation.reset()}
+                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
+                      />
                     </CardContent>
                   </Card>
                   <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
@@ -435,7 +361,7 @@ function AdminPanelPageConnected() {
                         <span className="text-gray-400">Vault Address:</span>
                         {vaultAddressQuery.isLoading ? (
                           <span className="font-mono text-xs text-gray-500">Loading...</span>
-                        ) : vaultAddressQuery.data?.[0] ? (
+                        ) : vaultAddressQuery.data ? (
                           <a
                             href={`https://solscan.io/account/${vaultAddressQuery.data}?cluster=devnet`}
                             target="_blank"
@@ -448,22 +374,6 @@ function AdminPanelPageConnected() {
                         ) : (
                           <span className="font-mono text-xs text-gray-500">Not found</span>
                         )}
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Unclaimed Rewards (xLABS Pending):</span>
-                        <span className="font-mono text-xs text-gray-500">1,234.56</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Claimed Rewards (xLABS Minted):</span>
-                        <span className="font-mono text-xs text-gray-500">5,678.90</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Total LABS Staked:</span>
-                        <span className="font-mono text-xs text-gray-500">50,000.00</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">TVL Staked (USDC Value):</span>
-                        <span className="font-mono text-xs text-gray-500">$75,000.00</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -484,24 +394,29 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button
+              disabled={updateStakePoolConfigMutation.isPending}
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(updateStakePoolConfigMutation)}
+              idleText="Confirm"
+              submittingText="Updating..."
+              confirmingText="Confirming..."
+              successText="Updated!"
               onClick={handleSetApy}
+              disabled={updateStakePoolConfigMutation.isPending}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            >
-              Confirm
-            </Button>
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Initialize Staking Program Confirmation Dialog */}
+      {/* Initialize Stake Pool Config Dialog */}
       <Dialog open={isInitializeStakePoolConfigDialogOpen} onOpenChange={setIsInitializeStakePoolConfigDialogOpen}>
         <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
@@ -511,24 +426,32 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsInitializeStakePoolConfigDialogOpen(false)}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button
+              disabled={initializeStakePoolConfigMutation.isPending}
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(initializeStakePoolConfigMutation)}
+              idleText="Confirm"
+              submittingText="Initializing..."
+              confirmingText="Confirming..."
+              successText="Initialized!"
               onClick={handleInitializeStakePoolConfig}
+              disabled={initializeStakePoolConfigMutation.isPending}
               className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            >
-              Confirm
-            </Button>
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Stake Pool Confirmation Dialog */}
+      {/* Other dialogs would follow the same pattern... */}
+      {/* For brevity, I'll include just the key dialogs. The rest follow the same enhanced pattern */}
+
+      {/* Delete Stake Pool Config Dialog */}
       <Dialog open={isDeleteStakePoolConfigDialogOpen} onOpenChange={setIsDeleteStakePoolConfigDialogOpen}>
         <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
@@ -538,24 +461,29 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsDeleteStakePoolConfigDialogOpen(false)}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button
+              disabled={deleteStakePoolConfigMutation.isPending}
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(deleteStakePoolConfigMutation)}
+              idleText="Confirm Deletion"
+              submittingText="Deleting..."
+              confirmingText="Confirming..."
+              successText="Deleted!"
               onClick={handleDeleteStakePoolConfig}
+              disabled={deleteStakePoolConfigMutation.isPending}
               className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
-            >
-              Confirm Deletion
-            </Button>
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Initialize xLABS Mint Confirmation Dialog */}
+      {/* Initialize xLABS Mint Dialog */}
       <Dialog open={isInitializeXLabsMintDialogOpen} onOpenChange={setIsInitializeXLabsMintDialogOpen}>
         <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
@@ -565,26 +493,29 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsInitializeXLabsMintDialogOpen(false)}
               disabled={initializeXLabsMutation.isPending}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white disabled:opacity-50"
-            >
-              Cancel
-            </Button>
-            <Button
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(initializeXLabsMutation)}
+              idleText="Confirm"
+              submittingText="Initializing..."
+              confirmingText="Confirming..."
+              successText="Initialized!"
               onClick={handleInitializeXLabsMint}
               disabled={initializeXLabsMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50"
-            >
-              {initializeXLabsMutation.isPending ? 'Initializing...' : 'Confirm'}
-            </Button>
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Initialize Stake Pool Confirmation Dialog */}
+      {/* Initialize Stake Pool Dialog */}
       <Dialog open={isInitializeStakePoolDialogOpen} onOpenChange={setIsInitializeStakePoolDialogOpen}>
         <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
@@ -594,26 +525,29 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsInitializeStakePoolDialogOpen(false)}
               disabled={initializeStakePoolMutation.isPending}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white disabled:opacity-50"
-            >
-              Cancel
-            </Button>
-            <Button
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(initializeStakePoolMutation)}
+              idleText="Confirm"
+              submittingText="Initializing..."
+              confirmingText="Confirming..."
+              successText="Initialized!"
               onClick={handleInitializeStakePool}
               disabled={initializeStakePoolMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50"
-            >
-              {initializeStakePoolMutation.isPending ? 'Initializing...' : 'Confirm'}
-            </Button>
+              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Stake Pool Confirmation Dialog */}
+      {/* Delete Stake Pool Dialog */}
       <Dialog open={isDeleteStakePoolDialogOpen} onOpenChange={setIsDeleteStakePoolDialogOpen}>
         <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
           <DialogHeader>
@@ -623,19 +557,24 @@ function AdminPanelPageConnected() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button
+            <TransactionButton
+              transactionState="idle"
+              idleText="Cancel"
               variant="outline"
               onClick={() => setIsDeleteStakePoolDialogOpen(false)}
-              className="bg-transparent border border-gray-600 text-gray-300 hover:bg-gray-800/50 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button
+              disabled={deleteStakePoolMutation.isPending}
+              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
+            />
+            <TransactionButton
+              transactionState={getTransactionState(deleteStakePoolMutation)}
+              idleText="Confirm Deletion"
+              submittingText="Deleting..."
+              confirmingText="Confirming..."
+              successText="Deleted!"
               onClick={handleDeleteStakePool}
+              disabled={deleteStakePoolMutation.isPending}
               className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
-            >
-              Confirm Deletion
-            </Button>
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>
