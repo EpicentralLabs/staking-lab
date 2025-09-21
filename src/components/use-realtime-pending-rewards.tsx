@@ -21,45 +21,22 @@ export function useRealtimePendingRewards(
     const [realtimeRewards, setRealtimeRewards] = useState<bigint>(0n);
 
     useEffect(() => {
-        console.log('🚨 REWARDS HOOK DEBUG - You said you have staked tokens:', {
-            hasStakeAccountData: !!stakeAccountData,
-            stakeAccountData,
-            stakePoolLoading: stakePoolQuery.isLoading,
-            stakePoolConfigLoading: stakePoolConfigQuery.isLoading,
-            hasStakePoolData: !!stakePoolQuery.data,
-            hasStakePoolConfigData: !!stakePoolConfigQuery.data,
-            stakePoolError: stakePoolQuery.error?.message,
-            stakePoolConfigError: stakePoolConfigQuery.error?.message,
-        });
-
         // Early return if data isn't ready yet
         if (stakePoolQuery.isLoading || stakePoolConfigQuery.isLoading) {
-            console.log('🚨 Still loading queries');
             return;
         }
 
         // If no stake account, set to 0
         if (!stakeAccountData) {
-            console.log('🚨 No stake account data - but you said you have staked tokens!');
             setRealtimeRewards(0n);
             return;
         }
 
         // If queries failed or don't have data, fall back to existing pending rewards
         if (!stakePoolQuery.data || !stakePoolConfigQuery.data) {
-            console.log('🚨 Missing pool data, falling back to existing pending rewards');
-            setRealtimeRewards(stakeAccountData.pendingRewards);
+            setRealtimeRewards(stakeAccountData.pendingRewards || 0n);
             return;
         }
-
-        console.log('🚨 All data available, calculating rewards with:', {
-            stakedAmount: stakeAccountData.stakedAmount,
-            pendingRewards: stakeAccountData.pendingRewards,
-            interestIndexAtDeposit: stakeAccountData.interestIndexAtDeposit,
-            currentInterestIndex: stakePoolQuery.data.data.interestIndex,
-            lastUpdated: stakePoolQuery.data.data.interestIndexLastUpdated,
-            aprBps: stakePoolConfigQuery.data.data.aprBps,
-        });
 
         const updateRewards = () => {
             // Calculate rewards with LIVE timestamp - this is the key for real-time growth!
@@ -75,7 +52,6 @@ export function useRealtimePendingRewards(
                 Date.now() // Pass live timestamp for continuous growth simulation
             );
 
-            console.log('🚨 Calculated rewards result:', currentRewards);
             setRealtimeRewards(currentRewards);
         };
 

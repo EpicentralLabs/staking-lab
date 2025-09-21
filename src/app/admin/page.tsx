@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
-import { useEnhancedInitializeStakePoolConfigMutation, useEnhancedInitializeXLabsMutation, useEnhancedInitializeStakePoolMutation, useEnhancedDeleteStakePoolConfigMutation, useEnhancedDeleteStakePoolMutation, useEnhancedUpdateStakePoolConfigMutation } from "@/components/admin/enhanced-admin-mutations"
+import { useEnhancedInitializeStakePoolConfigMutation, useEnhancedInitializeXLabsMutation, useEnhancedInitializeStakePoolMutation, useEnhancedDeleteStakePoolConfigMutation, useEnhancedDeleteStakePoolMutation, useEnhancedUpdateStakePoolConfigMutation } from "@/components/admin/admin-mutations"
 import { TransactionButton } from "@/components/ui/transaction-button"
 import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useXLabsMintAddress, useLabsMintAddress, useVaultAddress, useStakePoolAddress, useStakingProgramProgramId, useStakePoolConfigAddress, useStakePoolConfigData } from "@/components/shared/data-access"

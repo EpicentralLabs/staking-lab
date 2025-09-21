@@ -8,7 +8,7 @@ import { getCreateAssociatedTokenInstruction, getAssociatedTokenAccountAddress, 
 import { useWalletUi } from "@wallet-ui/react"
 import { address } from "gill"
 
-export function useEnhancedStakeToStakePoolMutation() {
+export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (expectedStakedAmount?: bigint) => Promise<void>) {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
     const queryClient = useQueryClient()
@@ -146,10 +146,22 @@ export function useEnhancedStakeToStakePoolMutation() {
                 context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Invalidate relevant queries to refresh UI after staking
-            await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Use coordinated refetch if provided, with expected staked amount
+            if (refetchStakingQueries) {
+                // Calculate expected total staked amount for validation
+                const newStakeAmount = BigInt(variables)
+                const currentStakedAmount = (context?.previousStakeAccount as any)?.data?.stakedAmount || BigInt(0)
+                const expectedTotalStaked = currentStakedAmount + newStakeAmount
+
+                await refetchStakingQueries(expectedTotalStaked)
+            } else {
+                await Promise.all([
+                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                ])
+            }
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -170,7 +182,7 @@ export function useEnhancedStakeToStakePoolMutation() {
     })
 }
 
-export function useEnhancedUnstakeFromStakePoolMutation() {
+export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?: (expectedRemainingAmount?: bigint) => Promise<void>) {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()
@@ -316,11 +328,25 @@ export function useEnhancedUnstakeFromStakePoolMutation() {
                 context.toast.success(tx, `Successfully unstaked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Invalidate relevant queries to refresh UI
-            await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['user-xlabs-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Use coordinated refetch if provided, with expected remaining amount
+            if (refetchUnstakingQueries) {
+                // Calculate expected remaining staked amount for validation
+                const unstakeAmount = BigInt(variables)
+                const currentStakedAmount = (context?.previousStakeAccount as any)?.data?.stakedAmount || BigInt(0)
+                const expectedRemainingStaked = currentStakedAmount > unstakeAmount
+                    ? currentStakedAmount - unstakeAmount
+                    : BigInt(0)
+
+                await refetchUnstakingQueries(expectedRemainingStaked)
+            } else {
+                await Promise.all([
+                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                ])
+            }
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -344,7 +370,7 @@ export function useEnhancedUnstakeFromStakePoolMutation() {
     })
 }
 
-export function useEnhancedClaimFromStakePoolMutation() {
+export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: () => Promise<void>) {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()
@@ -467,11 +493,18 @@ export function useEnhancedClaimFromStakePoolMutation() {
                 context.toast.success(tx, `Successfully claimed ${rewardAmount.toFixed(4)} xLABS rewards`)
             }
 
-            // Invalidate relevant queries to refresh UI
-            await queryClient.invalidateQueries({ queryKey: ['user-labs-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['user-stake-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['user-xlabs-account'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Use coordinated refetch if provided, otherwise fallback to individual refetches
+            if (refetchClaimingQueries) {
+                await refetchClaimingQueries()
+            } else {
+                await Promise.all([
+                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                ])
+            }
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error

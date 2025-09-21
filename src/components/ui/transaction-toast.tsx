@@ -35,7 +35,7 @@ export function toastTransaction(
       </div>
     ),
     duration,
-    className: 'border-green-500/50 bg-green-900/20',
+    className: 'bg-gray-900/90 border border-gray-700/40 backdrop-blur-xl shadow-lg shadow-black/40 text-white rounded-xl',
   })
 }
 
@@ -60,7 +60,7 @@ export function toastTransactionError(
       </div>
     ),
     duration,
-    className: 'border-red-500/50 bg-red-900/20',
+    className: 'bg-gray-900/90 border border-red-500/40 backdrop-blur-xl shadow-lg shadow-black/40 text-white rounded-xl',
   })
 }
 
@@ -110,7 +110,7 @@ export function toastTransactionProgress(
       <TransactionProgress steps={steps} compact className="mt-1" />
     ),
     duration: Infinity, // Keep open until manually dismissed
-    className: 'border-blue-500/50 bg-blue-900/20',
+    className: 'bg-gray-900/90 border border-[#4a85ff]/40 backdrop-blur-xl shadow-lg shadow-black/40 text-white rounded-xl',
   })
 }
 

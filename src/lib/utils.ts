@@ -1,9 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { address } from 'gill'
 import { SolanaClusterId } from '@wallet-ui/react'
-// Legacy imports removed
-import StakingProgramIDL from '@program-idl/staking_program.json'
 import {
   STAKING_PROGRAM_PROGRAM_ADDRESS
 } from '@program-client'

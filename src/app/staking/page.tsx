@@ -4,22 +4,14 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { useEnhancedStakeToStakePoolMutation, useEnhancedUnstakeFromStakePoolMutation, useEnhancedClaimFromStakePoolMutation } from "@/components/staking/enhanced-staking-mutations"
+import { ArrowUpRight, ArrowDownRight, Loader2, RefreshCw } from "lucide-react"
+import { useEnhancedStakeToStakePoolMutation, useEnhancedUnstakeFromStakePoolMutation, useEnhancedClaimFromStakePoolMutation } from "@/components/staking/staking-mutations"
+import { useCoordinatedRefetch } from "@/hooks/use-coordinated-refetch"
 import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolConfigData } from "@/components/shared/data-access"
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 import { TransactionButton } from "@/components/ui/transaction-button"
-import { TransactionProgress } from "@/components/ui/transaction-progress"
 
 export default function StakingPage() {
   const { account } = useWalletUi()
@@ -40,8 +32,6 @@ export default function StakingPage() {
 function StakingPageConnected() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
-  const [isStakeDialogOpen, setIsStakeDialogOpen] = useState(false)
-  const [isUnstakeDialogOpen, setIsUnstakeDialogOpen] = useState(false)
   const [stakeError, setStakeError] = useState("")
   const [unstakeError, setUnstakeError] = useState("")
 
@@ -51,10 +41,13 @@ function StakingPageConnected() {
   const vaultAccountQuery = useVaultAccount()
   const stakePoolConfigQuery = useStakePoolConfigData()
 
-  // Enhanced mutation hooks
-  const stakeMutation = useEnhancedStakeToStakePoolMutation()
-  const unstakeMutation = useEnhancedUnstakeFromStakePoolMutation()
-  const claimMutation = useEnhancedClaimFromStakePoolMutation()
+  // Coordinated refetch hook
+  const { isRefetching, retryStatus, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
+
+  // Enhanced mutation hooks with coordinated refetch
+  const stakeMutation = useEnhancedStakeToStakePoolMutation(refetchStakingQueries)
+  const unstakeMutation = useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries)
+  const claimMutation = useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries)
 
   // Extract stake account data
   const stakeAccountData = (() => {
@@ -124,7 +117,7 @@ function StakingPageConnected() {
     return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
   };
 
-  // Transaction handlers
+  // Transaction handlers - direct execution with toast feedback
   const handleStakeConfirm = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
 
@@ -132,7 +125,6 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(stakeAmount.replace(/,/g, '')) * 1e9);
       await stakeMutation.mutateAsync(amount);
       setStakeAmount("");
-      setIsStakeDialogOpen(false);
     } catch {
       // Error handled by mutation
     }
@@ -145,7 +137,6 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(unstakeAmount.replace(/,/g, '')) * 1e9);
       await unstakeMutation.mutateAsync(amount);
       setUnstakeAmount("");
-      setIsUnstakeDialogOpen(false);
     } catch {
       // Error handled by mutation
     }
@@ -228,21 +219,28 @@ function StakingPageConnected() {
 
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-gray-400">Available:</span>
-                    <span
-                      className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
-                      onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
-                        availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    <div className="flex items-center gap-1">
+                      {isRefetching && (
+                        <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      title="Click to use full available balance"
-                    >
-                      {userLabsAccountQuery.isLoading ? (
-                        "Loading..."
-                      ) : userLabsAccountQuery.error ? (
-                        "Error"
-                      ) : (
-                        `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                      )}
-                    </span>
+                      <span
+                        className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
+                        onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
+                          availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        )}
+                        title="Click to use full available balance"
+                      >
+                        {userLabsAccountQuery.isLoading ? (
+                          "Loading..."
+                        ) : isRefetching ? (
+                          retryStatus || "Updating..."
+                        ) : userLabsAccountQuery.error ? (
+                          "Error"
+                        ) : (
+                          `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   {stakeError && (
@@ -250,64 +248,18 @@ function StakingPageConnected() {
                   )}
                 </div>
 
-                <Dialog open={isStakeDialogOpen} onOpenChange={setIsStakeDialogOpen}>
-                  <DialogTrigger asChild>
-                    <TransactionButton
-                      transactionState={getStakeTransactionState()}
-                      idleText="Stake LABS"
-                      submittingText="Submitting..."
-                      confirmingText="Confirming..."
-                      successText="Stake Complete!"
-                      errorText="Stake Failed - Retry"
-                      disabled={!stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0}
-                      className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                      onRetry={() => stakeMutation.reset()}
-                    />
-                  </DialogTrigger>
-                  <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-                    <DialogHeader>
-                      <DialogTitle>Confirm Stake</DialogTitle>
-                      <DialogDescription className="text-gray-400">
-                        Are you sure you want to stake {stakeAmount} LABS?
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    {/* Show transaction progress in dialog */}
-                    {stakeMutation.isPending && (
-                      <div className="my-4">
-                        <TransactionProgress
-                          steps={[
-                            { id: 'submit', label: 'Submitting transaction', status: 'active' },
-                            { id: 'confirm', label: 'Confirming on blockchain', status: 'pending' },
-                            { id: 'complete', label: 'Updating balance', status: 'pending' }
-                          ]}
-                          compact
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex justify-end space-x-4 pt-4">
-                      <TransactionButton
-                        transactionState="idle"
-                        idleText="Cancel"
-                        variant="outline"
-                        className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-                        onClick={() => setIsStakeDialogOpen(false)}
-                        disabled={stakeMutation.isPending}
-                      />
-                      <TransactionButton
-                        transactionState={getStakeTransactionState()}
-                        idleText="Confirm"
-                        submittingText="Submitting..."
-                        confirmingText="Confirming..."
-                        successText="Success!"
-                        className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white"
-                        onClick={handleStakeConfirm}
-                        disabled={stakeMutation.isPending}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <TransactionButton
+                  transactionState={getStakeTransactionState()}
+                  idleText="Stake LABS"
+                  submittingText="Submitting..."
+                  confirmingText="Confirming..."
+                  successText="Stake Complete!"
+                  errorText="Stake Failed - Retry"
+                  disabled={!stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0}
+                  className="w-full bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                  onClick={handleStakeConfirm}
+                  onRetry={() => stakeMutation.reset()}
+                />
               </div>
 
               {/* Unstake Section */}
@@ -345,15 +297,24 @@ function StakingPageConnected() {
 
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-gray-400">Staked:</span>
-                    <span
-                      className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
-                      onClick={() => setUnstakeAmount(
-                        stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    <div className="flex items-center gap-1">
+                      {isRefetching && (
+                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      title="Click to use full staked amount"
-                    >
-                      {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
-                    </span>
+                      <span
+                        className="font-mono text-white cursor-pointer hover:text-blue-400 transition-colors"
+                        onClick={() => setUnstakeAmount(
+                          stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        )}
+                        title="Click to use full staked amount"
+                      >
+                        {isRefetching ? (
+                          retryStatus || "Updating..."
+                        ) : (
+                          `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   {unstakeError && (
@@ -361,63 +322,18 @@ function StakingPageConnected() {
                   )}
                 </div>
 
-                <Dialog open={isUnstakeDialogOpen} onOpenChange={setIsUnstakeDialogOpen}>
-                  <DialogTrigger asChild>
-                    <TransactionButton
-                      transactionState={getUnstakeTransactionState()}
-                      idleText="Unstake LABS"
-                      submittingText="Submitting..."
-                      confirmingText="Confirming..."
-                      successText="Unstake Complete!"
-                      errorText="Unstake Failed - Retry"
-                      disabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
-                      className="w-full bg-white text-black hover:bg-gray-200 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
-                      onRetry={() => unstakeMutation.reset()}
-                    />
-                  </DialogTrigger>
-                  <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-                    <DialogHeader>
-                      <DialogTitle>Confirm Unstake</DialogTitle>
-                      <DialogDescription className="text-gray-400">
-                        Are you sure you want to unstake {unstakeAmount} LABS?
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    {unstakeMutation.isPending && (
-                      <div className="my-4">
-                        <TransactionProgress
-                          steps={[
-                            { id: 'submit', label: 'Submitting transaction', status: 'active' },
-                            { id: 'confirm', label: 'Confirming on blockchain', status: 'pending' },
-                            { id: 'complete', label: 'Updating balance', status: 'pending' }
-                          ]}
-                          compact
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex justify-end space-x-4 pt-4">
-                      <TransactionButton
-                        transactionState="idle"
-                        idleText="Cancel"
-                        variant="outline"
-                        className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-                        onClick={() => setIsUnstakeDialogOpen(false)}
-                        disabled={unstakeMutation.isPending}
-                      />
-                      <TransactionButton
-                        transactionState={getUnstakeTransactionState()}
-                        idleText="Confirm"
-                        submittingText="Submitting..."
-                        confirmingText="Confirming..."
-                        successText="Success!"
-                        className="bg-orange-400 hover:bg-orange-500 text-white"
-                        onClick={handleUnstakeConfirm}
-                        disabled={unstakeMutation.isPending}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <TransactionButton
+                  transactionState={getUnstakeTransactionState()}
+                  idleText="Unstake LABS"
+                  submittingText="Submitting..."
+                  confirmingText="Confirming..."
+                  successText="Unstake Complete!"
+                  errorText="Unstake Failed - Retry"
+                  disabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
+                  className="w-full bg-white text-black hover:bg-gray-200 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 font-medium"
+                  onClick={handleUnstakeConfirm}
+                  onRetry={() => unstakeMutation.reset()}
+                />
               </div>
             </div>
           </CardContent>
@@ -436,15 +352,22 @@ function StakingPageConnected() {
             <CardContent className="text-sm space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Total Value Locked:</span>
-                <span className="font-mono text-white">
-                  {vaultAccountQuery.isLoading ? (
-                    "Loading..."
-                  ) : vaultAccountQuery.error ? (
-                    "Error"
-                  ) : (
-                    `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                <div className="flex items-center gap-1">
+                  {isRefetching && (
+                    <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                   )}
-                </span>
+                  <span className="font-mono text-white">
+                    {vaultAccountQuery.isLoading ? (
+                      "Loading..."
+                    ) : isRefetching ? (
+                      retryStatus || "Updating..."
+                    ) : vaultAccountQuery.error ? (
+                      "Error"
+                    ) : (
+                      `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                    )}
+                  </span>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Staking APY:</span>
@@ -466,33 +389,58 @@ function StakingPageConnected() {
             <CardContent className="text-sm space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Available Balance:</span>
-                <span className="font-mono text-white">
-                  {userLabsAccountQuery.isLoading ? (
-                    "Loading..."
-                  ) : userLabsAccountQuery.error ? (
-                    "Error"
-                  ) : (
-                    `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                <div className="flex items-center gap-1">
+                  {isRefetching && (
+                    <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                   )}
-                </span>
+                  <span className="font-mono text-white">
+                    {userLabsAccountQuery.isLoading ? (
+                      "Loading..."
+                    ) : isRefetching ? (
+                      retryStatus || "Updating..."
+                    ) : userLabsAccountQuery.error ? (
+                      "Error"
+                    ) : (
+                      `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                    )}
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Stake Account Status:</span>
-                <span className="font-mono text-white">
-                  {userStakeAccountQuery.isLoading ? (
-                    "Loading..."
-                  ) : stakeAccountData ? (
-                    <span className="text-green-400">Active</span>
-                  ) : (
-                    <span className="text-gray-500">Not Created</span>
+                <div className="flex items-center gap-1">
+                  {isRefetching && (
+                    <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                   )}
-                </span>
+                  <span className="font-mono text-white">
+                    {userStakeAccountQuery.isLoading ? (
+                      "Loading..."
+                    ) : isRefetching ? (
+                      retryStatus || "Fetching..."
+                    ) : stakeAccountData ? (
+                      <span className="text-green-400">Active</span>
+                    ) : (
+                      <span className="text-gray-500">Not Created</span>
+                    )}
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Staked Amount:</span>
-                <span className="font-mono text-white">{stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS</span>
+                <div className="flex items-center gap-1">
+                  {isRefetching && (
+                    <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                  )}
+                  <span className="font-mono text-white">
+                    {isRefetching ? (
+                      retryStatus || "Updating..."
+                    ) : (
+                      `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                    )}
+                  </span>
+                </div>
               </div>
 
               <div className="flex justify-between items-center">

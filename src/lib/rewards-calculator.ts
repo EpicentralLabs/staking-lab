@@ -97,41 +97,28 @@ export function calculateRealtimePendingRewards(
     interestIndexAtDeposit: bigint,
     currentInterestIndex: bigint
 ): bigint | null {
-    console.log('🚨 calculateRealtimePendingRewards INPUT:', {
-        stakedAmount,
-        pendingRewards,
-        interestIndexAtDeposit,
-        currentInterestIndex,
-    });
-
     // The interest index has 18 decimals of precision (same as PRECISION_FACTOR)
     // When we multiply, we get double precision, so we need to divide by PRECISION_FACTOR
     const PRECISION_FACTOR = 1000000000000000000n; // 18 decimal places
 
     // Calculate the interest difference
     const interestDiff = currentInterestIndex - interestIndexAtDeposit;
-    console.log('🚨 Interest difference:', interestDiff);
 
     // Calculate rewards: (stakedAmount * interestDiff) / PRECISION_FACTOR
     const rewardsRaw = stakedAmount * interestDiff;
-    console.log('🚨 Rewards raw (before scaling):', rewardsRaw);
 
     // Scale down by precision factor to get actual rewards
     const newRewards = rewardsRaw / PRECISION_FACTOR;
-    console.log('🚨 New rewards (after scaling):', newRewards);
 
     // Add to existing pending rewards
     const totalRewards = pendingRewards + newRewards;
-    console.log('🚨 Total rewards:', totalRewards);
 
     // Check for overflow (u64::MAX)
     const U64_MAX = 18446744073709551615n;
     if (totalRewards > U64_MAX) {
-        console.log('🚨 Overflow detected after scaling');
         return null;
     }
 
-    console.log('🚨 SUCCESS - Final result:', totalRewards);
     return totalRewards;
 }
 

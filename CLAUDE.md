@@ -100,3 +100,8 @@ anchor/
 - Frontend: Uses Vitest (configured in package.json)
 - Anchor: Uses built-in Anchor test framework
 - Run tests with `pnpm anchor-test` for Solana program tests
+
+## Development Guidelines
+
+### Backwards Compatibility Policy
+NEVER maintain backwards compatibility when refactoring or creating new implementations. If you create new files with improved functionality, ALWAYS delete the old versions completely. Do not keep duplicate implementations or "enhanced" vs "non-enhanced" versions. This keeps the codebase clean and prevents confusion about which version to use.

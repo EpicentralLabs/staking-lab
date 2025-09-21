@@ -8,15 +8,35 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme="dark"
       className="toaster group"
+      position="bottom-right"
+      closeButton
+      richColors
       style={
         {
-          '--normal-bg': 'var(--popover)',
-          '--normal-text': 'var(--popover-foreground)',
-          '--normal-border': 'var(--border)',
+          '--normal-bg': 'rgba(17, 24, 39, 0.9)',
+          '--normal-border': 'rgba(55, 65, 81, 0.4)',
+          '--normal-text': 'rgb(255, 255, 255)',
+          '--success-bg': 'rgba(17, 24, 39, 0.9)',
+          '--success-border': 'rgba(74, 133, 255, 0.4)',
+          '--success-text': 'rgb(255, 255, 255)',
+          '--error-bg': 'rgba(17, 24, 39, 0.9)',
+          '--error-border': 'rgba(239, 68, 68, 0.4)',
+          '--error-text': 'rgb(255, 255, 255)',
+          '--info-bg': 'rgba(17, 24, 39, 0.9)',
+          '--info-border': 'rgba(74, 133, 255, 0.4)',
+          '--info-text': 'rgb(255, 255, 255)',
         } as React.CSSProperties
       }
+      toastOptions={{
+        style: {
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+        },
+      }}
       {...props}
     />
   )
