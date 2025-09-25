@@ -1,8 +1,7 @@
 // Whitelisted admin wallet addresses
 export const ADMIN_WALLETS: string[] = [
-  "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT"
-  // Add admin wallet public keys here
-  // Example: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+  "8C9yaHEhc348upam4mJuY554ZvjrnmBsftcYTuRGZ4bT",
+  "EJXC56Podb1L6KhuQtVTME2eSbLrU3Y8k5mKwW2oX58S"
 ]
 
 /**
