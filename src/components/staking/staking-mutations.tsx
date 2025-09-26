@@ -154,21 +154,15 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                 context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, but without retry logic for normal operations
-            if (refetchStakingQueries) {
-                // Use refetchAll instead of refetchStakingQueries to avoid unnecessary retry logic
-                await queryClient.refetchQueries({ queryKey: ['user-labs-account'] })
-                await queryClient.refetchQueries({ queryKey: ['user-stake-account'] })
-                await queryClient.refetchQueries({ queryKey: ['vault-account'] })
-                await queryClient.refetchQueries({ queryKey: ['stake-pool-data'] })
-            } else {
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            }
+            // Comprehensive refetch to ensure all UI numbers update
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+            ])
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -335,25 +329,15 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
                 context.toast.success(tx, `Successfully unstaked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, but without retry logic for normal operations
-            if (refetchUnstakingQueries) {
-                // Use direct refetch instead of retry logic to avoid unnecessary "Retrying..." UI
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            } else {
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            }
+            // Comprehensive refetch to ensure all UI numbers update
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+            ])
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -500,18 +484,15 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
                 context.toast.success(tx, `Successfully claimed ${rewardAmount.toFixed(4)} xLABS rewards`)
             }
 
-            // Use coordinated refetch if provided, otherwise fallback to individual refetches
-            if (refetchClaimingQueries) {
-                await refetchClaimingQueries()
-            } else {
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            }
+            // Comprehensive refetch to ensure all UI numbers update
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+            ])
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error

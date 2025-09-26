@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -49,32 +49,44 @@ function StakingPageConnected() {
   const unstakeMutation = useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries)
   const claimMutation = useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries)
 
-  // Extract stake account data
-  const stakeAccountData = (() => {
+  // Extract stake account data - reactive to query changes
+  const stakeAccountData = useMemo(() => {
     if (!userStakeAccountQuery.data || !userStakeAccountQuery.data.exists) {
       return null;
     }
     return userStakeAccountQuery.data.data;
-  })();
+  }, [userStakeAccountQuery.data]);
 
   // Real-time pending rewards
   const realtimeRewardsQuery = useRealtimePendingRewards(stakeAccountData);
 
-  // Balance calculations
-  const walletBalance = (() => {
+  // Balance calculations - reactive to query data changes
+  const walletBalance = useMemo(() => {
     const tokenData = userLabsAccountQuery.data;
     if (!tokenData?.data?.amount) return 0;
     return Number(tokenData.data.amount) / 1e9;
-  })();
+  }, [userLabsAccountQuery.data]);
 
-  const stakedAmount = stakeAccountData ? Number(stakeAccountData.stakedAmount) / 1e9 : 0;
-  const pendingRewards = realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
-  const totalValueLocked = vaultAccountQuery.data?.data?.amount ? Number(vaultAccountQuery.data.data.amount) / 1e9 : 0;
-  const stakeApy = stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
+  const stakedAmount = useMemo(() => {
+    return stakeAccountData ? Number(stakeAccountData.stakedAmount) / 1e9 : 0;
+  }, [stakeAccountData]);
+
+  const pendingRewards = useMemo(() => {
+    return realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
+  }, [realtimeRewardsQuery.realtimeRewards]);
+
+  const totalValueLocked = useMemo(() => {
+    return vaultAccountQuery.data?.data?.amount ? Number(vaultAccountQuery.data.data.amount) / 1e9 : 0;
+  }, [vaultAccountQuery.data]);
+
+  const stakeApy = useMemo(() => {
+    return stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
+  }, [stakePoolConfigQuery.data]);
+
   const availableBalance = walletBalance;
 
-  // Input validation
-  const validateStakeAmount = (amount: string) => {
+  // Input validation - wrapped in useCallback to be reactive to balance changes
+  const validateStakeAmount = useMemo(() => (amount: string) => {
     const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
@@ -83,9 +95,9 @@ function StakingPageConnected() {
       return `Insufficient balance. Available: ${availableBalance.toFixed(2)} LABS`
     }
     return ""
-  }
+  }, [availableBalance]);
 
-  const validateUnstakeAmount = (amount: string) => {
+  const validateUnstakeAmount = useMemo(() => (amount: string) => {
     const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
@@ -94,7 +106,7 @@ function StakingPageConnected() {
       return `Insufficient staked amount. Staked: ${stakedAmount.toFixed(2)} LABS`
     }
     return ""
-  }
+  }, [stakedAmount]);
 
   // Real-time validation
   useEffect(() => {
