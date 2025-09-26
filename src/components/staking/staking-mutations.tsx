@@ -7,6 +7,7 @@ import { ProgressiveTransactionToast } from "../ui/transaction-toast"
 import { getCreateAssociatedTokenInstruction, getAssociatedTokenAccountAddress, TOKEN_PROGRAM_ADDRESS } from "gill/programs"
 import { useWalletUi } from "@wallet-ui/react"
 import { address } from "gill"
+import { POST_DEPOSIT_QUERY_DELAY } from "../constants"
 import type { 
   UserLabsAccountQueryData, 
   UserStakeAccountQueryData, 
@@ -154,15 +155,17 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                 context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Comprehensive refetch to ensure all UI numbers update
-            await Promise.all([
-                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
-                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-            ])
+            // Delay querying data after deposits to prevent loading issues
+            setTimeout(async () => {
+                await Promise.all([
+                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                ])
+            }, POST_DEPOSIT_QUERY_DELAY)
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error

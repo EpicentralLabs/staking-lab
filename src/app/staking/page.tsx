@@ -43,7 +43,7 @@ function StakingPageConnected() {
   const stakePoolConfigQuery = useStakePoolConfigData()
 
   // Coordinated refetch hook
-  const { isRefetching, retryStatus, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
+  const { isRefetching, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
 
   // Enhanced mutation hooks with coordinated refetch
   const stakeMutation = useEnhancedStakeToStakePoolMutation(refetchStakingQueries)
@@ -287,7 +287,7 @@ function StakingPageConnected() {
                         {userLabsAccountQuery.isLoading ? (
                           "Loading..."
                         ) : isRefetching ? (
-                          retryStatus || "Updating..."
+                          "Updating..."
                         ) : userLabsAccountQuery.error ? (
                           "Error"
                         ) : (
@@ -363,7 +363,7 @@ function StakingPageConnected() {
                         title="Click to use full staked amount"
                       >
                         {isRefetching ? (
-                          retryStatus || "Updating..."
+                          "Updating..."
                         ) : (
                           `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                         )}
@@ -414,7 +414,7 @@ function StakingPageConnected() {
                     {vaultAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : vaultAccountQuery.error ? (
                       "Error"
                     ) : (
@@ -451,7 +451,7 @@ function StakingPageConnected() {
                     {userLabsAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : userLabsAccountQuery.error ? (
                       "Error"
                     ) : (
@@ -471,7 +471,7 @@ function StakingPageConnected() {
                     {userStakeAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Fetching..."
+                      "Fetching..."
                     ) : stakeAccountData ? (
                       <span className="text-green-400">Active</span>
                     ) : (
@@ -489,7 +489,7 @@ function StakingPageConnected() {
                   )}
                   <span className="font-mono text-white">
                     {isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : (
                       `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                     )}
