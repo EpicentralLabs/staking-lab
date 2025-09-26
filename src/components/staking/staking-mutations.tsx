@@ -154,14 +154,13 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                 context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, with expected staked amount
+            // Use coordinated refetch if provided, but without retry logic for normal operations
             if (refetchStakingQueries) {
-                // Calculate expected total staked amount for validation
-                const newStakeAmount = BigInt(variables)
-                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
-                const expectedTotalStaked = currentStakedAmount + newStakeAmount
-
-                await refetchStakingQueries(expectedTotalStaked)
+                // Use refetchAll instead of refetchStakingQueries to avoid unnecessary retry logic
+                await queryClient.refetchQueries({ queryKey: ['user-labs-account'] })
+                await queryClient.refetchQueries({ queryKey: ['user-stake-account'] })
+                await queryClient.refetchQueries({ queryKey: ['vault-account'] })
+                await queryClient.refetchQueries({ queryKey: ['stake-pool-data'] })
             } else {
                 await Promise.all([
                     queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
@@ -336,16 +335,16 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
                 context.toast.success(tx, `Successfully unstaked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, with expected remaining amount
+            // Use coordinated refetch if provided, but without retry logic for normal operations
             if (refetchUnstakingQueries) {
-                // Calculate expected remaining staked amount for validation
-                const unstakeAmount = BigInt(variables)
-                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
-                const expectedRemainingStaked = currentStakedAmount > unstakeAmount
-                    ? currentStakedAmount - unstakeAmount
-                    : BigInt(0)
-
-                await refetchUnstakingQueries(expectedRemainingStaked)
+                // Use direct refetch instead of retry logic to avoid unnecessary "Retrying..." UI
+                await Promise.all([
+                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                ])
             } else {
                 await Promise.all([
                     queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
