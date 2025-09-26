@@ -31,7 +31,7 @@ export function useStakingProgram() {
 }
 export function useLabsMintAddress() {
     // this is just the test mint address
-    return useMemo(() => { return address("5xMz2PeLhC3t2dm5FBDq5GRAaA46PPQvTPBKEdRyppct") }, [])
+    return useMemo(() => { return address("BVoZA3pLiFUSzmLRq5graSwqYejbE2j4c3pgWX3HpHFj") }, [])
 }
 export function useXLabsMintAddress() {
     const { cluster } = useWalletUi()
