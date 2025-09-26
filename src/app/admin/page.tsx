@@ -18,6 +18,7 @@ import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useXLabsMintAddress, useLabsMintAddress, useVaultAddress, useStakePoolAddress, useStakingProgramProgramId, useStakePoolConfigAddress, useStakePoolConfigData } from "@/components/shared/data-access"
 import { isAdminWallet } from "@/lib/admin-config"
 import { ellipsify } from "@/lib/utils"
+import { REFETCH_DELAY } from "@/components/constants"
 
 export default function AdminPanelPage() {
   const { account } = useWalletUi()
@@ -84,12 +85,28 @@ function AdminPanelPageConnected() {
     return 'idle'
   }
 
-  // Simplified handlers
+  // Manual refetch helper
+  const forceRefreshAllQueries = async () => {
+    // Force refresh all admin panel queries to ensure UI updates
+    await Promise.all([
+      stakePoolConfigDataQuery.refetch(),
+      xLabsMintAddressQuery.refetch(),
+      vaultAddressQuery.refetch(),
+      stakePoolAddressQuery.refetch(),
+      stakePoolConfigAddressQuery.refetch(),
+    ]);
+  };
+
+  // Enhanced handlers with delayed refresh
   const handleSetApy = async () => {
     setIsDialogOpen(false)
     const aprBps = Math.round(parseFloat(apy) * 100)
     try {
       await updateStakePoolConfigMutation.mutateAsync(aprBps)
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }
@@ -100,6 +117,10 @@ function AdminPanelPageConnected() {
     const aprBps = Math.round(parseFloat(apy) * 100)
     try {
       await initializeStakePoolConfigMutation.mutateAsync(aprBps)
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }
@@ -109,6 +130,10 @@ function AdminPanelPageConnected() {
     setIsDeleteStakePoolConfigDialogOpen(false)
     try {
       await deleteStakePoolConfigMutation.mutateAsync()
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }
@@ -118,6 +143,10 @@ function AdminPanelPageConnected() {
     setIsInitializeXLabsMintDialogOpen(false)
     try {
       await initializeXLabsMutation.mutateAsync()
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }
@@ -127,6 +156,10 @@ function AdminPanelPageConnected() {
     setIsInitializeStakePoolDialogOpen(false)
     try {
       await initializeStakePoolMutation.mutateAsync()
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }
@@ -136,6 +169,10 @@ function AdminPanelPageConnected() {
     setIsDeleteStakePoolDialogOpen(false)
     try {
       await deleteStakePoolMutation.mutateAsync()
+      // Wait for blockchain data to propagate, then refetch
+      setTimeout(async () => {
+        await forceRefreshAllQueries()
+      }, REFETCH_DELAY);
     } catch {
       // Error handled by enhanced mutation
     }

@@ -12,6 +12,7 @@ import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolC
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 import { TransactionButton } from "@/components/ui/transaction-button"
+import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL } from "@/components/constants"
 
 export default function StakingPage() {
   const { account } = useWalletUi()
@@ -59,6 +60,32 @@ function StakingPageConnected() {
 
   // Real-time pending rewards
   const realtimeRewardsQuery = useRealtimePendingRewards(stakeAccountData);
+
+  // Auto-refresh stake pool details every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Only refetch stake pool related data for the details section
+      await Promise.all([
+        vaultAccountQuery.refetch(),
+        stakePoolConfigQuery.refetch(),
+      ]);
+    }, STAKE_POOL_AUTO_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [vaultAccountQuery, stakePoolConfigQuery]);
+
+  // Auto-refresh account overview every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Refetch user account data for the account overview section
+      await Promise.all([
+        userLabsAccountQuery.refetch(),
+        userStakeAccountQuery.refetch(),
+      ]);
+    }, ACCOUNT_OVERVIEW_REFETCH_DELAY);
+
+    return () => clearInterval(interval);
+  }, [userLabsAccountQuery, userStakeAccountQuery]);
 
   // Balance calculations - reactive to query data changes
   const walletBalance = useMemo(() => {
@@ -129,7 +156,7 @@ function StakingPageConnected() {
     return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
   };
 
-  // Transaction handlers - direct execution with toast feedback
+  // Transaction handlers - direct execution with toast feedback and delayed refresh
   const handleStakeConfirm = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
 
@@ -137,6 +164,11 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(stakeAmount.replace(/,/g, '')) * 1e9);
       await stakeMutation.mutateAsync(amount);
       setStakeAmount("");
+      
+      // Wait for blockchain data to propagate, then refetch (5 seconds for deposits)
+      setTimeout(async () => {
+        await refetchStakingQueries();
+      }, STAKE_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
@@ -149,6 +181,11 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(unstakeAmount.replace(/,/g, '')) * 1e9);
       await unstakeMutation.mutateAsync(amount);
       setUnstakeAmount("");
+      
+      // Wait for blockchain data to propagate, then refetch (2 seconds for withdrawals)
+      setTimeout(async () => {
+        await refetchUnstakingQueries();
+      }, UNSTAKE_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
@@ -159,6 +196,11 @@ function StakingPageConnected() {
 
     try {
       await claimMutation.mutateAsync();
+      
+      // Wait for blockchain data to propagate, then refetch (5 seconds for account overview)
+      setTimeout(async () => {
+        await refetchClaimingQueries();
+      }, ACCOUNT_OVERVIEW_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
