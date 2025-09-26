@@ -17,7 +17,7 @@ import type {
   MutationContext 
 } from "../../types/staking"
 
-export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (expectedStakedAmount?: bigint) => Promise<void>) {
+export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: () => Promise<void>) {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
     const queryClient = useQueryClient()
@@ -186,7 +186,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
     })
 }
 
-export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?: (expectedRemainingAmount?: bigint) => Promise<void>) {
+export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?: () => Promise<void>) {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()

@@ -13,120 +13,19 @@ export function useCoordinatedRefetch() {
     const queryClient = useQueryClient()
 
     /**
-     * Retry fetching stake account until it exists and meets the expected conditions
-     * Uses exponential backoff to handle blockchain propagation delays
+     * Simple delayed refetch for stake account
+     * Just waits a moment for blockchain to propagate, then refetches once
      */
-    const retryStakeAccountUntilReady = async (expectedStakedAmount?: bigint) => {
-        let attempts = 0
-        const maxAttempts = 8
-        const startTime = Date.now()
-
-        console.log('🔄 Starting stake account retry sequence', {
-            expectedStakedAmount: expectedStakedAmount?.toString(),
-            maxAttempts,
-            timestamp: new Date().toISOString()
-        })
-
-        while (attempts < maxAttempts) {
-            const attemptTime = Date.now()
-            setRetryStatus(attempts === 0 ? 'Waiting for blockchain...' : `Retrying... (${attempts + 1}/${maxAttempts})`)
-
-            console.log(`🔄 Retry attempt ${attempts + 1}/${maxAttempts}`, {
-                elapsedTime: `${attemptTime - startTime}ms`,
-                timestamp: new Date().toISOString()
-            })
-
-            try {
-                await queryClient.refetchQueries({ queryKey: ['user-stake-account'] })
-
-                // Get the current data from the query cache
-                const stakeAccountData = queryClient.getQueryData(['user-stake-account'])
-
-                console.log(`📊 Stake account data (attempt ${attempts + 1}):`, {
-                    exists: (stakeAccountData as UserStakeAccountQueryData)?.exists,
-                    fullData: stakeAccountData,
-                    dataStructure: stakeAccountData ? Object.keys(stakeAccountData as UserStakeAccountQueryData) : 'null',
-                    timestamp: new Date().toISOString()
-                })
-
-                // Check if stake account exists and meets our expectations
-                if ((stakeAccountData as UserStakeAccountQueryData)?.exists) {
-                    const stakedAmount = (stakeAccountData as UserStakeAccountQueryData)?.data?.stakedAmount
-
-                    console.log(`✅ Account exists! Validating staked amount:`, {
-                        stakedAmount: stakedAmount?.toString(),
-                        expectedStakedAmount: expectedStakedAmount?.toString(),
-                        hasExpectedAmount: !!expectedStakedAmount,
-                        meetsExpectation: expectedStakedAmount ? (stakedAmount && stakedAmount >= expectedStakedAmount) : 'N/A'
-                    })
-
-                    // If we have an expected amount, validate it
-                    if (expectedStakedAmount) {
-                        if (stakedAmount && stakedAmount >= expectedStakedAmount) {
-                            console.log('🎉 SUCCESS: Account ready with expected amount!', {
-                                stakedAmount: stakedAmount.toString(),
-                                expectedStakedAmount: expectedStakedAmount.toString(),
-                                totalTime: `${Date.now() - startTime}ms`
-                            })
-                            setRetryStatus('Account ready!')
-                            return // Success!
-                        } else {
-                            console.log(`❌ Amount validation failed:`, {
-                                reason: !stakedAmount ? 'No staked amount' : 'Amount too low',
-                                stakedAmount: stakedAmount?.toString(),
-                                expectedStakedAmount: expectedStakedAmount.toString(),
-                                difference: stakedAmount ? (expectedStakedAmount - stakedAmount).toString() : 'N/A'
-                            })
-                        }
-                    } else {
-                        // For operations that just need the account to exist
-                        console.log('🎉 SUCCESS: Account exists (no amount validation needed)!', {
-                            totalTime: `${Date.now() - startTime}ms`
-                        })
-                        setRetryStatus('Account ready!')
-                        return // Success!
-                    }
-                } else {
-                    console.log(`❌ Account does not exist yet (attempt ${attempts + 1})`, {
-                        dataReceived: !!stakeAccountData,
-                        existsField: (stakeAccountData as UserStakeAccountQueryData)?.exists
-                    })
-                }
-
-                attempts++
-
-                if (attempts < maxAttempts) {
-                    // Exponential backoff: 500ms, 1s, 2s, 4s, 8s, etc.
-                    const delay = 500 * Math.pow(2, attempts - 1)
-                    console.log(`⏳ Waiting ${delay}ms before next attempt...`)
-                    await new Promise(resolve => setTimeout(resolve, delay))
-                }
-            } catch (error) {
-                console.error(`❌ Stake account retry ${attempts + 1} failed:`, {
-                    error: error instanceof Error ? error.message : String(error),
-                    fullError: error,
-                    attempt: attempts + 1,
-                    timestamp: new Date().toISOString()
-                })
-                attempts++
-
-                if (attempts < maxAttempts) {
-                    const delay = 500 * Math.pow(2, attempts - 1)
-                    console.log(`⏳ Waiting ${delay}ms before next attempt after error...`)
-                    await new Promise(resolve => setTimeout(resolve, delay))
-                }
-            }
-        }
-
-        // If we get here, all retries failed
-        const totalTime = Date.now() - startTime
-        console.error('💥 RETRY SEQUENCE FAILED - All attempts exhausted', {
-            totalAttempts: maxAttempts,
-            totalTime: `${totalTime}ms`,
-            expectedStakedAmount: expectedStakedAmount?.toString(),
-            timestamp: new Date().toISOString()
-        })
-        setRetryStatus('Timeout - please refresh manually')
+    const delayedStakeAccountRefetch = async () => {
+        setRetryStatus('Updating...')
+        
+        // Simple 1 second delay to allow blockchain propagation
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Single refetch
+        await queryClient.refetchQueries({ queryKey: ['user-stake-account'] })
+        
+        setRetryStatus('')
     }
 
     const refetchAll = async () => {
@@ -151,7 +50,7 @@ export function useCoordinatedRefetch() {
         }
     }
 
-    const refetchStakingQueries = async (expectedStakedAmount?: bigint) => {
+    const refetchStakingQueries = async () => {
         setIsRefetching(true)
         setRetryStatus('')
 
@@ -163,8 +62,8 @@ export function useCoordinatedRefetch() {
                 queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
             ])
 
-            // Then retry stake account until it's ready with the expected amount
-            await retryStakeAccountUntilReady(expectedStakedAmount)
+            // Then do a simple delayed refetch of stake account
+            await delayedStakeAccountRefetch()
         } catch (error) {
             console.error('Staking refetch failed:', error)
             throw error
@@ -174,7 +73,7 @@ export function useCoordinatedRefetch() {
         }
     }
 
-    const refetchUnstakingQueries = async (expectedRemainingAmount?: bigint) => {
+    const refetchUnstakingQueries = async () => {
         setIsRefetching(true)
         setRetryStatus('')
 
@@ -187,13 +86,8 @@ export function useCoordinatedRefetch() {
                 queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
             ])
 
-            // Then retry stake account until it shows the correct remaining amount
-            if (expectedRemainingAmount !== undefined) {
-                await retryStakeAccountUntilReady(expectedRemainingAmount)
-            } else {
-                // Just do a single refetch if no expected amount
-                await queryClient.refetchQueries({ queryKey: ['user-stake-account'] })
-            }
+            // Then do a simple delayed refetch of stake account
+            await delayedStakeAccountRefetch()
         } catch (error) {
             console.error('Unstaking refetch failed:', error)
             throw error
