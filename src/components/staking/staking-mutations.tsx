@@ -7,6 +7,14 @@ import { ProgressiveTransactionToast } from "../ui/transaction-toast"
 import { getCreateAssociatedTokenInstruction, getAssociatedTokenAccountAddress, TOKEN_PROGRAM_ADDRESS } from "gill/programs"
 import { useWalletUi } from "@wallet-ui/react"
 import { address } from "gill"
+import type { 
+  UserLabsAccountQueryData, 
+  UserStakeAccountQueryData, 
+  VaultAccountQueryData, 
+  UserXLabsAccountQueryData, 
+  StakePoolConfigQueryData, 
+  MutationContext 
+} from "../../types/staking"
 
 export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (expectedStakedAmount?: bigint) => Promise<void>) {
     const signer = useWalletUiSigner()
@@ -36,7 +44,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
             const previousVaultAccount = queryClient.getQueryData(['vault-account'])
 
             // Optimistically update user LABS balance (decrease)
-            queryClient.setQueryData(['user-labs-account'], (old: any) => {
+            queryClient.setQueryData(['user-labs-account'], (old: UserLabsAccountQueryData | undefined) => {
                 if (!old?.data?.amount) return old
                 const currentAmount = Number(old.data.amount)
                 const newAmount = currentAmount - Number(amount)
@@ -50,7 +58,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
             })
 
             // Optimistically update user stake account (increase staked amount)
-            queryClient.setQueryData(['user-stake-account'], (old: any) => {
+            queryClient.setQueryData(['user-stake-account'], (old: UserStakeAccountQueryData | undefined) => {
                 if (!old) return old
                 if (!old.exists) {
                     return {
@@ -62,7 +70,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                         }
                     }
                 }
-                const currentStaked = Number(old.data.stakedAmount)
+                const currentStaked = Number(old.data?.stakedAmount || 0)
                 const newStaked = currentStaked + Number(amount)
                 return {
                     ...old,
@@ -74,7 +82,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
             })
 
             // Optimistically update vault account (increase TVL)
-            queryClient.setQueryData(['vault-account'], (old: any) => {
+            queryClient.setQueryData(['vault-account'], (old: VaultAccountQueryData | undefined) => {
                 if (!old?.data?.amount) return old
                 const currentAmount = Number(old.data.amount)
                 const newAmount = currentAmount + Number(amount)
@@ -92,7 +100,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                 previousStakeAccount,
                 previousVaultAccount,
                 toast
-            }
+            } as MutationContext
         },
         mutationFn: async (amount: number | bigint) => {
 
@@ -150,7 +158,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
             if (refetchStakingQueries) {
                 // Calculate expected total staked amount for validation
                 const newStakeAmount = BigInt(variables)
-                const currentStakedAmount = (context?.previousStakeAccount as any)?.data?.stakedAmount || BigInt(0)
+                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
                 const expectedTotalStaked = currentStakedAmount + newStakeAmount
 
                 await refetchStakingQueries(expectedTotalStaked)
@@ -215,7 +223,7 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
             const previousXLabsAccount = queryClient.getQueryData(['user-xlabs-account'])
 
             // Optimistically update user LABS balance (increase)
-            queryClient.setQueryData(['user-labs-account'], (old: any) => {
+            queryClient.setQueryData(['user-labs-account'], (old: UserLabsAccountQueryData | undefined) => {
                 if (!old?.data?.amount) return old
                 const currentAmount = Number(old.data.amount)
                 const newAmount = currentAmount + Number(amount)
@@ -229,7 +237,7 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
             })
 
             // Optimistically update user stake account (decrease staked amount)
-            queryClient.setQueryData(['user-stake-account'], (old: any) => {
+            queryClient.setQueryData(['user-stake-account'], (old: UserStakeAccountQueryData | undefined) => {
                 if (!old?.exists || !old?.data) return old
                 const currentStaked = Number(old.data.stakedAmount)
                 const newStaked = Math.max(0, currentStaked - Number(amount))
@@ -244,7 +252,7 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
             })
 
             // Optimistically update vault account (decrease TVL)
-            queryClient.setQueryData(['vault-account'], (old: any) => {
+            queryClient.setQueryData(['vault-account'], (old: VaultAccountQueryData | undefined) => {
                 if (!old?.data?.amount) return old
                 const currentAmount = Number(old.data.amount)
                 const newAmount = Math.max(0, currentAmount - Number(amount))
@@ -263,7 +271,7 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
                 previousVaultAccount,
                 previousXLabsAccount,
                 toast
-            }
+            } as MutationContext
         },
         mutationFn: async (amount: number | bigint) => {
 
@@ -332,7 +340,7 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
             if (refetchUnstakingQueries) {
                 // Calculate expected remaining staked amount for validation
                 const unstakeAmount = BigInt(variables)
-                const currentStakedAmount = (context?.previousStakeAccount as any)?.data?.stakedAmount || BigInt(0)
+                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
                 const expectedRemainingStaked = currentStakedAmount > unstakeAmount
                     ? currentStakedAmount - unstakeAmount
                     : BigInt(0)
@@ -398,12 +406,12 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             const previousStakeAccount = queryClient.getQueryData(['user-stake-account'])
 
             // Estimate pending rewards for optimistic update
-            const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as any
+            const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as UserStakeAccountQueryData | undefined
             let pendingRewards = BigInt(1000000) // Default fallback
 
             if (stakeAccountData?.exists && stakeAccountData?.data) {
                 const timeStaked = Date.now() - Number(stakeAccountData.data.lastUpdateSlot) * 400
-                const stakePoolConfig = queryClient.getQueryData(['stake-pool-config-data']) as any
+                const stakePoolConfig = queryClient.getQueryData(['stake-pool-config-data']) as StakePoolConfigQueryData | undefined
                 if (stakePoolConfig?.data?.aprBps && stakeAccountData.data.stakedAmount) {
                     const apr = Number(stakePoolConfig.data.aprBps) / 10000
                     const stakedAmount = Number(stakeAccountData.data.stakedAmount)
@@ -414,7 +422,7 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             }
 
             // Optimistically update xLABS balance
-            queryClient.setQueryData(['user-xlabs-account'], (old: any) => {
+            queryClient.setQueryData(['user-xlabs-account'], (old: UserXLabsAccountQueryData | undefined) => {
                 if (!old) {
                     return {
                         data: { amount: pendingRewards }
@@ -432,7 +440,7 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             })
 
             // Optimistically update stake account
-            queryClient.setQueryData(['user-stake-account'], (old: any) => {
+            queryClient.setQueryData(['user-stake-account'], (old: UserStakeAccountQueryData | undefined) => {
                 if (!old?.exists || !old?.data) return old
                 return {
                     ...old,
@@ -449,7 +457,7 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
                 previousStakeAccount,
                 claimedAmount: pendingRewards,
                 toast
-            }
+            } as MutationContext
         },
         mutationFn: async () => {
 

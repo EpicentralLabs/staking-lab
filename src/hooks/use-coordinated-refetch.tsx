@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import type { UserStakeAccountQueryData } from '../types/staking'
 
 /**
  * Hook for coordinating refetches across multiple queries after transactions
@@ -42,15 +43,15 @@ export function useCoordinatedRefetch() {
                 const stakeAccountData = queryClient.getQueryData(['user-stake-account'])
 
                 console.log(`📊 Stake account data (attempt ${attempts + 1}):`, {
-                    exists: (stakeAccountData as any)?.exists,
+                    exists: (stakeAccountData as UserStakeAccountQueryData)?.exists,
                     fullData: stakeAccountData,
-                    dataStructure: stakeAccountData ? Object.keys(stakeAccountData as any) : 'null',
+                    dataStructure: stakeAccountData ? Object.keys(stakeAccountData as UserStakeAccountQueryData) : 'null',
                     timestamp: new Date().toISOString()
                 })
 
                 // Check if stake account exists and meets our expectations
-                if ((stakeAccountData as any)?.exists) {
-                    const stakedAmount = (stakeAccountData as any)?.data?.stakedAmount
+                if ((stakeAccountData as UserStakeAccountQueryData)?.exists) {
+                    const stakedAmount = (stakeAccountData as UserStakeAccountQueryData)?.data?.stakedAmount
 
                     console.log(`✅ Account exists! Validating staked amount:`, {
                         stakedAmount: stakedAmount?.toString(),
@@ -88,7 +89,7 @@ export function useCoordinatedRefetch() {
                 } else {
                     console.log(`❌ Account does not exist yet (attempt ${attempts + 1})`, {
                         dataReceived: !!stakeAccountData,
-                        existsField: (stakeAccountData as any)?.exists
+                        existsField: (stakeAccountData as UserStakeAccountQueryData)?.exists
                     })
                 }
 
