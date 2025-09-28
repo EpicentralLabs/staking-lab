@@ -279,7 +279,8 @@ function StakingPageConnected() {
             <div className="text-center space-y-4 sm:space-y-6 md:space-y-8">
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
+              <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
+                {/* APR - Full width on mobile */}
                 <div className="space-y-1 sm:space-y-2">
                   <span className="text-white/70 text-sm font-medium">APR</span>
                   <div className="text-xl sm:text-2xl font-bold text-[#4AFFBA] animate-pulse" style={{textShadow: '0 0 15px #4AFFBA50, 0 0 30px #4AFFBA30'}}>
@@ -287,35 +288,40 @@ function StakingPageConnected() {
                   </div>
                 </div>
 
-                <div className="space-y-1 sm:space-y-2">
-                  <span className="text-white/70 text-sm font-medium">Available to Claim</span>
-                  <div className="flex items-center justify-center">
-                    <span className="text-xl sm:text-2xl font-bold text-white/95">
-                      {pendingRewards.toFixed(4)}
-                    </span>
+                {/* xLABS to Claim and My Stake - Side by side on mobile */}
+                <div className="grid grid-cols-2 gap-4 sm:contents">
+                  <div className="space-y-1 sm:space-y-2">
+                    <span className="text-white/70 text-sm font-medium">xLABS to Claim</span>
+                    <div className="flex items-center justify-center">
+                      <span className="text-xl sm:text-2xl font-bold text-white/95">
+                        {pendingRewards === 0 ? '0' : pendingRewards.toFixed(4).replace(/\.?0+$/, '')}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-1 sm:space-y-2">
-                  <span className="text-white/70 text-sm font-medium">My stake</span>
-                  <div className="flex items-center justify-center">
-                    <span className="text-xl sm:text-2xl font-bold text-white/95">
-                      {formatNumber(stakedAmount)}
-                    </span>
+                  <div className="space-y-1 sm:space-y-2">
+                    <span className="text-white/70 text-sm font-medium">My stake</span>
+                    <div className="flex items-center justify-center">
+                      <span className="text-xl sm:text-2xl font-bold text-white/95">
+                        {formatNumber(stakedAmount)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Available to Stake */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gradient-to-r from-white/5 via-white/3 to-white/5 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 gap-3 sm:gap-0">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-[#4a85ff]" />
-                  <span className="text-sm sm:text-base text-white/95 font-medium">Available to Stake</span>
-                </div>
-                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  <span className="text-white/95 text-base sm:text-lg font-semibold">
+                <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-1">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-[#4a85ff]" />
+                    <span className="text-sm sm:text-base text-white/95 font-medium">Available to Stake</span>
+                  </div>
+                  <span className="text-white/95 text-base sm:text-lg font-normal" style={{textShadow: '0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)'}}>
                     {formatNumber(availableBalance)} LABS
                   </span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-lg px-4 sm:px-6 py-2 text-sm sm:text-base flex-1 sm:flex-none"
@@ -344,7 +350,7 @@ function StakingPageConnected() {
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
                 >
-                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim &quot;xLABS&quot;" : "Claim &quot;xLABS&quot;"}
+                  {claimMutation.isPending ? 'Claiming...' : 'Claim xLABS'}
                 </Button>
               </div>
             </div>
