@@ -243,7 +243,7 @@ function StakingPageConnected() {
         <motion.div variants={itemVariants} className="lg:col-span-3">
           <Card
             ref={mainCardRef}
-            className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out"
+            className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
             style={{
               background: `
                 radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
@@ -263,7 +263,7 @@ function StakingPageConnected() {
           >
             <CardBody className="p-4">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
                   <DollarSign className="w-3 h-3 text-[#4a85ff]" />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ function StakingPageConnected() {
                 {/* Stake Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
                       <ArrowUpRight className="w-3 h-3 text-[#4a85ff]" />
                     </div>
                     <h3 className="text-sm font-medium text-white">Stake Tokens</h3>
@@ -306,7 +306,7 @@ function StakingPageConnected() {
                       classNames={{
                         base: "max-w-full",
                         input: "text-white",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10"
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10 rounded-xl"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />
@@ -320,7 +320,7 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30"
+                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30 rounded-lg"
                           onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
                             availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
@@ -348,7 +348,7 @@ function StakingPageConnected() {
                   <Button
                     color="primary"
                     size="lg"
-                    className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25"
+                    className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 rounded-xl py-3 h-auto min-h-[3rem]"
                     isDisabled={!stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0}
                     isLoading={stakeMutation.isPending}
                     onClick={handleStakeConfirm}
@@ -360,7 +360,7 @@ function StakingPageConnected() {
                 {/* Unstake Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-md bg-orange-400/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-lg bg-orange-400/20 flex items-center justify-center">
                       <ArrowDownRight className="w-3 h-3 text-orange-400" />
                     </div>
                     <h3 className="text-sm font-medium text-white">Unstake Tokens</h3>
@@ -388,7 +388,7 @@ function StakingPageConnected() {
                       classNames={{
                         base: "max-w-full",
                         input: "text-white",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10"
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10 rounded-xl"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />
@@ -402,7 +402,7 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30"
+                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30 rounded-lg"
                           onClick={() => setUnstakeAmount(
                             stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
@@ -426,7 +426,7 @@ function StakingPageConnected() {
                   <Button
                     variant="bordered"
                     size="lg"
-                    className="w-full font-medium text-white border-white/20 hover:border-white/30 hover:bg-white/5 transition-all duration-200"
+                    className="w-full font-medium text-white border-white/20 hover:border-white/30 hover:bg-white/5 transition-all duration-200 rounded-xl py-3 h-auto min-h-[3rem]"
                     isDisabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
                     isLoading={unstakeMutation.isPending}
                     onClick={handleUnstakeConfirm}
@@ -445,7 +445,7 @@ function StakingPageConnected() {
           <motion.div variants={itemVariants}>
             <Card
               ref={poolDetailsRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out"
+              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
               style={{
                 background: `
                   radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
@@ -465,7 +465,7 @@ function StakingPageConnected() {
             >
               <CardBody className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
                     <TrendingUp className="w-3 h-3 text-[#4a85ff]" />
                   </div>
                   <h3 className="text-sm font-medium text-white">Stake Pool Details</h3>
@@ -477,7 +477,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
                         <span className="font-mono text-white text-xs">
                           {vaultAccountQuery.isLoading ? (
                             "Loading..."
@@ -494,7 +494,7 @@ function StakingPageConnected() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 text-sm">Staking APY:</span>
-                    <Chip color="primary" variant="flat" size="sm">
+                    <Chip color="primary" variant="flat" size="sm" className="rounded-lg">
                       <span className="font-mono text-[#4a85ff] text-xs" style={{ textShadow: "0 0 8px #4a85ff" }}>
                         {stakePoolConfigQuery.isLoading ? "Loading..." : `${stakeApy}%`}
                       </span>
@@ -509,7 +509,7 @@ function StakingPageConnected() {
           <motion.div variants={itemVariants}>
             <Card
               ref={accountOverviewRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out"
+              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
               style={{
                 background: `
                   radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
@@ -529,7 +529,7 @@ function StakingPageConnected() {
             >
               <CardBody className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
                     <Wallet className="w-3 h-3 text-[#4a85ff]" />
                   </div>
                   <h3 className="text-sm font-medium text-white">Account Overview</h3>
@@ -541,7 +541,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
                         <span className="font-mono text-white text-xs">
                           {userLabsAccountQuery.isLoading ? (
                             "Loading..."
@@ -567,7 +567,7 @@ function StakingPageConnected() {
                         variant="flat" 
                         size="sm" 
                         color={stakeAccountData ? "success" : "default"}
-                        className={stakeAccountData ? "" : "bg-white/5 border border-white/20"}
+                        className={stakeAccountData ? "rounded-lg" : "bg-white/5 border border-white/20 rounded-lg"}
                       >
                         <span className="font-mono text-xs">
                           {userStakeAccountQuery.isLoading ? (
@@ -590,7 +590,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
                         <span className="font-mono text-white text-xs">
                           {isRefetching ? (
                             "Updating..."
@@ -604,7 +604,7 @@ function StakingPageConnected() {
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 text-sm">Total Rewards:</span>
-                    <Chip color="primary" variant="flat" size="sm">
+                    <Chip color="primary" variant="flat" size="sm" className="rounded-lg">
                       <div className="font-mono text-[#4a85ff] flex items-center gap-1 text-xs">
                         {realtimeRewardsQuery.isLoading ? (
                           <span>Loading...</span>
@@ -626,7 +626,7 @@ function StakingPageConnected() {
           <motion.div variants={itemVariants}>
             <Card
               ref={claimRewardsRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out"
+              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
               style={{
                 background: `
                   radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
@@ -646,7 +646,7 @@ function StakingPageConnected() {
             >
               <CardBody className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
                     <TrendingUp className="w-3 h-3 text-[#4a85ff]" />
                   </div>
                   <h3 className="text-sm font-medium text-white">Claim Rewards</h3>
@@ -663,7 +663,7 @@ function StakingPageConnected() {
                 <Button
                   color="primary"
                   size="lg"
-                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl py-3 h-auto min-h-[3rem]"
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
