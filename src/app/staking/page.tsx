@@ -284,9 +284,9 @@ function StakingPageConnected() {
                     <h3 className="text-sm font-medium text-white">Stake Tokens</h3>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-white">Amount to Stake</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-white/60">Amount to Stake</label>
                     </div>
                     <Input
                       id="stake-amount"
@@ -294,7 +294,7 @@ function StakingPageConnected() {
                       autoComplete="off"
                       inputMode="decimal"
                       pattern="[0-9]*\.?[0-9]*"
-                      placeholder="0.00"
+                      placeholder="Enter amount to stake"
                       value={formatWithCommas(stakeAmount)}
                       onChange={e => {
                         const rawValue = e.target.value.replace(/,/g, '');
@@ -302,16 +302,13 @@ function StakingPageConnected() {
                           setStakeAmount(rawValue);
                         }
                       }}
-                      endContent={
-                        <div className="pointer-events-none flex items-center">
-                          <span className="text-default-400 text-small">LABS</span>
-                        </div>
-                      }
+                      variant="flat"
                       classNames={{
+                        base: "max-w-full",
                         input: "text-white",
-                        inputWrapper: "bg-slate-800/50 border-slate-600/40 backdrop-blur-sm"
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10"
                       }}
-                      size="lg"
+                      endContent={<span className="text-white/40">LABS</span>}
                     />
 
                     <div className="flex justify-between items-center text-xs">
@@ -323,7 +320,7 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-[#4a85ff]/20 transition-colors bg-slate-800/50"
+                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30"
                           onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
                             availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
@@ -351,7 +348,7 @@ function StakingPageConnected() {
                   <Button
                     color="primary"
                     size="lg"
-                    className="w-full font-medium"
+                    className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25"
                     isDisabled={!stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0}
                     isLoading={stakeMutation.isPending}
                     onClick={handleStakeConfirm}
@@ -369,9 +366,9 @@ function StakingPageConnected() {
                     <h3 className="text-sm font-medium text-white">Unstake Tokens</h3>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-white">Amount to Unstake</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-white/60">Amount to Unstake</label>
                     </div>
                     <Input
                       id="unstake-amount"
@@ -379,7 +376,7 @@ function StakingPageConnected() {
                       autoComplete="off"
                       inputMode="decimal"
                       pattern="[0-9]*\.?[0-9]*"
-                      placeholder="0.00"
+                      placeholder="Enter amount to unstake"
                       value={formatWithCommas(unstakeAmount)}
                       onChange={e => {
                         const rawValue = e.target.value.replace(/,/g, '');
@@ -387,16 +384,13 @@ function StakingPageConnected() {
                           setUnstakeAmount(rawValue);
                         }
                       }}
-                      endContent={
-                        <div className="pointer-events-none flex items-center">
-                          <span className="text-default-400 text-small">LABS</span>
-                        </div>
-                      }
+                      variant="flat"
                       classNames={{
+                        base: "max-w-full",
                         input: "text-white",
-                        inputWrapper: "bg-slate-800/50 border-slate-600/40 backdrop-blur-sm"
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10"
                       }}
-                      size="lg"
+                      endContent={<span className="text-white/40">LABS</span>}
                     />
 
                     <div className="flex justify-between items-center text-xs">
@@ -408,7 +402,7 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-orange-400/20 transition-colors bg-slate-800/50"
+                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30"
                           onClick={() => setUnstakeAmount(
                             stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
@@ -432,7 +426,7 @@ function StakingPageConnected() {
                   <Button
                     variant="bordered"
                     size="lg"
-                    className="w-full font-medium text-white border-slate-600"
+                    className="w-full font-medium text-white border-white/20 hover:border-white/30 hover:bg-white/5 transition-all duration-200"
                     isDisabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
                     isLoading={unstakeMutation.isPending}
                     onClick={handleUnstakeConfirm}
@@ -483,7 +477,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-slate-800/50">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
                         <span className="font-mono text-white text-xs">
                           {vaultAccountQuery.isLoading ? (
                             "Loading..."
@@ -547,7 +541,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-slate-800/50">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
                         <span className="font-mono text-white text-xs">
                           {userLabsAccountQuery.isLoading ? (
                             "Loading..."
@@ -573,7 +567,7 @@ function StakingPageConnected() {
                         variant="flat" 
                         size="sm" 
                         color={stakeAccountData ? "success" : "default"}
-                        className={stakeAccountData ? "" : "bg-slate-800/50"}
+                        className={stakeAccountData ? "" : "bg-white/5 border border-white/20"}
                       >
                         <span className="font-mono text-xs">
                           {userStakeAccountQuery.isLoading ? (
@@ -596,7 +590,7 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-slate-800/50">
+                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20">
                         <span className="font-mono text-white text-xs">
                           {isRefetching ? (
                             "Updating..."
@@ -667,9 +661,9 @@ function StakingPageConnected() {
                   />
                 </div>
                 <Button
-                  variant="bordered"
+                  color="primary"
                   size="lg"
-                  className="w-full font-medium text-white border-slate-600"
+                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed"
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}

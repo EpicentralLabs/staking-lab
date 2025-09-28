@@ -266,32 +266,29 @@ function AdminPanelPageConnected() {
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-medium text-white">Set Annual Percentage Yield (APY)</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-white/60">Set Annual Percentage Yield (APY)</label>
                       </div>
                       <Input
                         id="apy-input"
                         type="number"
-                        placeholder="e.g., 10"
+                        placeholder="Enter APY percentage"
                         value={apy}
                         onChange={(e) => setApy(e.target.value)}
-                        endContent={
-                          <div className="pointer-events-none flex items-center">
-                            <span className="text-default-400 text-small">%</span>
-                          </div>
-                        }
+                        variant="flat"
                         classNames={{
+                          base: "max-w-full",
                           input: "text-white",
-                          inputWrapper: "bg-slate-800/50 border-slate-600/40 backdrop-blur-sm"
+                          inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10"
                         }}
-                        size="lg"
+                        endContent={<span className="text-white/40">%</span>}
                       />
                     </div>
                     <Button
                       color="primary"
                       size="lg"
-                      className="w-full md:w-auto font-medium"
+                      className="w-full md:w-auto font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25"
                       onClick={() => setIsDialogOpen(true)}
                       isLoading={updateStakePoolConfigMutation.isPending}
                     >
@@ -316,9 +313,9 @@ function AdminPanelPageConnected() {
                     </div>
                         <div className="space-y-3">
                           <Button
-                            variant="solid"
+                            variant="flat"
                             size="md"
-                            className="w-full bg-zinc-700 text-zinc-50 hover:bg-zinc-600"
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 text-white"
                             onClick={() => setIsInitializeStakePoolConfigDialogOpen(true)}
                             isLoading={initializeStakePoolConfigMutation.isPending}
                           >
@@ -326,9 +323,9 @@ function AdminPanelPageConnected() {
                           </Button>
                           <Button
                             color="danger"
-                            variant="solid"
+                            variant="flat"
                             size="md"
-                            className="w-full"
+                            className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all duration-200 text-red-400"
                             onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
                             isLoading={deleteStakePoolConfigMutation.isPending}
                           >
@@ -336,9 +333,9 @@ function AdminPanelPageConnected() {
                           </Button>
                           <Button
                             color="primary"
-                            variant="solid"
+                            variant="flat"
                             size="md"
-                            className="w-full"
+                            className="w-full bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 hover:from-[#4a85ff]/30 hover:to-[#1851c4]/30 border border-[#4a85ff]/30 hover:border-[#4a85ff]/50 transition-all duration-200 text-[#4a85ff]"
                             onClick={() => setIsInitializeStakePoolDialogOpen(true)}
                             isLoading={initializeStakePoolMutation.isPending}
                           >
@@ -346,18 +343,18 @@ function AdminPanelPageConnected() {
                           </Button>
                           <Button
                             color="danger"
-                            variant="solid"
+                            variant="flat"
                             size="md"
-                            className="w-full"
+                            className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 transition-all duration-200 text-red-400"
                             onClick={() => setIsDeleteStakePoolDialogOpen(true)}
                             isLoading={deleteStakePoolMutation.isPending}
                           >
                             Delete Stake Pool
                           </Button>
                           <Button
-                            variant="solid"
+                            variant="flat"
                             size="md"
-                            className="w-full bg-zinc-700 text-zinc-50 hover:bg-zinc-600"
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 text-white"
                             onClick={() => setIsInitializeXLabsMintDialogOpen(true)}
                             isLoading={initializeXLabsMutation.isPending}
                           >
@@ -492,14 +489,16 @@ function AdminPanelPageConnected() {
               </ModalBody>
               <ModalFooter>
                 <Button 
-                  variant="bordered" 
+                  variant="flat"
+                  className="bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 text-white"
                   onPress={onClose}
                   isDisabled={updateStakePoolConfigMutation.isPending}
                 >
                   Cancel
                 </Button>
                 <Button 
-                  color="primary" 
+                  color="primary"
+                  className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25"
                   onPress={handleSetApy}
                   isLoading={updateStakePoolConfigMutation.isPending}
                 >
@@ -525,10 +524,20 @@ function AdminPanelPageConnected() {
                 </p>
               </ModalBody>
               <ModalFooter>
-                <Button variant="bordered" onPress={onClose} isDisabled={initializeStakePoolConfigMutation.isPending}>
+                <Button 
+                  variant="flat"
+                  className="bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 transition-all duration-200 text-white"
+                  onPress={onClose} 
+                  isDisabled={initializeStakePoolConfigMutation.isPending}
+                >
                   Cancel
                 </Button>
-                <Button color="primary" onPress={handleInitializeStakePoolConfig} isLoading={initializeStakePoolConfigMutation.isPending}>
+                <Button 
+                  color="primary"
+                  className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] transition-all duration-200 shadow-lg shadow-[#4a85ff]/25"
+                  onPress={handleInitializeStakePoolConfig} 
+                  isLoading={initializeStakePoolConfigMutation.isPending}
+                >
                   Confirm
                 </Button>
               </ModalFooter>
