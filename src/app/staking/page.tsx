@@ -315,7 +315,7 @@ function StakingPageConnected() {
                 <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 flex-1">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-[#4a85ff]" />
-                    <span className="text-sm sm:text-base text-white/95 font-medium">Available to Stake</span>
+                    <span className="text-sm sm:text-base text-white/95 font-medium">Available to Stake:</span>
                   </div>
                   <span className="text-white/95 text-base sm:text-lg font-normal" style={{textShadow: '0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)'}}>
                     {formatNumber(availableBalance)} LABS
