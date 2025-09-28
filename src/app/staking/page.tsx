@@ -305,8 +305,8 @@ function StakingPageConnected() {
                       variant="flat"
                       classNames={{
                         base: "max-w-full",
-                        input: "text-white",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10 rounded-xl"
+                        input: "text-white font-sans",
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 rounded-xl !outline-none !ring-0 !shadow-none"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />
@@ -320,12 +320,12 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30 rounded-lg"
+                          className="cursor-pointer hover:opacity-80 transition-all duration-200 bg-transparent border-none rounded-lg"
                           onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
                             availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
                         >
-                          <span className="font-mono text-white text-xs">
+                          <span className="font-sans text-white text-xs">
                             {userLabsAccountQuery.isLoading ? (
                               "Loading..."
                             ) : isRefetching ? (
@@ -387,8 +387,8 @@ function StakingPageConnected() {
                       variant="flat"
                       classNames={{
                         base: "max-w-full",
-                        input: "text-white",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/10 data-[focus=true]:!bg-white/10 data-[focus-visible=true]:!bg-white/10 focus:!bg-white/10 rounded-xl"
+                        input: "text-white font-sans",
+                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 rounded-xl !outline-none !ring-0 !shadow-none"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />
@@ -402,12 +402,12 @@ function StakingPageConnected() {
                         <Chip
                           variant="flat"
                           size="sm"
-                          className="cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 border border-white/20 hover:border-white/30 rounded-lg"
+                          className="cursor-pointer hover:opacity-80 transition-all duration-200 bg-transparent border-none rounded-lg"
                           onClick={() => setUnstakeAmount(
                             stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           )}
                         >
-                          <span className="font-mono text-white text-xs">
+                          <span className="font-sans text-white text-xs">
                             {isRefetching ? (
                               "Updating..."
                             ) : (
@@ -477,8 +477,8 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
-                        <span className="font-mono text-white text-xs">
+                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
+                        <span className="font-sans text-white text-xs">
                           {vaultAccountQuery.isLoading ? (
                             "Loading..."
                           ) : isRefetching ? (
@@ -541,8 +541,8 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
-                        <span className="font-mono text-white text-xs">
+                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
+                        <span className="font-sans text-white text-xs">
                           {userLabsAccountQuery.isLoading ? (
                             "Loading..."
                           ) : isRefetching ? (
@@ -567,9 +567,9 @@ function StakingPageConnected() {
                         variant="flat" 
                         size="sm" 
                         color={stakeAccountData ? "success" : "default"}
-                        className={stakeAccountData ? "rounded-lg" : "bg-white/5 border border-white/20 rounded-lg"}
+                        className="bg-transparent border-none rounded-lg"
                       >
-                        <span className="font-mono text-xs">
+                        <span className="font-sans text-xs">
                           {userStakeAccountQuery.isLoading ? (
                             "Loading..."
                           ) : isRefetching ? (
@@ -590,8 +590,8 @@ function StakingPageConnected() {
                       {isRefetching && (
                         <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-white/5 border border-white/20 rounded-lg">
-                        <span className="font-mono text-white text-xs">
+                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
+                        <span className="font-sans text-white text-xs">
                           {isRefetching ? (
                             "Updating..."
                           ) : (
