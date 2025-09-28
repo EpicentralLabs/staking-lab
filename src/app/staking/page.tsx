@@ -262,18 +262,6 @@ function StakingPageConnected() {
             }}
           >
             <CardBody className="p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
-                  <DollarSign className="w-3 h-3 text-[#4a85ff]" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-medium text-white">The Staking Lab</h1>
-                  <p className="text-gray-400 font-light text-xs">
-                    Stake your LABS tokens to earn xLABS revenue sharing tokens!
-                  </p>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Stake Section */}
                 <div className="space-y-4">
@@ -306,7 +294,7 @@ function StakingPageConnected() {
                       classNames={{
                         base: "max-w-full",
                         input: "text-white font-sans",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 rounded-xl !outline-none !ring-0 !shadow-none"
+                        inputWrapper: "bg-white/5 border-transparent hover:border-transparent data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 data-[focus=true]:!border-transparent data-[focus-visible=true]:!border-transparent focus:!border-transparent rounded-xl !outline-none !ring-0 !shadow-none"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />
@@ -388,7 +376,7 @@ function StakingPageConnected() {
                       classNames={{
                         base: "max-w-full",
                         input: "text-white font-sans",
-                        inputWrapper: "bg-white/5 border-white/20 hover:border-white/30 data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 rounded-xl !outline-none !ring-0 !shadow-none"
+                        inputWrapper: "bg-white/5 border-transparent hover:border-transparent data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 data-[focus=true]:!border-transparent data-[focus-visible=true]:!border-transparent focus:!border-transparent rounded-xl !outline-none !ring-0 !shadow-none"
                       }}
                       endContent={<span className="text-white/40">LABS</span>}
                     />

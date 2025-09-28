@@ -238,3 +238,14 @@ input::selection {
   text-underline-offset: 2px;
   cursor: pointer;
 }
+
+/* Remove input field borders and focus states */
+input[type="text"]:focus,
+input[type="text"]:focus-visible,
+.heroui-input-wrapper[data-focus="true"],
+.heroui-input-wrapper[data-focus-visible="true"] {
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
