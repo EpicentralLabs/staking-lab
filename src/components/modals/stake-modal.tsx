@@ -37,6 +37,22 @@ export function StakeModal({
   const [stakeError, setStakeError] = useState('')
   const modalContentRef = useMouseGlow()
 
+  // Helper function to format numbers intelligently
+  const formatNumber = (value: number): string => {
+    // If the number is a whole number, show it without decimals
+    if (value % 1 === 0) {
+      return value.toLocaleString();
+    }
+    
+    // Otherwise, show up to 4 decimal places, removing trailing zeros
+    const formatted = value.toLocaleString(undefined, { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 4 
+    });
+    
+    return formatted;
+  };
+
   // Helper to format numbers with commas
   const formatWithCommas = (value: string) => {
     if (!value) return '';
@@ -52,7 +68,7 @@ export function StakeModal({
       return "Please enter a valid amount"
     }
     if (numAmount > availableBalance) {
-      return `Insufficient balance. Available: ${availableBalance.toFixed(2)} LABS`
+      return `Insufficient balance. Available: ${formatNumber(availableBalance)} LABS`
     }
     return ""
   };
@@ -91,7 +107,7 @@ export function StakeModal({
   };
 
   const handleMaxClick = () => {
-    setStakeAmount(availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    setStakeAmount(formatNumber(availableBalance));
     setStakeError('');
   };
 
@@ -211,7 +227,7 @@ export function StakeModal({
                         className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white/95 border border-white/10 hover:border-white/20 transition-all duration-200 rounded-lg h-8"
                         onClick={handleMaxClick}
                       >
-                        {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                        {formatNumber(availableBalance)} LABS
                       </Button>
                     </div>
                   </div>
@@ -231,8 +247,8 @@ export function StakeModal({
                       <span className="text-white/60">Remaining balance:</span>
                       <span className="text-white/95 font-medium">
                         {stakeAmount ? 
-                          `${Math.max(0, availableBalance - Number.parseFloat(stakeAmount.replace(/,/g, '') || '0')).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS` 
-                          : `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                          `${formatNumber(Math.max(0, availableBalance - Number.parseFloat(stakeAmount.replace(/,/g, '') || '0')))} LABS` 
+                          : `${formatNumber(availableBalance)} LABS`
                         }
                       </span>
                     </div>

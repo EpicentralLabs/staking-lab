@@ -115,8 +115,21 @@ function StakingPageConnected() {
 
   const availableBalance = walletBalance;
 
-
-
+  // Helper function to format numbers intelligently
+  const formatNumber = (value: number): string => {
+    // If the number is a whole number, show it without decimals
+    if (value % 1 === 0) {
+      return value.toLocaleString();
+    }
+    
+    // Otherwise, show up to 4 decimal places, removing trailing zeros
+    const formatted = value.toLocaleString(undefined, { 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 4 
+    });
+    
+    return formatted;
+  };
 
   // Transaction handlers for modals
   const handleStake = async (amount: string) => {
@@ -280,7 +293,7 @@ function StakingPageConnected() {
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-white/70 text-sm font-medium">Cumulative Earnings</span>
+                  <span className="text-white/70 text-sm font-medium">Available to Claim</span>
                   <div className="flex items-center justify-center">
                     <span className="text-2xl font-bold text-white/95">
                       {pendingRewards.toFixed(4)}
@@ -292,7 +305,7 @@ function StakingPageConnected() {
                   <span className="text-white/70 text-sm font-medium">My stake</span>
                   <div className="flex items-center justify-center">
                     <span className="text-2xl font-bold text-white/95">
-                      {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {formatNumber(stakedAmount)}
                     </span>
                   </div>
                 </div>
@@ -306,7 +319,7 @@ function StakingPageConnected() {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-white/95 text-lg font-semibold">
-                    {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                    {formatNumber(availableBalance)} LABS
                   </span>
                   <div className="flex gap-2">
                     <Button
