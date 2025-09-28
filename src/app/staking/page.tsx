@@ -221,7 +221,7 @@ function StakingPageConnected() {
           Stake LABS for xLABS
         </h1>
         <p className="text-xl text-white/70 max-w-4xl mx-auto mb-8 leading-relaxed">
-          The Staking Lab allows is an on-chain revenue sharing model that allows users to stake LABS for "xLABS", a revenue sharing token. This allows for Epicentral DAO members to realize gains from OPX without giving up their governance power.
+          The Staking Lab allows is an on-chain revenue sharing model that allows users to stake LABS for &quot;xLABS&quot;, a revenue sharing token. This allows for Epicentral DAO members to realize gains from OPX without giving up their governance power.
         </p>
       </motion.div>
 
