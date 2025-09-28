@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Card, CardBody, Chip, Button } from "@heroui/react"
 import { motion } from "framer-motion"
-import { Loader2, RefreshCw, TrendingUp, Wallet, Plus, Minus } from "lucide-react"
+import { Loader2, RefreshCw, TrendingUp, Wallet, Plus, Minus, Vote, Shield, DollarSign } from "lucide-react"
 import { useMouseGlow } from "@/hooks/useMouseGlow"
 import { useEnhancedStakeToStakePoolMutation, useEnhancedUnstakeFromStakePoolMutation, useEnhancedClaimFromStakePoolMutation } from "@/components/staking/staking-mutations"
 import { useCoordinatedRefetch } from "@/hooks/use-coordinated-refetch"
@@ -197,340 +197,272 @@ function StakingPageConnected() {
       animate="visible"
       className="container mx-auto sm:px-4 px-2 py-4 sm:py-6 md:py-8 flex-1 max-w-7xl"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
-        {/* Main Staking Interface */}
-        <motion.div variants={itemVariants} className="lg:col-span-3">
-          <Card
-            ref={mainCardRef}
-            className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
-            style={{
-              background: `
-                radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                  rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
-                  rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
-                  rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
-                  transparent 75%
-                ),
-                linear-gradient(to bottom right, 
-                  rgb(15 23 42 / 0.4), 
-                  rgb(30 41 59 / 0.3), 
-                  rgb(51 65 85 / 0.2)
-                )
-              `,
-              transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
-            }}
+      {/* Header Section */}
+      <motion.div variants={itemVariants} className="text-center py-12 relative overflow-hidden">
+        {/* Floating LABS tokens - decorative */}
+        <div className="absolute top-8 right-16 w-20 h-20 rounded-full bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 blur-sm animate-pulse"></div>
+        <div className="absolute top-20 right-32 w-12 h-12 rounded-full bg-gradient-to-br from-orange-400/20 to-orange-600/20 blur-sm animate-pulse delay-300"></div>
+        <div className="absolute top-12 right-48 w-16 h-16 rounded-full bg-gradient-to-br from-[#4a85ff]/15 to-[#1851c4]/15 blur-sm animate-pulse delay-700"></div>
+        
+        <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent mb-6">
+          LABS Safety Module
+        </h1>
+        <p className="text-xl text-white/70 max-w-4xl mx-auto mb-8 leading-relaxed">
+          The LABS Safety Module ("LSM") is a fully on-chain system for automatically covering 
+          bad debt and managing protocol risk. Staking in LSM allows users to enjoy benefits 
+          across protocol fee discounts and boosted governance power. <span className="text-[#4a85ff]">Learn more about LSM.</span>
+        </p>
+      </motion.div>
+
+      {/* Main Stats Bar */}
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
+              <TrendingUp className="w-5 h-5 text-[#4a85ff]" />
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Total LABS Staked</span>
+              <div className="text-2xl font-bold text-white/95">
+                {vaultAccountQuery.isLoading ? (
+                  "Loading..."
+                ) : vaultAccountQuery.error ? (
+                  "Error"
+                ) : (
+                  `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M`
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-white/70 text-sm">About Governance</span>
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 hover:border-[#4a85ff]/50 text-[#4a85ff] transition-all duration-300 rounded-lg"
+            variant="bordered"
           >
-            <CardBody className="p-6">
-              <div className="text-center space-y-6">
-                {/* Header Section */}
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#4a85ff]/5 via-transparent to-orange-500/5 rounded-2xl"></div>
-                  <div className="relative space-y-2 py-4">
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
-                        <TrendingUp className="w-5 h-5 text-[#4a85ff]" />
-                      </div>
-                      <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent">
-                        Staking Interface
-                      </h2>
-                    </div>
-                    <p className="text-base text-white/70 max-w-xl mx-auto">
-                      Stake your LABS tokens to earn rewards. Quick deposit and withdrawal options.
-                    </p>
+            🏛️ Epicentral DAO ↗
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Central Staking Card */}
+      <motion.div variants={itemVariants} className="max-w-4xl mx-auto mb-16">
+        <Card
+          ref={mainCardRef}
+          className="bg-gradient-to-br from-slate-950/80 via-slate-900/60 to-slate-800/40 border border-slate-700/30 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
+          style={{
+            background: `
+              radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
+                rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
+                rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
+                transparent 75%
+              ),
+              linear-gradient(to bottom right, 
+                rgb(2 6 23 / 0.8), 
+                rgb(15 23 42 / 0.6), 
+                rgb(30 41 59 / 0.4)
+              )
+            `,
+            transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
+          }}
+        >
+          <CardBody className="p-8">
+            <div className="text-center space-y-8">
+              {/* Header */}
+              <div className="flex items-center justify-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
+                  <TrendingUp className="w-6 h-6 text-[#4a85ff]" />
+                </div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent">
+                  Stake LABS
+                </h2>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="space-y-2">
+                  <span className="text-white/70 text-sm font-medium">Est. APY</span>
+                  <div className="text-2xl font-bold text-green-400">
+                    {stakePoolConfigQuery.isLoading ? "Loading..." : `${stakeApy}%`}
                   </div>
                 </div>
 
-                {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="group relative bg-gradient-to-br from-white/8 via-white/5 to-white/3 rounded-xl p-4 border border-white/10 hover:border-[#4a85ff]/30 transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#4a85ff]/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Wallet className="w-4 h-4 text-[#4a85ff]" />
-                          <span className="text-white/70 text-sm font-medium">Available Balance</span>
-                        </div>
-                        {isRefetching && (
-                          <Loader2 className="w-3 h-3 text-[#4a85ff] animate-spin" />
-                        )}
-                      </div>
-                      <div className="text-xl font-bold text-white/95">
-                        {userLabsAccountQuery.isLoading ? (
-                          "Loading..."
-                        ) : isRefetching ? (
-                          "Updating..."
-                        ) : userLabsAccountQuery.error ? (
-                          "Error"
-                        ) : (
-                          `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="group relative bg-gradient-to-br from-white/8 via-white/5 to-white/3 rounded-xl p-4 border border-white/10 hover:border-orange-400/30 transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-orange-400" />
-                          <span className="text-white/70 text-sm font-medium">Staked Amount</span>
-                        </div>
-                        {isRefetching && (
-                          <RefreshCw className="w-3 h-3 text-orange-400 animate-spin" />
-                        )}
-                      </div>
-                      <div className="text-xl font-bold text-white/95">
-                        {isRefetching ? (
-                          "Updating..."
-                        ) : (
-                          `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                        )}
-                      </div>
-                    </div>
+                <div className="space-y-2">
+                  <span className="text-white/70 text-sm font-medium">Cumulative Earnings</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4a85ff] to-[#1851c4]"></div>
+                    <span className="text-2xl font-bold text-white/95">
+                      {pendingRewards.toFixed(4)}
+                    </span>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <div className="space-y-2">
+                  <span className="text-white/70 text-sm font-medium">My stake</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4a85ff] to-[#1851c4]"></div>
+                    <span className="text-2xl font-bold text-white/95">
+                      {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Available to Stake */}
+              <div className="flex justify-between items-center bg-gradient-to-r from-white/5 via-white/3 to-white/5 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-5 h-5 text-[#4a85ff]" />
+                  <span className="text-white/95 font-medium">Available to Stake</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-white/95 text-lg font-semibold">
+                    {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
+                  </span>
                   <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-lg px-6 py-2"
                     onPress={() => setIsStakeModalOpen(true)}
-                    startContent={<Plus className="w-4 h-4" />}
                     isDisabled={availableBalance <= 0}
                   >
-                    Stake Tokens
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    onPress={() => setIsUnstakeModalOpen(true)}
-                    startContent={<Minus className="w-4 h-4" />}
-                    isDisabled={stakedAmount <= 0}
-                  >
-                    Unstake Tokens
+                    Stake
                   </Button>
                 </div>
               </div>
-            </CardBody>
-          </Card>
-        </motion.div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Stake Pool Details */}
-          <motion.div variants={itemVariants}>
-            <Card
-              ref={poolDetailsRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
-              style={{
-                background: `
-                  radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                    rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
-                    rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
-                    rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
-                    transparent 75%
-                  ),
-                  linear-gradient(to bottom right, 
-                    rgb(15 23 42 / 0.4), 
-                    rgb(30 41 59 / 0.3), 
-                    rgb(51 65 85 / 0.2)
-                  )
-                `,
-                transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
-              }}
-            >
-              <CardBody className="p-5">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
-                    <TrendingUp className="w-4 h-4 text-[#4a85ff]" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white/95">Stake Pool Details</h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-white/70 text-sm font-medium">Total Value Locked:</span>
-                    <div className="flex items-center gap-2">
-                      {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
-                      )}
-                      <div className="text-right">
-                        <div className="text-white/95 text-base font-semibold">
-                          {vaultAccountQuery.isLoading ? (
-                            "Loading..."
-                          ) : isRefetching ? (
-                            "Updating..."
-                          ) : vaultAccountQuery.error ? (
-                            "Error"
-                          ) : (
-                            `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-white/70 text-sm font-medium">USD Value:</span>
-                    <div className="flex items-center gap-2">
-                      {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
-                      )}
-                      <div className="text-right">
-                        <div className="text-white/95 text-base font-semibold">
-                          {vaultAccountQuery.isLoading ? (
-                            "Loading..."
-                          ) : isRefetching ? (
-                            "Updating..."
-                          ) : vaultAccountQuery.error ? (
-                            "Error"
-                          ) : (
-                            `$${totalValueLockedUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-white/70 text-sm font-medium">Staking APY:</span>
-                    <Chip 
-                      className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 rounded-lg px-3 py-1 h-8"
-                    >
-                      <span className="font-mono text-[#4a85ff] text-base font-bold" style={{ textShadow: "0 0 8px #4a85ff80" }}>
-                        {stakePoolConfigQuery.isLoading ? "Loading..." : `${stakeApy}%`}
-                      </span>
-                    </Chip>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
+              {/* Warning Message */}
+              <div className="bg-gradient-to-r from-orange-500/10 via-orange-400/5 to-orange-500/10 border border-orange-500/30 rounded-lg p-4 text-sm text-orange-200">
+                You are accessing LABS from a restricted territory. Increasing stake is prohibited.
+              </div>
 
-          {/* Account Overview */}
-          <motion.div variants={itemVariants}>
-            <Card
-              ref={accountOverviewRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
-              style={{
-                background: `
-                  radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                    rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
-                    rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
-                    rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
-                    transparent 75%
-                  ),
-                  linear-gradient(to bottom right, 
-                    rgb(15 23 42 / 0.4), 
-                    rgb(30 41 59 / 0.3), 
-                    rgb(51 65 85 / 0.2)
-                  )
-                `,
-                transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
-              }}
-            >
-              <CardBody className="p-5">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
-                    <Wallet className="w-4 h-4 text-[#4a85ff]" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white/95">Account Overview</h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-white/70 text-sm font-medium">Staked Amount:</span>
-                    <div className="flex items-center gap-2">
-                      {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
-                      )}
-                      <div className="text-right">
-                        <div className="text-white/95 text-base font-semibold">
-                          {isRefetching ? (
-                            "Updating..."
-                          ) : (
-                            `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-white/70 text-sm font-medium">Total Rewards:</span>
-                    <Chip 
-                      className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 rounded-lg px-3 py-1 h-8"
-                    >
-                      <div className="font-mono text-[#4a85ff] flex items-center gap-1 text-sm font-semibold">
-                        {realtimeRewardsQuery.isLoading ? (
-                          <span>Loading...</span>
-                        ) : (
-                          <>
-                            <span>{pendingRewards.toFixed(4)}</span>
-                            <span className="text-[#4a85ff]">xLABS</span>
-                          </>
-                        )}
-                      </div>
-                    </Chip>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
-
-          {/* Claim Rewards */}
-          <motion.div variants={itemVariants}>
-            <Card
-              ref={claimRewardsRef}
-              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out rounded-2xl"
-              style={{
-                background: `
-                  radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                    rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
-                    rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
-                    rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
-                    transparent 75%
-                  ),
-                  linear-gradient(to bottom right, 
-                    rgb(15 23 42 / 0.4), 
-                    rgb(30 41 59 / 0.3), 
-                    rgb(51 65 85 / 0.2)
-                  )
-                `,
-                transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
-              }}
-            >
-              <CardBody className="p-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
-                    <TrendingUp className="w-4 h-4 text-[#4a85ff]" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white/95">Claim Rewards</h3>
-                </div>
-                <p className="text-white/70 text-sm mb-4 leading-relaxed">
-                  Your current xLABS tokens to claim • Updates live based on staking time
-                </p>
-                <div className="py-4">
-                  <AnimatedRewardCounter
-                    stakeAccountData={stakeAccountData}
-                    className=""
-                  />
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                 <Button
                   size="lg"
-                  className="w-full font-semibold text-base bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white transition-all duration-300 rounded-xl py-3 h-12 shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  onPress={() => setIsUnstakeModalOpen(true)}
+                  startContent={<Minus className="w-4 h-4" />}
+                  isDisabled={stakedAmount <= 0}
+                >
+                  Unstake Tokens
+                </Button>
+
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
                 >
-                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim Rewards" : "No Rewards to Claim"}
+                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim Rewards" : "No Rewards"}
                 </Button>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      </motion.div>
+
+      {/* Benefits Section */}
+      <motion.div variants={itemVariants} className="mb-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent mb-4">
+            Benefits of Staking
+          </h2>
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              className="text-[#4a85ff] hover:text-[#5a95ff] transition-all duration-300"
+              variant="light"
+            >
+              How it works ↗
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Vote on proposals */}
+          <motion.div 
+            variants={itemVariants}
+            className="group"
+          >
+            <Card
+              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-[#4a85ff]/30 h-full"
+            >
+              <CardBody className="p-6 text-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30 mx-auto">
+                  <Vote className="w-8 h-8 text-[#4a85ff]" />
+                </div>
+                <h3 className="text-xl font-semibold text-white/95">
+                  Vote on proposals
+                </h3>
+                <p className="text-white/70 leading-relaxed">
+                  Vote on LABS proposals and shape the future of LABS
+                </p>
+                <div className="pt-2">
+                  <span className="text-[#4a85ff] text-sm font-medium">Realms • Futarchy</span>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
+
+          {/* Fee Discounts */}
+          <motion.div 
+            variants={itemVariants}
+            className="group"
+          >
+            <Card
+              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-orange-400/30 h-full"
+            >
+              <CardBody className="p-6 text-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center border border-orange-400/30 mx-auto">
+                  <DollarSign className="w-8 h-8 text-orange-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white/95">
+                  Revenue Sharing
+                </h3>
+                <p className="text-white/70 leading-relaxed">
+                  Receive xLABS tokens when staking LABS based on the amount staked
+                </p>
+                <div className="pt-2">
+                  <span className="text-orange-400 text-sm font-medium">Learn more</span>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
+
+          {/* Secure the Protocol */}
+          <motion.div 
+            variants={itemVariants}
+            className="group"
+          >
+            <Card
+              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-green-400/30 h-full"
+            >
+              <CardBody className="p-6 text-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400/20 to-green-600/20 flex items-center justify-center border border-green-400/30 mx-auto">
+                  <Shield className="w-8 h-8 text-green-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white/95">
+                  Secure the Protocol
+                </h3>
+                <p className="text-white/70 leading-relaxed">
+                  Secure the LABS Protocol with your staked LABS through LSM
+                </p>
+                <div className="pt-2">
+                  <span className="text-green-400 text-sm font-medium">Learn more</span>
+                </div>
               </CardBody>
             </Card>
           </motion.div>
         </div>
-      </div>
+
+        {/* Unstaking Info */}
+        <div className="text-center mt-12 text-white/60 text-sm">
+          Unstaking can be requested at any time and will be available after 3-5 days. Yield will not be accrued during the cooldown period, while losses can be incurred. <span className="text-[#4a85ff]">Learn More</span>
+        </div>
+      </motion.div>
 
       {/* Modals */}
       <StakeModal
