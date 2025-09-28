@@ -41,11 +41,11 @@ export function StakeModal({
   const formatNumber = (value: number): string => {
     // If the number is a whole number, show it without decimals
     if (value % 1 === 0) {
-      return value.toLocaleString();
+      return value.toLocaleString("en-US");
     }
     
     // Otherwise, show up to 4 decimal places, removing trailing zeros
-    const formatted = value.toLocaleString(undefined, { 
+    const formatted = value.toLocaleString("en-US", { 
       minimumFractionDigits: 0, 
       maximumFractionDigits: 4 
     });
@@ -56,14 +56,14 @@ export function StakeModal({
   // Helper to format numbers with commas
   const formatWithCommas = (value: string) => {
     if (!value) return '';
-    const [intPart, decPart] = value.replace(/,/g, '').split('.');
-    const formattedInt = parseInt(intPart || '0', 10).toLocaleString();
+    const [intPart, decPart] = value.replace(/[^\d.\-]/g, '').split('.');
+    const formattedInt = parseInt(intPart || '0', 10).toLocaleString("en-US");
     return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
   };
 
   // Input validation
   const validateStakeAmount = (amount: string) => {
-    const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
+    const numAmount = Number.parseFloat(amount.replace(/[^\d.\-]/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
     }
@@ -75,7 +75,7 @@ export function StakeModal({
 
   // Handle amount change with validation
   const handleAmountChange = (value: string) => {
-    const rawValue = value.replace(/,/g, '');
+    const rawValue = value.replace(/[^\d.\-]/g, '');
     if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
       setStakeAmount(rawValue);
       if (rawValue) {
@@ -87,7 +87,7 @@ export function StakeModal({
   };
 
   const handleStake = async () => {
-    if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
+    if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) <= 0) return;
     
     const error = validateStakeAmount(stakeAmount);
     if (error) {
@@ -107,7 +107,7 @@ export function StakeModal({
   };
 
   const handleMaxClick = () => {
-    setStakeAmount(formatNumber(availableBalance));
+    setStakeAmount(availableBalance.toString());
     setStakeError('');
   };
 
@@ -247,7 +247,7 @@ export function StakeModal({
                       <span className="text-white/60">Remaining balance:</span>
                       <span className="text-white/95 font-medium">
                         {stakeAmount ? 
-                          `${formatNumber(Math.max(0, availableBalance - Number.parseFloat(stakeAmount.replace(/,/g, '') || '0')))} LABS` 
+                          `${formatNumber(Math.max(0, availableBalance - Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '') || '0')))} LABS` 
                           : `${formatNumber(availableBalance)} LABS`
                         }
                       </span>
@@ -276,7 +276,7 @@ export function StakeModal({
                     size="lg"
                     className={cn(
                       "font-semibold transition-all duration-300 rounded-xl px-8 h-12 min-w-[120px]",
-                      (!isProcessing && stakeAmount && !stakeError && Number.parseFloat(stakeAmount.replace(/,/g, '')) > 0)
+                      (!isProcessing && stakeAmount && !stakeError && Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) > 0)
                         ? "bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white shadow-xl shadow-[#4a85ff]/40 hover:shadow-[#4a85ff]/60 hover:scale-[1.02]"
                         : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
                     )}
@@ -284,7 +284,7 @@ export function StakeModal({
                       isProcessing ||
                       !stakeAmount ||
                       !!stakeError ||
-                      Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0
+                      Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) <= 0
                     }
                     isLoading={isProcessing}
                     onPress={handleStake}

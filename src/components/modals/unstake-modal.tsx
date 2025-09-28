@@ -41,11 +41,11 @@ export function UnstakeModal({
   const formatNumber = (value: number): string => {
     // If the number is a whole number, show it without decimals
     if (value % 1 === 0) {
-      return value.toLocaleString();
+      return value.toLocaleString("en-US");
     }
     
     // Otherwise, show up to 4 decimal places, removing trailing zeros
-    const formatted = value.toLocaleString(undefined, { 
+    const formatted = value.toLocaleString("en-US", { 
       minimumFractionDigits: 0, 
       maximumFractionDigits: 4 
     });
@@ -56,14 +56,14 @@ export function UnstakeModal({
   // Helper to format numbers with commas
   const formatWithCommas = (value: string) => {
     if (!value) return '';
-    const [intPart, decPart] = value.replace(/,/g, '').split('.');
-    const formattedInt = parseInt(intPart || '0', 10).toLocaleString();
+    const [intPart, decPart] = value.replace(/[^\d.\-]/g, '').split('.');
+    const formattedInt = parseInt(intPart || '0', 10).toLocaleString("en-US");
     return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
   };
 
   // Input validation
   const validateUnstakeAmount = (amount: string) => {
-    const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
+    const numAmount = Number.parseFloat(amount.replace(/[^\d.\-]/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
     }
@@ -75,7 +75,7 @@ export function UnstakeModal({
 
   // Handle amount change with validation
   const handleAmountChange = (value: string) => {
-    const rawValue = value.replace(/,/g, '');
+    const rawValue = value.replace(/[^\d.\-]/g, '');
     if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
       setUnstakeAmount(rawValue);
       if (rawValue) {
@@ -87,7 +87,7 @@ export function UnstakeModal({
   };
 
   const handleUnstake = async () => {
-    if (!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0) return;
+    if (!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) <= 0) return;
     
     const error = validateUnstakeAmount(unstakeAmount);
     if (error) {
@@ -107,7 +107,7 @@ export function UnstakeModal({
   };
 
   const handleMaxClick = () => {
-    setUnstakeAmount(formatNumber(stakedAmount));
+    setUnstakeAmount(stakedAmount.toString());
     setUnstakeError('');
   };
 
@@ -247,7 +247,7 @@ export function UnstakeModal({
                       <span className="text-white/60">Remaining staked:</span>
                       <span className="text-white/95 font-medium">
                         {unstakeAmount ? 
-                          `${formatNumber(Math.max(0, stakedAmount - Number.parseFloat(unstakeAmount.replace(/,/g, '') || '0')))} LABS` 
+                          `${formatNumber(Math.max(0, stakedAmount - Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '') || '0')))} LABS` 
                           : `${formatNumber(stakedAmount)} LABS`
                         }
                       </span>
@@ -291,7 +291,7 @@ export function UnstakeModal({
                     size="lg"
                     className={cn(
                       "font-semibold transition-all duration-300 rounded-xl px-8 h-12 min-w-[120px]",
-                      (!isProcessing && unstakeAmount && !unstakeError && Number.parseFloat(unstakeAmount.replace(/,/g, '')) > 0)
+                      (!isProcessing && unstakeAmount && !unstakeError && Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) > 0)
                         ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white shadow-xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:scale-[1.02]"
                         : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
                     )}
@@ -299,7 +299,7 @@ export function UnstakeModal({
                       isProcessing ||
                       !unstakeAmount ||
                       !!unstakeError ||
-                      Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0
+                      Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) <= 0
                     }
                     isLoading={isProcessing}
                     onPress={handleUnstake}
