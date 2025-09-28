@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Card, CardBody, Chip, Button, Input, cn } from "@heroui/react"
+import { Card, CardBody, Chip, Button } from "@heroui/react"
 import { motion } from "framer-motion"
-import { ArrowUpRight, ArrowDownRight, Loader2, RefreshCw, DollarSign, TrendingUp, Wallet } from "lucide-react"
+import { Loader2, RefreshCw, TrendingUp, Wallet, Plus, Minus } from "lucide-react"
 import { useMouseGlow } from "@/hooks/useMouseGlow"
 import { useEnhancedStakeToStakePoolMutation, useEnhancedUnstakeFromStakePoolMutation, useEnhancedClaimFromStakePoolMutation } from "@/components/staking/staking-mutations"
 import { useCoordinatedRefetch } from "@/hooks/use-coordinated-refetch"
@@ -11,6 +11,8 @@ import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolConfigData } from "@/components/shared/data-access"
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
+import { StakeModal } from "@/components/modals/stake-modal"
+import { UnstakeModal } from "@/components/modals/unstake-modal"
 import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL, LABS_TOKEN_PRICE_USD } from "@/components/constants"
 
 export default function StakingPage() {
@@ -30,10 +32,8 @@ export default function StakingPage() {
 }
 
 function StakingPageConnected() {
-  const [stakeAmount, setStakeAmount] = useState("")
-  const [unstakeAmount, setUnstakeAmount] = useState("")
-  const [stakeError, setStakeError] = useState("")
-  const [unstakeError, setUnstakeError] = useState("")
+  const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
+  const [isUnstakeModalOpen, setIsUnstakeModalOpen] = useState(false)
 
   // Query hooks
   const userLabsAccountQuery = useUserLabsAccount()
@@ -115,60 +115,17 @@ function StakingPageConnected() {
 
   const availableBalance = walletBalance;
 
-  // Input validation - wrapped in useCallback to be reactive to balance changes
-  const validateStakeAmount = useMemo(() => (amount: string) => {
-    const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
-    if (isNaN(numAmount) || numAmount <= 0) {
-      return "Please enter a valid amount"
-    }
-    if (numAmount > availableBalance) {
-      return `Insufficient balance. Available: ${availableBalance.toFixed(2)} LABS`
-    }
-    return ""
-  }, [availableBalance]);
 
-  const validateUnstakeAmount = useMemo(() => (amount: string) => {
-    const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
-    if (isNaN(numAmount) || numAmount <= 0) {
-      return "Please enter a valid amount"
-    }
-    if (numAmount > stakedAmount) {
-      return `Insufficient staked amount. Staked: ${stakedAmount.toFixed(2)} LABS`
-    }
-    return ""
-  }, [stakedAmount]);
 
-  // Real-time validation
-  useEffect(() => {
-    if (stakeAmount) {
-      setStakeError(validateStakeAmount(stakeAmount))
-    }
-  }, [stakeAmount, availableBalance, validateStakeAmount])
 
-  useEffect(() => {
-    if (unstakeAmount) {
-      setUnstakeError(validateUnstakeAmount(unstakeAmount))
-    }
-  }, [unstakeAmount, stakedAmount, validateUnstakeAmount])
-
-  // Helper to format numbers with commas
-  const formatWithCommas = (value: string) => {
-    if (!value) return '';
-    const [intPart, decPart] = value.replace(/,/g, '').split('.');
-    const formattedInt = parseInt(intPart || '0', 10).toLocaleString();
-    return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
-  };
-
-  // Transaction handlers - direct execution with toast feedback and delayed refresh
-  const handleStakeConfirm = async () => {
-    if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
-
+  // Transaction handlers for modals
+  const handleStake = async (amount: string) => {
     try {
-      const amount = Math.floor(Number.parseFloat(stakeAmount.replace(/,/g, '')) * 1e9);
-      await stakeMutation.mutateAsync(amount);
-      setStakeAmount("");
+      const numericAmount = Math.floor(Number.parseFloat(amount.replace(/,/g, '')) * 1e9);
+      await stakeMutation.mutateAsync(numericAmount);
+      setIsStakeModalOpen(false);
       
-      // Wait for blockchain data to propagate, then refetch (5 seconds for deposits)
+      // Wait for blockchain data to propagate, then refetch
       setTimeout(async () => {
         await refetchStakingQueries();
       }, STAKE_REFETCH_DELAY);
@@ -177,15 +134,13 @@ function StakingPageConnected() {
     }
   };
 
-  const handleUnstakeConfirm = async () => {
-    if (!unstakeAmount || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0) return;
-
+  const handleUnstake = async (amount: string) => {
     try {
-      const amount = Math.floor(Number.parseFloat(unstakeAmount.replace(/,/g, '')) * 1e9);
-      await unstakeMutation.mutateAsync(amount);
-      setUnstakeAmount("");
+      const numericAmount = Math.floor(Number.parseFloat(amount.replace(/,/g, '')) * 1e9);
+      await unstakeMutation.mutateAsync(numericAmount);
+      setIsUnstakeModalOpen(false);
       
-      // Wait for blockchain data to propagate, then refetch (2 seconds for withdrawals)
+      // Wait for blockchain data to propagate, then refetch
       setTimeout(async () => {
         await refetchUnstakingQueries();
       }, UNSTAKE_REFETCH_DELAY);
@@ -240,9 +195,9 @@ function StakingPageConnected() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1"
+      className="container mx-auto sm:px-4 px-2 py-4 sm:py-6 md:py-8 flex-1 max-w-7xl"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-8 md:gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
         {/* Main Staking Interface */}
         <motion.div variants={itemVariants} className="lg:col-span-3">
           <Card
@@ -265,175 +220,97 @@ function StakingPageConnected() {
               transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
             }}
           >
-            <CardBody className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Stake Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
-                      <ArrowUpRight className="w-3 h-3 text-[#4a85ff]" />
-                    </div>
-                    <h3 className="text-sm font-medium text-white">Stake Tokens</h3>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-white/60">Amount to Stake</label>
-                    </div>
-                    <Input
-                      id="stake-amount"
-                      type="text"
-                      autoComplete="off"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      placeholder="Enter amount to stake"
-                      value={formatWithCommas(stakeAmount)}
-                      onChange={e => {
-                        const rawValue = e.target.value.replace(/,/g, '');
-                        if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
-                          setStakeAmount(rawValue);
-                        }
-                      }}
-                      variant="flat"
-                      classNames={{
-                        base: "max-w-full",
-                        input: "text-white font-sans",
-                        inputWrapper: "bg-white/5 border-transparent hover:border-transparent data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 data-[focus=true]:!border-transparent data-[focus-visible=true]:!border-transparent focus:!border-transparent rounded-xl !outline-none !ring-0 !shadow-none"
-                      }}
-                      endContent={<span className="text-white/40">LABS</span>}
-                    />
-
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-400">Available:</span>
-                      <div className="flex items-center gap-1">
-                        {isRefetching && (
-                          <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
-                        )}
-                        <Chip
-                          variant="flat"
-                          size="sm"
-                          className="cursor-pointer hover:opacity-80 transition-all duration-200 bg-transparent border-none rounded-lg"
-                          onClick={() => !userLabsAccountQuery.isLoading && setStakeAmount(
-                            availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                          )}
-                        >
-                          <span className="font-sans text-white text-xs">
-                            {userLabsAccountQuery.isLoading ? (
-                              "Loading..."
-                            ) : isRefetching ? (
-                              "Updating..."
-                            ) : userLabsAccountQuery.error ? (
-                              "Error"
-                            ) : (
-                              `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                            )}
-                          </span>
-                        </Chip>
+            <CardBody className="p-6">
+              <div className="text-center space-y-6">
+                {/* Header Section */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#4a85ff]/5 via-transparent to-orange-500/5 rounded-2xl"></div>
+                  <div className="relative space-y-2 py-4">
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
+                        <TrendingUp className="w-5 h-5 text-[#4a85ff]" />
                       </div>
+                      <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent">
+                        Staking Interface
+                      </h2>
                     </div>
-
-                    {stakeError && (
-                      <p className="text-danger text-xs">{stakeError}</p>
-                    )}
+                    <p className="text-base text-white/70 max-w-xl mx-auto">
+                      Stake your LABS tokens to earn rewards. Quick deposit and withdrawal options.
+                    </p>
                   </div>
-
-                  <Button
-                    color="primary"
-                    size="lg"
-                    className={cn(
-                      "w-full font-medium transition-all duration-200 rounded-xl py-4 h-[3.5rem]",
-                      !stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0
-                        ? "bg-gray-600 text-gray-400 cursor-not-allowed shadow-none"
-                        : "bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] hover:shadow-xl hover:shadow-[#4a85ff]/40 shadow-lg shadow-[#4a85ff]/25"
-                    )}
-                    isDisabled={!stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0}
-                    isLoading={stakeMutation.isPending}
-                    onClick={handleStakeConfirm}
-                  >
-                    {stakeMutation.isPending ? 'Staking...' : 'Stake LABS'}
-                  </Button>
                 </div>
 
-                {/* Unstake Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-lg bg-orange-400/20 flex items-center justify-center">
-                      <ArrowDownRight className="w-3 h-3 text-orange-400" />
-                    </div>
-                    <h3 className="text-sm font-medium text-white">Unstake Tokens</h3>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-white/60">Amount to Unstake</label>
-                    </div>
-                    <Input
-                      id="unstake-amount"
-                      type="text"
-                      autoComplete="off"
-                      inputMode="decimal"
-                      pattern="[0-9]*\.?[0-9]*"
-                      placeholder="Enter amount to unstake"
-                      value={formatWithCommas(unstakeAmount)}
-                      onChange={e => {
-                        const rawValue = e.target.value.replace(/,/g, '');
-                        if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
-                          setUnstakeAmount(rawValue);
-                        }
-                      }}
-                      variant="flat"
-                      classNames={{
-                        base: "max-w-full",
-                        input: "text-white font-sans",
-                        inputWrapper: "bg-white/5 border-transparent hover:border-transparent data-[hover=true]:bg-white/5 data-[focus=true]:!bg-white/5 data-[focus-visible=true]:!bg-white/5 focus:!bg-white/5 data-[focus=true]:!border-transparent data-[focus-visible=true]:!border-transparent focus:!border-transparent rounded-xl !outline-none !ring-0 !shadow-none"
-                      }}
-                      endContent={<span className="text-white/40">LABS</span>}
-                    />
-
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-400">Staked:</span>
-                      <div className="flex items-center gap-1">
+                {/* Stats Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="group relative bg-gradient-to-br from-white/8 via-white/5 to-white/3 rounded-xl p-4 border border-white/10 hover:border-[#4a85ff]/30 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#4a85ff]/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Wallet className="w-4 h-4 text-[#4a85ff]" />
+                          <span className="text-white/70 text-sm font-medium">Available Balance</span>
+                        </div>
                         {isRefetching && (
-                          <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                          <Loader2 className="w-3 h-3 text-[#4a85ff] animate-spin" />
                         )}
-                        <Chip
-                          variant="flat"
-                          size="sm"
-                          className="cursor-pointer hover:opacity-80 transition-all duration-200 bg-transparent border-none rounded-lg"
-                          onClick={() => setUnstakeAmount(
-                            stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                          )}
-                        >
-                          <span className="font-sans text-white text-xs">
-                            {isRefetching ? (
-                              "Updating..."
-                            ) : (
-                              `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                            )}
-                          </span>
-                        </Chip>
+                      </div>
+                      <div className="text-xl font-bold text-white/95">
+                        {userLabsAccountQuery.isLoading ? (
+                          "Loading..."
+                        ) : isRefetching ? (
+                          "Updating..."
+                        ) : userLabsAccountQuery.error ? (
+                          "Error"
+                        ) : (
+                          `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                        )}
                       </div>
                     </div>
-
-                    {unstakeError && (
-                      <p className="text-danger text-xs">{unstakeError}</p>
-                    )}
                   </div>
 
+                  <div className="group relative bg-gradient-to-br from-white/8 via-white/5 to-white/3 rounded-xl p-4 border border-white/10 hover:border-orange-400/30 transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-orange-400" />
+                          <span className="text-white/70 text-sm font-medium">Staked Amount</span>
+                        </div>
+                        {isRefetching && (
+                          <RefreshCw className="w-3 h-3 text-orange-400 animate-spin" />
+                        )}
+                      </div>
+                      <div className="text-xl font-bold text-white/95">
+                        {isRefetching ? (
+                          "Updating..."
+                        ) : (
+                          `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                   <Button
-                    variant="bordered"
                     size="lg"
-                    className={cn(
-                      "w-full font-medium text-white bg-transparent transition-all duration-200 rounded-xl py-4 h-[3.5rem]",
-                      !unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0
-                        ? "border border-white/20 hover:border-white/30"
-                        : "border border-white/60 hover:border-white/80 hover:bg-white/5 hover:shadow-lg hover:shadow-white/10"
-                    )}
-                    isDisabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
-                    isLoading={unstakeMutation.isPending}
-                    onClick={handleUnstakeConfirm}
+                    className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    onPress={() => setIsStakeModalOpen(true)}
+                    startContent={<Plus className="w-4 h-4" />}
+                    isDisabled={availableBalance <= 0}
                   >
-                    {unstakeMutation.isPending ? 'Unstaking...' : 'Unstake LABS'}
+                    Stake Tokens
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    onPress={() => setIsUnstakeModalOpen(true)}
+                    startContent={<Minus className="w-4 h-4" />}
+                    isDisabled={stakedAmount <= 0}
+                  >
+                    Unstake Tokens
                   </Button>
                 </div>
               </div>
@@ -442,7 +319,7 @@ function StakingPageConnected() {
         </motion.div>
 
         {/* Sidebar */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {/* Stake Pool Details */}
           <motion.div variants={itemVariants}>
             <Card
@@ -465,22 +342,22 @@ function StakingPageConnected() {
                 transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
               }}
             >
-              <CardBody className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
-                    <TrendingUp className="w-3 h-3 text-[#4a85ff]" />
+              <CardBody className="p-5">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
+                    <TrendingUp className="w-4 h-4 text-[#4a85ff]" />
                   </div>
-                  <h3 className="text-sm font-medium text-white">Stake Pool Details</h3>
+                  <h3 className="text-lg font-semibold text-white/95">Stake Pool Details</h3>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Total Value Locked:</span>
-                    <div className="flex items-center gap-1">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-white/70 text-sm font-medium">Total Value Locked:</span>
+                    <div className="flex items-center gap-2">
                       {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
-                        <span className="font-sans text-white text-xs">
+                      <div className="text-right">
+                        <div className="text-white/95 text-base font-semibold">
                           {vaultAccountQuery.isLoading ? (
                             "Loading..."
                           ) : isRefetching ? (
@@ -490,18 +367,19 @@ function StakingPageConnected() {
                           ) : (
                             `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                           )}
-                        </span>
-                      </Chip>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">USD Value:</span>
-                    <div className="flex items-center gap-1">
+                  
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-white/70 text-sm font-medium">USD Value:</span>
+                    <div className="flex items-center gap-2">
                       {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
-                        <span className="font-sans text-white text-xs">
+                      <div className="text-right">
+                        <div className="text-white/95 text-base font-semibold">
                           {vaultAccountQuery.isLoading ? (
                             "Loading..."
                           ) : isRefetching ? (
@@ -511,14 +389,17 @@ function StakingPageConnected() {
                           ) : (
                             `$${totalValueLockedUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                           )}
-                        </span>
-                      </Chip>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Staking APY:</span>
-                    <Chip color="primary" variant="flat" size="sm" className="rounded-lg">
-                      <span className="font-mono text-[#4a85ff] text-xs" style={{ textShadow: "0 0 8px #4a85ff" }}>
+                  
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-white/70 text-sm font-medium">Staking APY:</span>
+                    <Chip 
+                      className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 rounded-lg px-3 py-1 h-8"
+                    >
+                      <span className="font-mono text-[#4a85ff] text-base font-bold" style={{ textShadow: "0 0 8px #4a85ff80" }}>
                         {stakePoolConfigQuery.isLoading ? "Loading..." : `${stakeApy}%`}
                       </span>
                     </Chip>
@@ -550,36 +431,38 @@ function StakingPageConnected() {
                 transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
               }}
             >
-              <CardBody className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
-                    <Wallet className="w-3 h-3 text-[#4a85ff]" />
+              <CardBody className="p-5">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
+                    <Wallet className="w-4 h-4 text-[#4a85ff]" />
                   </div>
-                  <h3 className="text-sm font-medium text-white">Account Overview</h3>
+                  <h3 className="text-lg font-semibold text-white/95">Account Overview</h3>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Staked Amount:</span>
-                    <div className="flex items-center gap-1">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-white/70 text-sm font-medium">Staked Amount:</span>
+                    <div className="flex items-center gap-2">
                       {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                        <RefreshCw className="w-3 h-3 text-[#4a85ff] animate-spin" />
                       )}
-                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
-                        <span className="font-sans text-white text-xs">
+                      <div className="text-right">
+                        <div className="text-white/95 text-base font-semibold">
                           {isRefetching ? (
                             "Updating..."
                           ) : (
                             `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                           )}
-                        </span>
-                      </Chip>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Total Rewards:</span>
-                    <Chip color="primary" variant="flat" size="sm" className="rounded-lg">
-                      <div className="font-mono text-[#4a85ff] flex items-center gap-1 text-xs">
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-white/70 text-sm font-medium">Total Rewards:</span>
+                    <Chip 
+                      className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 rounded-lg px-3 py-1 h-8"
+                    >
+                      <div className="font-mono text-[#4a85ff] flex items-center gap-1 text-sm font-semibold">
                         {realtimeRewardsQuery.isLoading ? (
                           <span>Loading...</span>
                         ) : (
@@ -618,14 +501,14 @@ function StakingPageConnected() {
                 transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
               }}
             >
-              <CardBody className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center">
-                    <TrendingUp className="w-3 h-3 text-[#4a85ff]" />
+              <CardBody className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/20 flex items-center justify-center border border-[#4a85ff]/30">
+                    <TrendingUp className="w-4 h-4 text-[#4a85ff]" />
                   </div>
-                  <h3 className="text-sm font-medium text-white">Claim Rewards</h3>
+                  <h3 className="text-lg font-semibold text-white/95">Claim Rewards</h3>
                 </div>
-                <p className="text-gray-400 font-light text-xs mb-3">
+                <p className="text-white/70 text-sm mb-4 leading-relaxed">
                   Your current xLABS tokens to claim • Updates live based on staking time
                 </p>
                 <div className="py-4">
@@ -635,9 +518,8 @@ function StakingPageConnected() {
                   />
                 </div>
                 <Button
-                  color="primary"
                   size="lg"
-                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] hover:shadow-xl hover:shadow-[#4a85ff]/40 transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl py-4 h-[3.5rem]"
+                  className="w-full font-semibold text-base bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white transition-all duration-300 rounded-xl py-3 h-12 shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
@@ -649,6 +531,25 @@ function StakingPageConnected() {
           </motion.div>
         </div>
       </div>
+
+      {/* Modals */}
+      <StakeModal
+        isOpen={isStakeModalOpen}
+        onOpenChange={() => setIsStakeModalOpen(false)}
+        availableBalance={availableBalance}
+        onStake={handleStake}
+        isProcessing={stakeMutation.isPending}
+        isRefetching={isRefetching}
+      />
+
+      <UnstakeModal
+        isOpen={isUnstakeModalOpen}
+        onOpenChange={() => setIsUnstakeModalOpen(false)}
+        stakedAmount={stakedAmount}
+        onUnstake={handleUnstake}
+        isProcessing={unstakeMutation.isPending}
+        isRefetching={isRefetching}
+      />
     </motion.div>
   )
 }
