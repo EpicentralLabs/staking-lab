@@ -150,7 +150,7 @@ export function StakeModal({
     >
       <div ref={modalContentRef}>
         <ModalContent 
-          className="border border-gray-700/30 backdrop-blur-xl max-h-[80vh] overflow-hidden relative transition-all duration-300 ease-out rounded-xl max-w-md mx-auto"
+          className="border border-gray-700/30 backdrop-blur-xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden relative transition-all duration-300 ease-out rounded-xl max-w-md mx-auto m-4 sm:m-0"
           style={{
             background: `
               linear-gradient(to bottom right, 
@@ -163,7 +163,7 @@ export function StakeModal({
         >
         {(onClose) => (
           <>
-            <ModalHeader className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+            <ModalHeader className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/10 flex items-center justify-center border border-[#4a85ff]/20">
                   <ArrowUpRight className="w-4 h-4 text-[#4a85ff]" />
@@ -179,7 +179,7 @@ export function StakeModal({
               </div>
             </ModalHeader>
 
-            <ModalBody className="p-6 overflow-y-auto">
+            <ModalBody className="p-4 sm:p-6 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -207,7 +207,7 @@ export function StakeModal({
                       classNames={{
                         base: "max-w-full",
                         label: "text-white/80 text-base",
-                        input: "text-white/95 text-lg font-medium",
+                        input: "text-white/95 text-lg font-medium placeholder:font-normal",
                         inputWrapper: "bg-white/5 border-white/10 hover:border-white/20 data-[hover=true]:bg-white/8 data-[focus=true]:!bg-white/8 data-[focus-visible=true]:!bg-white/8 focus:!bg-white/8 data-[focus=true]:!border-[#4a85ff]/40 data-[focus-visible=true]:!border-[#4a85ff]/40 focus:!border-[#4a85ff]/40 h-14 rounded-xl"
                       }}
                       isInvalid={!!stakeError}
@@ -234,7 +234,7 @@ export function StakeModal({
                 </div>
 
                 {/* Information Section */}
-                <div className="p-6 rounded-xl bg-gray-950/40 border border-white/5 space-y-3">
+                <div className="p-4 sm:p-6 rounded-xl bg-gray-950/40 border border-white/5 space-y-3">
                   <h4 className="text-base font-medium text-white/90 mb-4">Transaction Details</h4>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between items-center">
@@ -257,41 +257,35 @@ export function StakeModal({
               </motion.div>
             </ModalBody>
 
-            <ModalFooter className="border-t border-white/10 px-6 py-4">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 text-sm text-white/60">
-                  <ArrowUpRight className="w-4 h-4" />
-                  <span>Stake Transaction</span>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="flat"
-                    size="lg"
-                    onPress={onClose}
-                    className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white/95 border border-white/10 hover:border-white/20 transition-all duration-200 rounded-xl px-6 h-12"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "font-semibold transition-all duration-300 rounded-xl px-8 h-12 min-w-[120px]",
-                      (!isProcessing && stakeAmount && !stakeError && Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) > 0)
-                        ? "bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white shadow-xl shadow-[#4a85ff]/40 hover:shadow-[#4a85ff]/60 hover:scale-[1.02]"
-                        : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
-                    )}
-                    isDisabled={
-                      isProcessing ||
-                      !stakeAmount ||
-                      !!stakeError ||
-                      Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) <= 0
-                    }
-                    isLoading={isProcessing}
-                    onPress={handleStake}
-                  >
-                    {isProcessing ? "Staking..." : "Confirm Stake"}
-                  </Button>
-                </div>
+            <ModalFooter className="border-t border-white/10 px-4 sm:px-6 py-4">
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="flat"
+                  size="lg"
+                  onPress={onClose}
+                  className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white/95 border border-white/10 hover:border-white/20 transition-all duration-200 rounded-xl px-4 sm:px-6 h-12 flex-1 sm:flex-none"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="lg"
+                  className={cn(
+                    "font-semibold transition-all duration-300 rounded-xl px-4 sm:px-8 h-12 min-w-[120px] flex-1 sm:flex-none",
+                    (!isProcessing && stakeAmount && !stakeError && Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) > 0)
+                      ? "bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white shadow-xl shadow-[#4a85ff]/40 hover:shadow-[#4a85ff]/60 hover:scale-[1.02]"
+                      : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
+                  )}
+                  isDisabled={
+                    isProcessing ||
+                    !stakeAmount ||
+                    !!stakeError ||
+                    Number.parseFloat(stakeAmount.replace(/[^\d.\-]/g, '')) <= 0
+                  }
+                  isLoading={isProcessing}
+                  onPress={handleStake}
+                >
+                  {isProcessing ? "Staking..." : "Confirm Stake"}
+                </Button>
               </div>
             </ModalFooter>
           </>
