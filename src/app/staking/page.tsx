@@ -11,7 +11,7 @@ import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolConfigData } from "@/components/shared/data-access"
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
-import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL } from "@/components/constants"
+import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL, LABS_TOKEN_PRICE_USD } from "@/components/constants"
 
 export default function StakingPage() {
   const { account } = useWalletUi()
@@ -108,6 +108,10 @@ function StakingPageConnected() {
   const stakeApy = useMemo(() => {
     return stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
   }, [stakePoolConfigQuery.data]);
+
+  const totalValueLockedUsd = useMemo(() => {
+    return totalValueLocked * LABS_TOKEN_PRICE_USD;
+  }, [totalValueLocked]);
 
   const availableBalance = walletBalance;
 
@@ -491,6 +495,27 @@ function StakingPageConnected() {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-sm">USD Value:</span>
+                    <div className="flex items-center gap-1">
+                      {isRefetching && (
+                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
+                      )}
+                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
+                        <span className="font-sans text-white text-xs">
+                          {vaultAccountQuery.isLoading ? (
+                            "Loading..."
+                          ) : isRefetching ? (
+                            "Updating..."
+                          ) : vaultAccountQuery.error ? (
+                            "Error"
+                          ) : (
+                            `$${totalValueLockedUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          )}
+                        </span>
+                      </Chip>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-400 text-sm">Staking APY:</span>
                     <Chip color="primary" variant="flat" size="sm" className="rounded-lg">
                       <span className="font-mono text-[#4a85ff] text-xs" style={{ textShadow: "0 0 8px #4a85ff" }}>
@@ -533,55 +558,6 @@ function StakingPageConnected() {
                   <h3 className="text-sm font-medium text-white">Account Overview</h3>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Available Balance:</span>
-                    <div className="flex items-center gap-1">
-                      {isRefetching && (
-                        <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
-                      )}
-                      <Chip variant="flat" size="sm" className="bg-transparent border-none rounded-lg">
-                        <span className="font-sans text-white text-xs">
-                          {userLabsAccountQuery.isLoading ? (
-                            "Loading..."
-                          ) : isRefetching ? (
-                            "Updating..."
-                          ) : userLabsAccountQuery.error ? (
-                            "Error"
-                          ) : (
-                            `${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
-                          )}
-                        </span>
-                      </Chip>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">Stake Account Status:</span>
-                    <div className="flex items-center gap-1">
-                      {isRefetching && (
-                        <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
-                      )}
-                      <Chip 
-                        variant="flat" 
-                        size="sm" 
-                        color={stakeAccountData ? "success" : "default"}
-                        className="bg-transparent border-none rounded-lg"
-                      >
-                        <span className="font-sans text-xs">
-                          {userStakeAccountQuery.isLoading ? (
-                            "Loading..."
-                          ) : isRefetching ? (
-                            "Fetching..."
-                          ) : stakeAccountData ? (
-                            "Active"
-                          ) : (
-                            "Not Created"
-                          )}
-                        </span>
-                      </Chip>
-                    </div>
-                  </div>
-
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 text-sm">Staked Amount:</span>
                     <div className="flex items-center gap-1">
