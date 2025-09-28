@@ -7,6 +7,36 @@ import { getDeleteStakePoolConfigInstruction, getDeleteStakePoolInstruction, get
 import { useLabsMintAddress, useStakePoolAddress, useStakePoolConfigAddress, useVaultAddress, useXLabsMintAddress } from "../shared/data-access"
 import { TOKEN_PROGRAM_ADDRESS } from "gill/programs"
 
+/**
+ * Comprehensive query refetch for admin operations
+ * Forces immediate data updates to ensure all UI components reflect changes without manual refresh
+ * Uses refetchQueries instead of invalidateQueries to bypass staleTime settings
+ */
+const refetchAllStakingQueries = async (queryClient: ReturnType<typeof useQueryClient>) => {
+    await Promise.all([
+        // Core staking data - force immediate refetch
+        queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+        queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+        queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+        
+        // User-specific data - force immediate refetch
+        queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+        queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+        queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+        
+        // Address queries - force immediate refetch
+        queryClient.refetchQueries({ queryKey: ['xlabs-mint-address'] }),
+        queryClient.refetchQueries({ queryKey: ['stake-pool-address'] }),
+        queryClient.refetchQueries({ queryKey: ['stake-pool-config-address'] }),
+        queryClient.refetchQueries({ queryKey: ['vault-address'] }),
+        queryClient.refetchQueries({ queryKey: ['labs-user-associated-token-account'] }),
+        queryClient.refetchQueries({ queryKey: ['xlabs-user-associated-token-account'] }),
+        
+        // Program data - force immediate refetch
+        queryClient.refetchQueries({ queryKey: ['get-program-account'] }),
+    ]);
+}
+
 export function useEnhancedInitializeXLabsMutation() {
     const { cluster } = useWalletUi()
     const queryClient = useQueryClient()
@@ -36,8 +66,8 @@ export function useEnhancedInitializeXLabsMutation() {
             if (context?.toast) {
                 context.toast.success(tx, 'Successfully initialized xLABS mint')
             }
-            // Invalidate relevant queries
-            await queryClient.invalidateQueries({ queryKey: ['xlabs-mint-address'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {
@@ -80,10 +110,8 @@ export function useEnhancedInitializeStakePoolConfigMutation() {
             if (context?.toast) {
                 context.toast.success(tx, `Successfully initialized stake pool config with APY: ${Number(variables) / 100}%`)
             }
-            // Invalidate relevant queries to refresh admin UI
-            await queryClient.invalidateQueries({ queryKey: ['xlabs-mint-address'] })
-            await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {
@@ -125,10 +153,8 @@ export function useEnhancedDeleteStakePoolConfigMutation() {
             if (context?.toast) {
                 context.toast.success(tx, 'Successfully deleted stake pool config')
             }
-            // Invalidate relevant queries to refresh admin UI
-            await queryClient.invalidateQueries({ queryKey: ['xlabs-mint-address'] })
-            await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {
@@ -175,10 +201,8 @@ export function useEnhancedInitializeStakePoolMutation() {
             if (context?.toast) {
                 context.toast.success(tx, 'Successfully initialized stake pool')
             }
-            // Invalidate relevant queries to refresh admin UI
-            await queryClient.invalidateQueries({ queryKey: ['xlabs-mint-address'] })
-            await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {
@@ -224,10 +248,8 @@ export function useEnhancedDeleteStakePoolMutation() {
             if (context?.toast) {
                 context.toast.success(tx, 'Successfully deleted stake pool')
             }
-            // Invalidate relevant queries to refresh admin UI
-            await queryClient.invalidateQueries({ queryKey: ['xlabs-mint-address'] })
-            await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
-            await queryClient.invalidateQueries({ queryKey: ['vault-account'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {
@@ -270,8 +292,8 @@ export function useEnhancedUpdateStakePoolConfigMutation() {
             if (context?.toast) {
                 context.toast.success(tx, `Successfully updated APY to ${Number(variables) / 100}%`)
             }
-            // Invalidate stake pool config queries to refresh the data
-            await queryClient.invalidateQueries({ queryKey: ['stake-pool-config-data'] })
+            // Force immediate refetch of all staking queries to ensure UI updates everywhere, especially APY-dependent calculations
+            await refetchAllStakingQueries(queryClient)
         },
         onError: (error, variables, context) => {
             if (context?.toast) {

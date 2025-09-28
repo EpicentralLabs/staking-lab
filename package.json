@@ -1,5 +1,5 @@
 {
-  "name": "staking-frontend",
+  "name": "staking-lab",
   "scripts": {
     "anchor": "cd anchor && anchor",
     "anchor-build": "cd anchor && anchor build",
@@ -26,7 +26,7 @@
     "typescript",
     "wallet-ui"
   ],
-  "version": "0.0.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "dependencies": {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,7 @@ import { useUserLabsAccount, useUserStakeAccount, useVaultAccount, useStakePoolC
 import { useRealtimePendingRewards } from "@/components/use-realtime-pending-rewards"
 import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 import { TransactionButton } from "@/components/ui/transaction-button"
+import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL } from "@/components/constants"
 
 export default function StakingPage() {
   const { account } = useWalletUi()
@@ -42,39 +43,77 @@ function StakingPageConnected() {
   const stakePoolConfigQuery = useStakePoolConfigData()
 
   // Coordinated refetch hook
-  const { isRefetching, retryStatus, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
+  const { isRefetching, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
 
   // Enhanced mutation hooks with coordinated refetch
   const stakeMutation = useEnhancedStakeToStakePoolMutation(refetchStakingQueries)
   const unstakeMutation = useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries)
   const claimMutation = useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries)
 
-  // Extract stake account data
-  const stakeAccountData = (() => {
+  // Extract stake account data - reactive to query changes
+  const stakeAccountData = useMemo(() => {
     if (!userStakeAccountQuery.data || !userStakeAccountQuery.data.exists) {
       return null;
     }
     return userStakeAccountQuery.data.data;
-  })();
+  }, [userStakeAccountQuery.data]);
 
   // Real-time pending rewards
   const realtimeRewardsQuery = useRealtimePendingRewards(stakeAccountData);
 
-  // Balance calculations
-  const walletBalance = (() => {
+  // Auto-refresh stake pool details every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Only refetch stake pool related data for the details section
+      await Promise.all([
+        vaultAccountQuery.refetch(),
+        stakePoolConfigQuery.refetch(),
+      ]);
+    }, STAKE_POOL_AUTO_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [vaultAccountQuery, stakePoolConfigQuery]);
+
+  // Auto-refresh account overview every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      // Refetch user account data for the account overview section
+      await Promise.all([
+        userLabsAccountQuery.refetch(),
+        userStakeAccountQuery.refetch(),
+      ]);
+    }, ACCOUNT_OVERVIEW_REFETCH_DELAY);
+
+    return () => clearInterval(interval);
+  }, [userLabsAccountQuery, userStakeAccountQuery]);
+
+  // Balance calculations - reactive to query data changes
+  const walletBalance = useMemo(() => {
     const tokenData = userLabsAccountQuery.data;
     if (!tokenData?.data?.amount) return 0;
     return Number(tokenData.data.amount) / 1e9;
-  })();
+  }, [userLabsAccountQuery.data]);
 
-  const stakedAmount = stakeAccountData ? Number(stakeAccountData.stakedAmount) / 1e9 : 0;
-  const pendingRewards = realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
-  const totalValueLocked = vaultAccountQuery.data?.data?.amount ? Number(vaultAccountQuery.data.data.amount) / 1e9 : 0;
-  const stakeApy = stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
+  const stakedAmount = useMemo(() => {
+    return stakeAccountData ? Number(stakeAccountData.stakedAmount) / 1e9 : 0;
+  }, [stakeAccountData]);
+
+  const pendingRewards = useMemo(() => {
+    return realtimeRewardsQuery.realtimeRewards ? Number(realtimeRewardsQuery.realtimeRewards) / 1e9 : 0;
+  }, [realtimeRewardsQuery.realtimeRewards]);
+
+  const totalValueLocked = useMemo(() => {
+    return vaultAccountQuery.data?.data?.amount ? Number(vaultAccountQuery.data.data.amount) / 1e9 : 0;
+  }, [vaultAccountQuery.data]);
+
+  const stakeApy = useMemo(() => {
+    return stakePoolConfigQuery.data?.data?.aprBps ? Number(stakePoolConfigQuery.data.data.aprBps) / 100 : 0;
+  }, [stakePoolConfigQuery.data]);
+
   const availableBalance = walletBalance;
 
-  // Input validation
-  const validateStakeAmount = (amount: string) => {
+  // Input validation - wrapped in useCallback to be reactive to balance changes
+  const validateStakeAmount = useMemo(() => (amount: string) => {
     const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
@@ -83,9 +122,9 @@ function StakingPageConnected() {
       return `Insufficient balance. Available: ${availableBalance.toFixed(2)} LABS`
     }
     return ""
-  }
+  }, [availableBalance]);
 
-  const validateUnstakeAmount = (amount: string) => {
+  const validateUnstakeAmount = useMemo(() => (amount: string) => {
     const numAmount = Number.parseFloat(amount.replace(/,/g, ''))
     if (isNaN(numAmount) || numAmount <= 0) {
       return "Please enter a valid amount"
@@ -94,7 +133,7 @@ function StakingPageConnected() {
       return `Insufficient staked amount. Staked: ${stakedAmount.toFixed(2)} LABS`
     }
     return ""
-  }
+  }, [stakedAmount]);
 
   // Real-time validation
   useEffect(() => {
@@ -117,7 +156,7 @@ function StakingPageConnected() {
     return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
   };
 
-  // Transaction handlers - direct execution with toast feedback
+  // Transaction handlers - direct execution with toast feedback and delayed refresh
   const handleStakeConfirm = async () => {
     if (!stakeAmount || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0) return;
 
@@ -125,6 +164,11 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(stakeAmount.replace(/,/g, '')) * 1e9);
       await stakeMutation.mutateAsync(amount);
       setStakeAmount("");
+      
+      // Wait for blockchain data to propagate, then refetch (5 seconds for deposits)
+      setTimeout(async () => {
+        await refetchStakingQueries();
+      }, STAKE_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
@@ -137,6 +181,11 @@ function StakingPageConnected() {
       const amount = Math.floor(Number.parseFloat(unstakeAmount.replace(/,/g, '')) * 1e9);
       await unstakeMutation.mutateAsync(amount);
       setUnstakeAmount("");
+      
+      // Wait for blockchain data to propagate, then refetch (2 seconds for withdrawals)
+      setTimeout(async () => {
+        await refetchUnstakingQueries();
+      }, UNSTAKE_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
@@ -146,7 +195,12 @@ function StakingPageConnected() {
     if (pendingRewards <= 0) return;
 
     try {
-      await claimMutation.mutateAsync();
+      await claimMutation.mutateAsync(pendingRewards);
+      
+      // Wait for blockchain data to propagate, then refetch (5 seconds for account overview)
+      setTimeout(async () => {
+        await refetchClaimingQueries();
+      }, ACCOUNT_OVERVIEW_REFETCH_DELAY);
     } catch {
       // Error handled by mutation
     }
@@ -233,7 +287,7 @@ function StakingPageConnected() {
                         {userLabsAccountQuery.isLoading ? (
                           "Loading..."
                         ) : isRefetching ? (
-                          retryStatus || "Updating..."
+                          "Updating..."
                         ) : userLabsAccountQuery.error ? (
                           "Error"
                         ) : (
@@ -309,7 +363,7 @@ function StakingPageConnected() {
                         title="Click to use full staked amount"
                       >
                         {isRefetching ? (
-                          retryStatus || "Updating..."
+                          "Updating..."
                         ) : (
                           `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                         )}
@@ -360,7 +414,7 @@ function StakingPageConnected() {
                     {vaultAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : vaultAccountQuery.error ? (
                       "Error"
                     ) : (
@@ -397,7 +451,7 @@ function StakingPageConnected() {
                     {userLabsAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : userLabsAccountQuery.error ? (
                       "Error"
                     ) : (
@@ -417,7 +471,7 @@ function StakingPageConnected() {
                     {userStakeAccountQuery.isLoading ? (
                       "Loading..."
                     ) : isRefetching ? (
-                      retryStatus || "Fetching..."
+                      "Fetching..."
                     ) : stakeAccountData ? (
                       <span className="text-green-400">Active</span>
                     ) : (
@@ -435,7 +489,7 @@ function StakingPageConnected() {
                   )}
                   <span className="font-mono text-white">
                     {isRefetching ? (
-                      retryStatus || "Updating..."
+                      "Updating..."
                     ) : (
                       `${stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS`
                     )}

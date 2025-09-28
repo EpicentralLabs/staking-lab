@@ -7,6 +7,7 @@ import { ProgressiveTransactionToast } from "../ui/transaction-toast"
 import { getCreateAssociatedTokenInstruction, getAssociatedTokenAccountAddress, TOKEN_PROGRAM_ADDRESS } from "gill/programs"
 import { useWalletUi } from "@wallet-ui/react"
 import { address } from "gill"
+import { POST_DEPOSIT_QUERY_DELAY } from "../constants"
 import type { 
   UserLabsAccountQueryData, 
   UserStakeAccountQueryData, 
@@ -16,7 +17,7 @@ import type {
   MutationContext 
 } from "../../types/staking"
 
-export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (expectedStakedAmount?: bigint) => Promise<void>) {
+export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: () => Promise<void>) {
     const signer = useWalletUiSigner()
     const signAndSend = useWalletTransactionSignAndSend()
     const queryClient = useQueryClient()
@@ -154,22 +155,17 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
                 context.toast.success(tx, `Successfully staked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, with expected staked amount
-            if (refetchStakingQueries) {
-                // Calculate expected total staked amount for validation
-                const newStakeAmount = BigInt(variables)
-                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
-                const expectedTotalStaked = currentStakedAmount + newStakeAmount
-
-                await refetchStakingQueries(expectedTotalStaked)
-            } else {
+            // Delay querying data after deposits to prevent loading issues
+            setTimeout(async () => {
                 await Promise.all([
                     queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
                     queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
                     queryClient.refetchQueries({ queryKey: ['vault-account'] }),
                     queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                    queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
                 ])
-            }
+            }, POST_DEPOSIT_QUERY_DELAY)
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -190,7 +186,7 @@ export function useEnhancedStakeToStakePoolMutation(refetchStakingQueries?: (exp
     })
 }
 
-export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?: (expectedRemainingAmount?: bigint) => Promise<void>) {
+export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?: () => Promise<void>) {
     const signer = useWalletUiSigner()
     const { account } = useWalletUi()
     const signAndSend = useWalletTransactionSignAndSend()
@@ -336,25 +332,15 @@ export function useEnhancedUnstakeFromStakePoolMutation(refetchUnstakingQueries?
                 context.toast.success(tx, `Successfully unstaked ${Number(variables) / 1e9} LABS tokens`)
             }
 
-            // Use coordinated refetch if provided, with expected remaining amount
-            if (refetchUnstakingQueries) {
-                // Calculate expected remaining staked amount for validation
-                const unstakeAmount = BigInt(variables)
-                const currentStakedAmount = context?.previousStakeAccount?.data?.stakedAmount || BigInt(0)
-                const expectedRemainingStaked = currentStakedAmount > unstakeAmount
-                    ? currentStakedAmount - unstakeAmount
-                    : BigInt(0)
-
-                await refetchUnstakingQueries(expectedRemainingStaked)
-            } else {
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            }
+            // Comprehensive refetch to ensure all UI numbers update
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+            ])
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
@@ -393,7 +379,7 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
     const userXLabsAccountQuery = useUserXLabsAccount()
 
     return useMutation({
-        onMutate: async () => {
+        onMutate: async (actualPendingRewards?: number) => {
             const toast = new ProgressiveTransactionToast('Claiming Rewards')
             toast.start()
 
@@ -405,11 +391,18 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             const previousXLabsAccount = queryClient.getQueryData(['user-xlabs-account'])
             const previousStakeAccount = queryClient.getQueryData(['user-stake-account'])
 
-            // Estimate pending rewards for optimistic update
-            const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as UserStakeAccountQueryData | undefined
+            // Use actual pending rewards if provided, otherwise estimate for optimistic update
             let pendingRewards = BigInt(1000000) // Default fallback
+            let actualClaimedAmount = pendingRewards // For toast display
 
-            if (stakeAccountData?.exists && stakeAccountData?.data) {
+            if (actualPendingRewards && actualPendingRewards > 0) {
+                actualClaimedAmount = BigInt(Math.floor(actualPendingRewards * 1e9))
+                pendingRewards = actualClaimedAmount
+            } else {
+                // Estimate pending rewards for optimistic update when actual amount not provided
+                const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as UserStakeAccountQueryData | undefined
+
+                if (stakeAccountData?.exists && stakeAccountData?.data) {
                 const timeStaked = Date.now() - Number(stakeAccountData.data.lastUpdateSlot) * 400
                 const stakePoolConfig = queryClient.getQueryData(['stake-pool-config-data']) as StakePoolConfigQueryData | undefined
                 if (stakePoolConfig?.data?.aprBps && stakeAccountData.data.stakedAmount) {
@@ -418,8 +411,12 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
                     const annualRewards = (stakedAmount * apr)
                     const timeRewards = annualRewards * (timeStaked / (365 * 24 * 60 * 60 * 1000))
                     pendingRewards = BigInt(Math.floor(timeRewards))
+                    if (!actualPendingRewards) {
+                        actualClaimedAmount = pendingRewards
+                    }
                 }
             }
+            } // Close the else block
 
             // Optimistically update xLABS balance
             queryClient.setQueryData(['user-xlabs-account'], (old: UserXLabsAccountQueryData | undefined) => {
@@ -455,11 +452,11 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             return {
                 previousXLabsAccount,
                 previousStakeAccount,
-                claimedAmount: pendingRewards,
+                claimedAmount: actualClaimedAmount,
                 toast
             } as MutationContext
         },
-        mutationFn: async () => {
+        mutationFn: async (actualPendingRewards?: number) => {
 
             // Validation checks
             if (!stakeAccountQuery.data || !stakePoolAddress.data || !stakePoolConfig.data ||
@@ -501,18 +498,15 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
                 context.toast.success(tx, `Successfully claimed ${rewardAmount.toFixed(4)} xLABS rewards`)
             }
 
-            // Use coordinated refetch if provided, otherwise fallback to individual refetches
-            if (refetchClaimingQueries) {
-                await refetchClaimingQueries()
-            } else {
-                await Promise.all([
-                    queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['vault-account'] }),
-                    queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
-                ])
-            }
+            // Comprehensive refetch to ensure all UI numbers update
+            await Promise.all([
+                queryClient.refetchQueries({ queryKey: ['user-labs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-stake-account'] }),
+                queryClient.refetchQueries({ queryKey: ['user-xlabs-account'] }),
+                queryClient.refetchQueries({ queryKey: ['vault-account'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-data'] }),
+                queryClient.refetchQueries({ queryKey: ['stake-pool-config-data'] }),
+            ])
         },
         onError: (error, variables, context) => {
             // Rollback optimistic updates on error
