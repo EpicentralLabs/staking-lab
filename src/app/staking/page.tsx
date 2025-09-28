@@ -337,7 +337,7 @@ function StakingPageConnected() {
                     color="primary"
                     size="lg"
                     className={cn(
-                      "w-full font-medium transition-all duration-200 rounded-xl py-3 h-auto min-h-[3rem] min-w-0",
+                      "w-full font-medium transition-all duration-200 rounded-xl py-4 h-[3.5rem]",
                       !stakeAmount || !!stakeError || Number.parseFloat(stakeAmount.replace(/,/g, '')) <= 0
                         ? "bg-gray-600 text-gray-400 cursor-not-allowed shadow-none"
                         : "bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] hover:shadow-xl hover:shadow-[#4a85ff]/40 shadow-lg shadow-[#4a85ff]/25"
@@ -346,9 +346,7 @@ function StakingPageConnected() {
                     isLoading={stakeMutation.isPending}
                     onClick={handleStakeConfirm}
                   >
-                    <span className="truncate">
-                      {stakeMutation.isPending ? 'Staking...' : 'Stake LABS'}
-                    </span>
+                    {stakeMutation.isPending ? 'Staking...' : 'Stake LABS'}
                   </Button>
                 </div>
 
@@ -421,14 +419,17 @@ function StakingPageConnected() {
                   <Button
                     variant="bordered"
                     size="lg"
-                    className="w-full font-medium text-white bg-transparent border border-white/60 hover:border-white/80 hover:bg-white/5 hover:shadow-lg hover:shadow-white/10 transition-all duration-200 rounded-xl py-3 h-auto min-h-[3rem] min-w-0"
+                    className={cn(
+                      "w-full font-medium text-white bg-transparent transition-all duration-200 rounded-xl py-4 h-[3.5rem]",
+                      !unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0
+                        ? "border border-white/20 hover:border-white/30"
+                        : "border border-white/60 hover:border-white/80 hover:bg-white/5 hover:shadow-lg hover:shadow-white/10"
+                    )}
                     isDisabled={!unstakeAmount || !!unstakeError || Number.parseFloat(unstakeAmount.replace(/,/g, '')) <= 0}
                     isLoading={unstakeMutation.isPending}
                     onClick={handleUnstakeConfirm}
                   >
-                    <span className="truncate">
-                      {unstakeMutation.isPending ? 'Unstaking...' : 'Unstake LABS'}
-                    </span>
+                    {unstakeMutation.isPending ? 'Unstaking...' : 'Unstake LABS'}
                   </Button>
                 </div>
               </div>
@@ -660,7 +661,7 @@ function StakingPageConnected() {
                 <Button
                   color="primary"
                   size="lg"
-                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] hover:shadow-xl hover:shadow-[#4a85ff]/40 transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl py-3 h-auto min-h-[3rem]"
+                  className="w-full font-medium bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] hover:shadow-xl hover:shadow-[#4a85ff]/40 transition-all duration-200 shadow-lg shadow-[#4a85ff]/25 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl py-4 h-[3.5rem]"
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
