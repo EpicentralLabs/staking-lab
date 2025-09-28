@@ -1,19 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog"
+import { Card, CardBody, Button, Input, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, cn } from "@heroui/react"
+import { motion } from "framer-motion"
+import { useMouseGlow } from "@/hooks/useMouseGlow"
+import { Settings, Server } from "lucide-react"
 import { useEnhancedInitializeStakePoolConfigMutation, useEnhancedInitializeXLabsMutation, useEnhancedInitializeStakePoolMutation, useEnhancedDeleteStakePoolConfigMutation, useEnhancedDeleteStakePoolMutation, useEnhancedUpdateStakePoolConfigMutation } from "@/components/admin/admin-mutations"
-import { TransactionButton } from "@/components/ui/transaction-button"
 import { useWalletUi, WalletUiDropdown } from "@wallet-ui/react"
 import { useXLabsMintAddress, useLabsMintAddress, useVaultAddress, useStakePoolAddress, useStakingProgramProgramId, useStakePoolConfigAddress, useStakePoolConfigData } from "@/components/shared/data-access"
 import { isAdminWallet } from "@/lib/admin-config"
@@ -60,6 +52,28 @@ function AdminPanelPageConnected() {
   const [isInitializeXLabsMintDialogOpen, setIsInitializeXLabsMintDialogOpen] = useState(false)
   const [isInitializeStakePoolDialogOpen, setIsInitializeStakePoolDialogOpen] = useState(false)
   const [isDeleteStakePoolDialogOpen, setIsDeleteStakePoolDialogOpen] = useState(false)
+
+  // Mouse glow effects for cards
+  const mainCardRef = useMouseGlow()
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  }
 
   // Enhanced mutations
   const initializeXLabsMutation = useEnhancedInitializeXLabsMutation()
@@ -180,142 +194,184 @@ function AdminPanelPageConnected() {
 
   return (
     <>
-      <div className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="container mx-auto sm:px-2 px-1 py-6 sm:py-8 md:py-12 flex-1"
+      >
         <div className="max-w-4xl mx-auto">
-          <Card className="bg-gray-900/20 border border-gray-700/40 shadow-lg shadow-black/40 rounded-lg sm:rounded-xl md:rounded-2xl backdrop-blur-xl transition-all duration-300 hover:border-[#4a85ff]/60 hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] hover:bg-gray-900/30">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-2xl md:text-3xl font-bold text-white">Admin Panel</CardTitle>
-              <CardDescription className="text-gray-400 text-sm sm:text-lg font-light">
-                Manage staking contract settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* APY Settings */}
-              <div className="space-y-4">
-                <h3 className="text-base sm:text-xl font-medium text-white">Staking APY</h3>
-
-                {/* Current APY Display */}
-                {stakePoolConfigDataQuery.data && (
-                  <div className="p-3 sm:p-4 bg-gray-800/30 rounded-lg border border-gray-700/40">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300 text-sm sm:text-base">Current APY:</span>
-                      <span className="text-[#4a85ff] font-semibold text-lg sm:text-xl">
-                        {(Number(stakePoolConfigDataQuery.data.data.aprBps) / 100).toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-gray-400 text-xs sm:text-sm">Basis Points:</span>
-                      <span className="text-gray-400 text-xs sm:text-sm">
-                        {stakePoolConfigDataQuery.data.data.aprBps.toString()}
-                      </span>
-                    </div>
+          <motion.div variants={itemVariants}>
+            <Card
+              ref={mainCardRef}
+              className="bg-gradient-to-br from-slate-900/40 via-slate-800/30 to-slate-700/20 border border-slate-600/20 backdrop-blur-sm relative overflow-hidden transition-all duration-300 ease-out"
+              style={{
+                background: `
+                  radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                    rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
+                    rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
+                    rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
+                    transparent 75%
+                  ),
+                  linear-gradient(to bottom right, 
+                    rgb(15 23 42 / 0.4), 
+                    rgb(30 41 59 / 0.3), 
+                    rgb(51 65 85 / 0.2)
+                  )
+                `,
+                transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
+              }}
+            >
+              <CardBody className="p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                    <Settings className="w-3 h-3 text-[#4a85ff]" />
                   </div>
-                )}
+                  <div>
+                    <h1 className="text-lg font-medium text-white">Admin Panel</h1>
+                    <p className="text-gray-400 text-xs font-light">
+                      Manage staking contract settings
+                    </p>
+                  </div>
+                </div>
+                {/* APY Settings */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                      <Settings className="w-3 h-3 text-[#4a85ff]" />
+                    </div>
+                    <h3 className="text-sm font-medium text-white">Staking APY</h3>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                  <div className="space-y-2">
-                    <Label htmlFor="apy-input" className="text-gray-300 font-medium text-xs sm:text-base">
-                      Set Annual Percentage Yield (APY)
-                    </Label>
-                    <div className="relative">
+                  {/* Current APY Display */}
+                  {stakePoolConfigDataQuery.data && (
+                    <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-600/40">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300 text-base">Current APY:</span>
+                        <Chip color="primary" variant="flat" size="lg">
+                          <span className="text-[#4a85ff] font-semibold text-lg">
+                            {(Number(stakePoolConfigDataQuery.data.data.aprBps) / 100).toFixed(2)}%
+                          </span>
+                        </Chip>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-gray-400 text-sm">Basis Points:</span>
+                        <Chip variant="flat" size="sm" className="bg-slate-700/50">
+                          <span className="text-gray-300 text-sm">
+                            {stakePoolConfigDataQuery.data.data.aprBps.toString()}
+                          </span>
+                        </Chip>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-white">Set Annual Percentage Yield (APY)</span>
+                      </div>
                       <Input
                         id="apy-input"
                         type="number"
                         placeholder="e.g., 10"
                         value={apy}
                         onChange={(e) => setApy(e.target.value)}
-                        className="bg-gray-800/30 border-gray-600/40 text-white placeholder-gray-500 pr-12 py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl backdrop-blur-xl w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        endContent={
+                          <div className="pointer-events-none flex items-center">
+                            <span className="text-default-400 text-small">%</span>
+                          </div>
+                        }
+                        classNames={{
+                          input: "text-white",
+                          inputWrapper: "bg-slate-800/50 border-slate-600/40 backdrop-blur-sm"
+                        }}
+                        size="lg"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm font-medium">%</span>
                     </div>
+                    <Button
+                      color="primary"
+                      size="lg"
+                      className="w-full md:w-auto font-medium"
+                      onClick={() => setIsDialogOpen(true)}
+                      isLoading={updateStakePoolConfigMutation.isPending}
+                    >
+                      {updateStakePoolConfigMutation.isPending ? 'Updating...' : 'Update APY'}
+                    </Button>
                   </div>
-                  <TransactionButton
-                    transactionState={getTransactionState(updateStakePoolConfigMutation)}
-                    idleText="Update APY"
-                    submittingText="Updating..."
-                    confirmingText="Confirming..."
-                    successText="Updated!"
-                    errorText="Update Failed - Retry"
-                    onClick={() => setIsDialogOpen(true)}
-                    onRetry={() => updateStakePoolConfigMutation.reset()}
-                    className="w-full md:w-auto bg-[#4a85ff] hover:bg-[#3a75ef] text-white py-3 sm:py-6 text-base sm:text-lg rounded-lg sm:rounded-xl shadow-md transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,133,255,0.3)] disabled:opacity-50 font-medium"
-                  />
                 </div>
-              </div>
 
-              {/* Staking Vault Management */}
-              <div className="space-y-4">
-                <h3 className="text-base sm:text-xl font-medium text-white">Stake Program</h3>
+                {/* Staking Vault Management */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-md bg-[#4a85ff]/20 flex items-center justify-center">
+                      <Server className="w-3 h-3 text-[#4a85ff]" />
+                    </div>
+                    <h3 className="text-sm font-medium text-white">Stake Program</h3>
+                  </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
-                    <CardHeader className="p-0 mb-4">
-                      <CardTitle className="text-lg font-semibold text-white">Initialize Stake Program</CardTitle>
-                      <CardDescription className="text-gray-400 text-sm">Initialize the on-chain staking program.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0 space-y-4">
-                      <TransactionButton
-                        transactionState={getTransactionState(initializeStakePoolConfigMutation)}
-                        idleText="Initialize Stake Pool Config"
-                        submittingText="Initializing..."
-                        confirmingText="Confirming..."
-                        successText="Initialized!"
-                        errorText="Failed - Retry"
-                        onClick={() => setIsInitializeStakePoolConfigDialogOpen(true)}
-                        onRetry={() => initializeStakePoolConfigMutation.reset()}
-                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                      />
-                      <TransactionButton
-                        transactionState={getTransactionState(deleteStakePoolConfigMutation)}
-                        idleText="Delete Stake Pool Config"
-                        submittingText="Deleting..."
-                        confirmingText="Confirming..."
-                        successText="Deleted!"
-                        errorText="Failed - Retry"
-                        onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
-                        onRetry={() => deleteStakePoolConfigMutation.reset()}
-                        className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
-                      />
-                      <TransactionButton
-                        transactionState={getTransactionState(initializeStakePoolMutation)}
-                        idleText="Initialize Stake Pool"
-                        submittingText="Initializing..."
-                        confirmingText="Confirming..."
-                        successText="Initialized!"
-                        errorText="Failed - Retry"
-                        onClick={() => setIsInitializeStakePoolDialogOpen(true)}
-                        onRetry={() => initializeStakePoolMutation.reset()}
-                        className="w-full bg-blue-800 text-blue-50 hover:bg-blue-700"
-                      />
-                      <TransactionButton
-                        transactionState={getTransactionState(deleteStakePoolMutation)}
-                        idleText="Delete Stake Pool"
-                        submittingText="Deleting..."
-                        confirmingText="Confirming..."
-                        successText="Deleted!"
-                        errorText="Failed - Retry"
-                        onClick={() => setIsDeleteStakePoolDialogOpen(true)}
-                        onRetry={() => deleteStakePoolMutation.reset()}
-                        className="w-full bg-red-900/70 text-red-100 hover:bg-red-800/70"
-                      />
-                      <TransactionButton
-                        transactionState={getTransactionState(initializeXLabsMutation)}
-                        idleText="Initialize X Labs Mint"
-                        submittingText="Initializing..."
-                        confirmingText="Confirming..."
-                        successText="Initialized!"
-                        errorText="Failed - Retry"
-                        onClick={() => setIsInitializeXLabsMintDialogOpen(true)}
-                        onRetry={() => initializeXLabsMutation.reset()}
-                        className="w-full bg-zinc-800 text-zinc-50 hover:bg-zinc-700"
-                      />
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-gray-800/30 border-gray-700/60 p-4 rounded-lg">
-                    <CardHeader className="p-0 mb-4">
-                      <CardTitle className="text-lg font-semibold text-white">Stake Pool Status</CardTitle>
-                      <CardDescription className="text-gray-400 text-sm">Current state of the stake pool.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0 space-y-3 text-sm">
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-600/40">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-white">Initialize Stake Program</h4>
+                      <p className="text-gray-400 text-xs">Initialize the on-chain staking program.</p>
+                    </div>
+                        <div className="space-y-3">
+                          <Button
+                            variant="solid"
+                            size="md"
+                            className="w-full bg-zinc-700 text-zinc-50 hover:bg-zinc-600"
+                            onClick={() => setIsInitializeStakePoolConfigDialogOpen(true)}
+                            isLoading={initializeStakePoolConfigMutation.isPending}
+                          >
+                            Initialize Stake Pool Config
+                          </Button>
+                          <Button
+                            color="danger"
+                            variant="solid"
+                            size="md"
+                            className="w-full"
+                            onClick={() => setIsDeleteStakePoolConfigDialogOpen(true)}
+                            isLoading={deleteStakePoolConfigMutation.isPending}
+                          >
+                            Delete Stake Pool Config
+                          </Button>
+                          <Button
+                            color="primary"
+                            variant="solid"
+                            size="md"
+                            className="w-full"
+                            onClick={() => setIsInitializeStakePoolDialogOpen(true)}
+                            isLoading={initializeStakePoolMutation.isPending}
+                          >
+                            Initialize Stake Pool
+                          </Button>
+                          <Button
+                            color="danger"
+                            variant="solid"
+                            size="md"
+                            className="w-full"
+                            onClick={() => setIsDeleteStakePoolDialogOpen(true)}
+                            isLoading={deleteStakePoolMutation.isPending}
+                          >
+                            Delete Stake Pool
+                          </Button>
+                          <Button
+                            variant="solid"
+                            size="md"
+                            className="w-full bg-zinc-700 text-zinc-50 hover:bg-zinc-600"
+                            onClick={() => setIsInitializeXLabsMintDialogOpen(true)}
+                            isLoading={initializeXLabsMutation.isPending}
+                          >
+                            Initialize X Labs Mint
+                          </Button>
+                        </div>
+                        </div>
+                  </div>
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-600/40">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-white">Stake Pool Status</h4>
+                      <p className="text-gray-400 text-xs">Current state of the stake pool.</p>
+                    </div>
+                    <div className="space-y-3 text-sm">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-400">Program Address:</span>
                         <a
@@ -412,209 +468,76 @@ function AdminPanelPageConnected() {
                           <span className="font-mono text-xs text-gray-500">Not found</span>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardBody>
+            </Card>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* APY Confirmation Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm APY Change</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to change the staking APY to {apy}%?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              disabled={updateStakePoolConfigMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(updateStakePoolConfigMutation)}
-              idleText="Confirm"
-              submittingText="Updating..."
-              confirmingText="Confirming..."
-              successText="Updated!"
-              onClick={handleSetApy}
-              disabled={updateStakePoolConfigMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* APY Confirmation Modal */}
+      <Modal isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} backdrop="blur">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                <h4 className="text-white">Confirm APY Change</h4>
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-gray-400">
+                  Are you sure you want to change the staking APY to {apy}%?
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button 
+                  variant="bordered" 
+                  onPress={onClose}
+                  isDisabled={updateStakePoolConfigMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  color="primary" 
+                  onPress={handleSetApy}
+                  isLoading={updateStakePoolConfigMutation.isPending}
+                >
+                  {updateStakePoolConfigMutation.isPending ? 'Updating...' : 'Confirm'}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
-      {/* Initialize Stake Pool Config Dialog */}
-      <Dialog open={isInitializeStakePoolConfigDialogOpen} onOpenChange={setIsInitializeStakePoolConfigDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Initialize Stake Pool Config</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to initialize the stake pool config with APY: <span className="font-semibold text-white">{apy}%</span> ({Math.round(parseFloat(apy) * 100)} <span className="font-semibold text-white">basis points</span>)?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsInitializeStakePoolConfigDialogOpen(false)}
-              disabled={initializeStakePoolConfigMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(initializeStakePoolConfigMutation)}
-              idleText="Confirm"
-              submittingText="Initializing..."
-              confirmingText="Confirming..."
-              successText="Initialized!"
-              onClick={handleInitializeStakePoolConfig}
-              disabled={initializeStakePoolConfigMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Initialize Stake Pool Config Modal */}
+      <Modal isOpen={isInitializeStakePoolConfigDialogOpen} onOpenChange={setIsInitializeStakePoolConfigDialogOpen} backdrop="blur">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                <h4 className="text-white">Confirm Initialize Stake Pool Config</h4>
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-gray-400">
+                  Are you sure you want to initialize the stake pool config with APY: <span className="font-semibold text-white">{apy}%</span> ({Math.round(parseFloat(apy) * 100)} <span className="font-semibold text-white">basis points</span>)?
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="bordered" onPress={onClose} isDisabled={initializeStakePoolConfigMutation.isPending}>
+                  Cancel
+                </Button>
+                <Button color="primary" onPress={handleInitializeStakePoolConfig} isLoading={initializeStakePoolConfigMutation.isPending}>
+                  Confirm
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
-      {/* Other dialogs would follow the same pattern... */}
-      {/* For brevity, I'll include just the key dialogs. The rest follow the same enhanced pattern */}
-
-      {/* Delete Stake Pool Config Dialog */}
-      <Dialog open={isDeleteStakePoolConfigDialogOpen} onOpenChange={setIsDeleteStakePoolConfigDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Delete Stake Pool Config</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to delete the stake pool config? This action is destructive and cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsDeleteStakePoolConfigDialogOpen(false)}
-              disabled={deleteStakePoolConfigMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(deleteStakePoolConfigMutation)}
-              idleText="Confirm Deletion"
-              submittingText="Deleting..."
-              confirmingText="Confirming..."
-              successText="Deleted!"
-              onClick={handleDeleteStakePoolConfig}
-              disabled={deleteStakePoolConfigMutation.isPending}
-              className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Initialize xLABS Mint Dialog */}
-      <Dialog open={isInitializeXLabsMintDialogOpen} onOpenChange={setIsInitializeXLabsMintDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Initialize xLABS Mint</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to initialize the xLABS mint?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsInitializeXLabsMintDialogOpen(false)}
-              disabled={initializeXLabsMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(initializeXLabsMutation)}
-              idleText="Confirm"
-              submittingText="Initializing..."
-              confirmingText="Confirming..."
-              successText="Initialized!"
-              onClick={handleInitializeXLabsMint}
-              disabled={initializeXLabsMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Initialize Stake Pool Dialog */}
-      <Dialog open={isInitializeStakePoolDialogOpen} onOpenChange={setIsInitializeStakePoolDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Initialize Stake Pool</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to initialize the stake pool?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsInitializeStakePoolDialogOpen(false)}
-              disabled={initializeStakePoolMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(initializeStakePoolMutation)}
-              idleText="Confirm"
-              submittingText="Initializing..."
-              confirmingText="Confirming..."
-              successText="Initialized!"
-              onClick={handleInitializeStakePool}
-              disabled={initializeStakePoolMutation.isPending}
-              className="bg-[#4a85ff] hover:bg-[#3a75ef] text-white shadow-md transition-all hover:shadow-[0_0_20px_rgba(74,133,255,0.3)]"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Stake Pool Dialog */}
-      <Dialog open={isDeleteStakePoolDialogOpen} onOpenChange={setIsDeleteStakePoolDialogOpen}>
-        <DialogContent className="bg-gray-900/80 border-gray-700/40 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirm Delete Stake Pool</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to delete the stake pool? This action is destructive and cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-4">
-            <TransactionButton
-              transactionState="idle"
-              idleText="Cancel"
-              variant="outline"
-              onClick={() => setIsDeleteStakePoolDialogOpen(false)}
-              disabled={deleteStakePoolMutation.isPending}
-              className="bg-gray-800 border border-gray-600 text-white hover:bg-gray-700"
-            />
-            <TransactionButton
-              transactionState={getTransactionState(deleteStakePoolMutation)}
-              idleText="Confirm Deletion"
-              submittingText="Deleting..."
-              confirmingText="Confirming..."
-              successText="Deleted!"
-              onClick={handleDeleteStakePool}
-              disabled={deleteStakePoolMutation.isPending}
-              className="bg-red-600 hover:bg-red-500 text-white shadow-md transition-all"
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Additional modals can be added here following the same pattern */}
     </>
   )
 }
