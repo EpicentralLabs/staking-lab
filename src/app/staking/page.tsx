@@ -240,20 +240,15 @@ function StakingPageConnected() {
                 ) : vaultAccountQuery.error ? (
                   "Error"
                 ) : (
-                  `${Math.round(totalValueLocked).toLocaleString()}`
+                  <>
+                    {`${Math.round(totalValueLocked).toLocaleString()}`}
+                    <span className="text-white/50 text-lg font-normal ml-2">
+                      (${Math.round(totalValueLockedUsd).toLocaleString()} USDC)
+                    </span>
+                  </>
                 )}
               </div>
             </div>
-          </div>
-          
-          <div className="flex justify-start">
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 hover:border-[#4a85ff]/50 text-[#4a85ff] transition-all duration-300 rounded-lg"
-              variant="bordered"
-            >
-              🏛️ Epicentral DAO ↗
-            </Button>
           </div>
         </div>
       </motion.div>
