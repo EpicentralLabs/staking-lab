@@ -205,18 +205,16 @@ function StakingPageConnected() {
         <div className="absolute top-12 right-48 w-16 h-16 rounded-full bg-gradient-to-br from-[#4a85ff]/15 to-[#1851c4]/15 blur-sm animate-pulse delay-700"></div>
         
         <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent mb-6">
-          LABS Safety Module
+          Stake LABS for xLABS
         </h1>
         <p className="text-xl text-white/70 max-w-4xl mx-auto mb-8 leading-relaxed">
-          The LABS Safety Module ("LSM") is a fully on-chain system for automatically covering 
-          bad debt and managing protocol risk. Staking in LSM allows users to enjoy benefits 
-          across protocol fee discounts and boosted governance power. <span className="text-[#4a85ff]">Learn more about LSM.</span>
+          The Staking Lab allows is an on-chain revenue sharing model that allows users to stake LABS for "xLABS", a revenue sharing token. This allows for Epicentral DAO members to realize gains from OPX without giving up their governance power.
         </p>
       </motion.div>
 
-      {/* Main Stats Bar */}
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
-        <div className="flex items-center gap-8">
+      {/* Stats Above Container */}
+      <motion.div variants={itemVariants} className="max-w-4xl mx-auto mb-4">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
               <TrendingUp className="w-5 h-5 text-[#4a85ff]" />
@@ -229,22 +227,21 @@ function StakingPageConnected() {
                 ) : vaultAccountQuery.error ? (
                   "Error"
                 ) : (
-                  `${totalValueLocked.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M`
+                  `${Math.round(totalValueLocked).toLocaleString()}`
                 )}
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-white/70 text-sm">About Governance</span>
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 hover:border-[#4a85ff]/50 text-[#4a85ff] transition-all duration-300 rounded-lg"
-            variant="bordered"
-          >
-            🏛️ Epicentral DAO ↗
-          </Button>
+          
+          <div className="flex justify-start">
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-[#4a85ff]/20 to-[#1851c4]/20 border border-[#4a85ff]/30 hover:border-[#4a85ff]/50 text-[#4a85ff] transition-all duration-300 rounded-lg"
+              variant="bordered"
+            >
+              🏛️ Epicentral DAO ↗
+            </Button>
+          </div>
         </div>
       </motion.div>
 
@@ -272,29 +269,19 @@ function StakingPageConnected() {
         >
           <CardBody className="p-8">
             <div className="text-center space-y-8">
-              {/* Header */}
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30">
-                  <TrendingUp className="w-6 h-6 text-[#4a85ff]" />
-                </div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent">
-                  Stake LABS
-                </h2>
-              </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="space-y-2">
-                  <span className="text-white/70 text-sm font-medium">Est. APY</span>
-                  <div className="text-2xl font-bold text-green-400">
+                  <span className="text-white/70 text-sm font-medium">APR</span>
+                  <div className="text-2xl font-bold text-[#4AFFBA] animate-pulse" style={{textShadow: '0 0 15px #4AFFBA50, 0 0 30px #4AFFBA30'}}>
                     {stakePoolConfigQuery.isLoading ? "Loading..." : `${stakeApy}%`}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <span className="text-white/70 text-sm font-medium">Cumulative Earnings</span>
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4a85ff] to-[#1851c4]"></div>
+                  <div className="flex items-center justify-center">
                     <span className="text-2xl font-bold text-white/95">
                       {pendingRewards.toFixed(4)}
                     </span>
@@ -303,8 +290,7 @@ function StakingPageConnected() {
 
                 <div className="space-y-2">
                   <span className="text-white/70 text-sm font-medium">My stake</span>
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4a85ff] to-[#1851c4]"></div>
+                  <div className="flex items-center justify-center">
                     <span className="text-2xl font-bold text-white/95">
                       {stakedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -322,41 +308,35 @@ function StakingPageConnected() {
                   <span className="text-white/95 text-lg font-semibold">
                     {availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LABS
                   </span>
-                  <Button
-                    className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-lg px-6 py-2"
-                    onPress={() => setIsStakeModalOpen(true)}
-                    isDisabled={availableBalance <= 0}
-                  >
-                    Stake
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-lg px-6 py-2"
+                      onPress={() => setIsStakeModalOpen(true)}
+                      isDisabled={availableBalance <= 0}
+                    >
+                      Stake
+                    </Button>
+                    <Button
+                      className="bg-transparent border border-orange-500 hover:border-orange-400 text-orange-500 hover:text-orange-400 font-semibold transition-all duration-300 rounded-lg px-6 py-2"
+                      onPress={() => setIsUnstakeModalOpen(true)}
+                      isDisabled={stakedAmount <= 0}
+                    >
+                      Unstake
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* Warning Message */}
-              <div className="bg-gradient-to-r from-orange-500/10 via-orange-400/5 to-orange-500/10 border border-orange-500/30 rounded-lg p-4 text-sm text-orange-200">
-                You are accessing LABS from a restricted territory. Increasing stake is prohibited.
-              </div>
-
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+              <div className="flex justify-center">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                  onPress={() => setIsUnstakeModalOpen(true)}
-                  startContent={<Minus className="w-4 h-4" />}
-                  isDisabled={stakedAmount <= 0}
-                >
-                  Unstake Tokens
-                </Button>
-
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg shadow-[#4a85ff]/30 hover:shadow-[#4a85ff]/50 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className={`${pendingRewards > 0 ? 'bg-gradient-to-r from-[#4a85ff] to-[#1851c4] hover:from-[#5a95ff] hover:to-[#2861d4] text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed'} font-semibold transition-all duration-300 rounded-xl px-6 py-3 h-12 text-base shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
                   isDisabled={pendingRewards <= 0}
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
                 >
-                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim Rewards" : "No Rewards"}
+                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim xLABS" : "Claim xLABS"}
                 </Button>
               </div>
             </div>
@@ -364,105 +344,6 @@ function StakingPageConnected() {
         </Card>
       </motion.div>
 
-      {/* Benefits Section */}
-      <motion.div variants={itemVariants} className="mb-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-white/95 to-white/90 bg-clip-text text-transparent mb-4">
-            Benefits of Staking
-          </h2>
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              className="text-[#4a85ff] hover:text-[#5a95ff] transition-all duration-300"
-              variant="light"
-            >
-              How it works ↗
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Vote on proposals */}
-          <motion.div 
-            variants={itemVariants}
-            className="group"
-          >
-            <Card
-              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-[#4a85ff]/30 h-full"
-            >
-              <CardBody className="p-6 text-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#4a85ff]/20 to-[#1851c4]/20 flex items-center justify-center border border-[#4a85ff]/30 mx-auto">
-                  <Vote className="w-8 h-8 text-[#4a85ff]" />
-                </div>
-                <h3 className="text-xl font-semibold text-white/95">
-                  Vote on proposals
-                </h3>
-                <p className="text-white/70 leading-relaxed">
-                  Vote on LABS proposals and shape the future of LABS
-                </p>
-                <div className="pt-2">
-                  <span className="text-[#4a85ff] text-sm font-medium">Realms • Futarchy</span>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
-
-          {/* Fee Discounts */}
-          <motion.div 
-            variants={itemVariants}
-            className="group"
-          >
-            <Card
-              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-orange-400/30 h-full"
-            >
-              <CardBody className="p-6 text-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center border border-orange-400/30 mx-auto">
-                  <DollarSign className="w-8 h-8 text-orange-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white/95">
-                  Revenue Sharing
-                </h3>
-                <p className="text-white/70 leading-relaxed">
-                  Receive xLABS tokens when staking LABS based on the amount staked
-                </p>
-                <div className="pt-2">
-                  <span className="text-orange-400 text-sm font-medium">Learn more</span>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
-
-          {/* Secure the Protocol */}
-          <motion.div 
-            variants={itemVariants}
-            className="group"
-          >
-            <Card
-              className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/50 border border-slate-700/40 backdrop-blur-sm transition-all duration-300 ease-out rounded-2xl hover:border-green-400/30 h-full"
-            >
-              <CardBody className="p-6 text-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400/20 to-green-600/20 flex items-center justify-center border border-green-400/30 mx-auto">
-                  <Shield className="w-8 h-8 text-green-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white/95">
-                  Secure the Protocol
-                </h3>
-                <p className="text-white/70 leading-relaxed">
-                  Secure the LABS Protocol with your staked LABS through LSM
-                </p>
-                <div className="pt-2">
-                  <span className="text-green-400 text-sm font-medium">Learn more</span>
-                </div>
-              </CardBody>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Unstaking Info */}
-        <div className="text-center mt-12 text-white/60 text-sm">
-          Unstaking can be requested at any time and will be available after 3-5 days. Yield will not be accrued during the cooldown period, while losses can be incurred. <span className="text-[#4a85ff]">Learn More</span>
-        </div>
-      </motion.div>
 
       {/* Modals */}
       <StakeModal

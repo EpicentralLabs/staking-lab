@@ -99,7 +99,7 @@ export function StakeModal({
     <Modal 
       isOpen={isOpen} 
       onOpenChange={handleModalClose}
-      size="lg"
+      size="md"
       backdrop="blur"
       motionProps={{
         variants: {
@@ -134,43 +134,36 @@ export function StakeModal({
     >
       <div ref={modalContentRef}>
         <ModalContent 
-          className="border border-gray-700/40 backdrop-blur-lg max-h-[90vh] overflow-hidden relative transition-all duration-300 ease-out rounded-2xl"
+          className="border border-gray-700/30 backdrop-blur-xl max-h-[80vh] overflow-hidden relative transition-all duration-300 ease-out rounded-xl max-w-md mx-auto"
           style={{
             background: `
-              radial-gradient(var(--glow-size, 600px) circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-                rgba(74, 133, 255, calc(0.15 * var(--glow-opacity, 0) * var(--glow-intensity, 1))), 
-                rgba(88, 80, 236, calc(0.08 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 25%,
-                rgba(74, 133, 255, calc(0.03 * var(--glow-opacity, 0) * var(--glow-intensity, 1))) 50%,
-                transparent 75%
-              ),
               linear-gradient(to bottom right, 
-                rgb(15 23 42 / 0.9), 
-                rgb(30 41 59 / 0.8), 
-                rgb(51 65 85 / 0.7)
+                rgb(15 23 42 / 0.95), 
+                rgb(30 41 59 / 0.9), 
+                rgb(51 65 85 / 0.85)
               )
-            `,
-            transition: 'var(--glow-transition, all 200ms cubic-bezier(0.4, 0, 0.2, 1))'
+            `
           }}
         >
         {(onClose) => (
           <>
-            <ModalHeader className="flex items-center justify-between border-b border-white/5 px-8 py-6">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#4a85ff]/10 flex items-center justify-center border border-[#4a85ff]/20">
-                  <ArrowUpRight className="w-5 h-5 text-[#4a85ff]" />
+            <ModalHeader className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#4a85ff]/10 flex items-center justify-center border border-[#4a85ff]/20">
+                  <ArrowUpRight className="w-4 h-4 text-[#4a85ff]" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white/95">
+                  <h2 className="text-lg font-semibold text-white/95">
                     Stake Tokens
                   </h2>
-                  <p className="text-sm text-white/60">
+                  <p className="text-xs text-white/60">
                     Deposit LABS tokens to start earning rewards
                   </p>
                 </div>
               </div>
             </ModalHeader>
 
-            <ModalBody className="p-8 overflow-y-auto">
+            <ModalBody className="p-6 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -248,7 +241,7 @@ export function StakeModal({
               </motion.div>
             </ModalBody>
 
-            <ModalFooter className="border-t border-white/5 px-8 py-6">
+            <ModalFooter className="border-t border-white/10 px-6 py-4">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2 text-sm text-white/60">
                   <ArrowUpRight className="w-4 h-4" />
