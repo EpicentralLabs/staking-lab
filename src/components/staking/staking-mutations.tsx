@@ -379,7 +379,7 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
     const userXLabsAccountQuery = useUserXLabsAccount()
 
     return useMutation({
-        onMutate: async () => {
+        onMutate: async (actualPendingRewards?: number) => {
             const toast = new ProgressiveTransactionToast('Claiming Rewards')
             toast.start()
 
@@ -391,11 +391,18 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             const previousXLabsAccount = queryClient.getQueryData(['user-xlabs-account'])
             const previousStakeAccount = queryClient.getQueryData(['user-stake-account'])
 
-            // Estimate pending rewards for optimistic update
-            const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as UserStakeAccountQueryData | undefined
+            // Use actual pending rewards if provided, otherwise estimate for optimistic update
             let pendingRewards = BigInt(1000000) // Default fallback
+            let actualClaimedAmount = pendingRewards // For toast display
 
-            if (stakeAccountData?.exists && stakeAccountData?.data) {
+            if (actualPendingRewards && actualPendingRewards > 0) {
+                actualClaimedAmount = BigInt(Math.floor(actualPendingRewards * 1e9))
+                pendingRewards = actualClaimedAmount
+            } else {
+                // Estimate pending rewards for optimistic update when actual amount not provided
+                const stakeAccountData = queryClient.getQueryData(['user-stake-account']) as UserStakeAccountQueryData | undefined
+
+                if (stakeAccountData?.exists && stakeAccountData?.data) {
                 const timeStaked = Date.now() - Number(stakeAccountData.data.lastUpdateSlot) * 400
                 const stakePoolConfig = queryClient.getQueryData(['stake-pool-config-data']) as StakePoolConfigQueryData | undefined
                 if (stakePoolConfig?.data?.aprBps && stakeAccountData.data.stakedAmount) {
@@ -404,8 +411,12 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
                     const annualRewards = (stakedAmount * apr)
                     const timeRewards = annualRewards * (timeStaked / (365 * 24 * 60 * 60 * 1000))
                     pendingRewards = BigInt(Math.floor(timeRewards))
+                    if (!actualPendingRewards) {
+                        actualClaimedAmount = pendingRewards
+                    }
                 }
             }
+            } // Close the else block
 
             // Optimistically update xLABS balance
             queryClient.setQueryData(['user-xlabs-account'], (old: UserXLabsAccountQueryData | undefined) => {
@@ -441,11 +452,11 @@ export function useEnhancedClaimFromStakePoolMutation(refetchClaimingQueries?: (
             return {
                 previousXLabsAccount,
                 previousStakeAccount,
-                claimedAmount: pendingRewards,
+                claimedAmount: actualClaimedAmount,
                 toast
             } as MutationContext
         },
-        mutationFn: async () => {
+        mutationFn: async (actualPendingRewards?: number) => {
 
             // Validation checks
             if (!stakeAccountQuery.data || !stakePoolAddress.data || !stakePoolConfig.data ||

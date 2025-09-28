@@ -195,7 +195,7 @@ function StakingPageConnected() {
     if (pendingRewards <= 0) return;
 
     try {
-      await claimMutation.mutateAsync();
+      await claimMutation.mutateAsync(pendingRewards);
       
       // Wait for blockchain data to propagate, then refetch (5 seconds for account overview)
       setTimeout(async () => {
