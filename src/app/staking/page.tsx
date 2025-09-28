@@ -344,7 +344,7 @@ function StakingPageConnected() {
                   isLoading={claimMutation.isPending}
                   onClick={handleClaimConfirm}
                 >
-                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim xLABS" : "Claim xLABS"}
+                  {claimMutation.isPending ? 'Claiming...' : pendingRewards > 0 ? "Claim &quot;xLABS&quot;" : "Claim &quot;xLABS&quot;"}
                 </Button>
               </div>
             </div>
