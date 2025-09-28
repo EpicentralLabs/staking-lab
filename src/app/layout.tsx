@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import '@heroui/react/styles.css'
 import './globals.css'
 import { AppProviders } from '@/components/app-providers'
 import { DynamicAppLayout } from '@/components/dynamic-app-layout'
