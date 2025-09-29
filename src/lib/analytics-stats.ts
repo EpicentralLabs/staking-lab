@@ -30,6 +30,7 @@ export async function recordXLabsClaim(
 ): Promise<ClaimResult> {
   try {
     const currentTime = Math.floor(Date.now() / 1000)
+    const claimAmountBigInt = BigInt(claimAmount)
 
     // Use a transaction to ensure consistency
     const result = await prisma.$transaction(async (tx) => {
@@ -44,25 +45,25 @@ export async function recordXLabsClaim(
         where: { walletAddress },
         update: {
           totalXLabsClaimed: {
-            increment: claimAmount
+            increment: claimAmountBigInt
           },
           pendingXLabsClaim: {
-            decrement: claimAmount // Reduce pending by claimed amount
+            decrement: claimAmountBigInt // Reduce pending by claimed amount
           },
           lastClaimTime: currentTime
         },
         create: {
           walletAddress,
           firstVisitTime: currentTime,
-          labsBalance: 0,
-          xLABSBalance: 0,
-          stakedBalance: 0,
-          unstakedBalance: 0,
-          pendingRewards: 0,
-          interestIndex: 0,
+          labsBalance: BigInt(0),
+          xLABSBalance: BigInt(0),
+          stakedBalance: BigInt(0),
+          unstakedBalance: BigInt(0),
+          pendingRewards: BigInt(0),
+          interestIndex: BigInt(0),
           bump: 0,
-          totalXLabsClaimed: claimAmount,
-          pendingXLabsClaim: 0, // New user starts with 0 pending
+          totalXLabsClaimed: claimAmountBigInt,
+          pendingXLabsClaim: BigInt(0), // New user starts with 0 pending
           lastClaimTime: currentTime
         }
       })
@@ -72,19 +73,19 @@ export async function recordXLabsClaim(
         where: { id: 'global' },
         update: {
           totalXLabsClaimed: {
-            increment: claimAmount
+            increment: claimAmountBigInt
           },
           totalPendingXLabs: {
-            decrement: claimAmount // Reduce global pending
+            decrement: claimAmountBigInt // Reduce global pending
           },
           lastUpdated: currentTime
         },
         create: {
           id: 'global',
-          totalXLabsClaimed: claimAmount,
-          totalPendingXLabs: 0,
+          totalXLabsClaimed: claimAmountBigInt,
+          totalPendingXLabs: BigInt(0),
           totalUsers: 1,
-          totalStaked: 0,
+          totalStaked: BigInt(0),
           lastUpdated: currentTime
         }
       })
@@ -99,10 +100,10 @@ export async function recordXLabsClaim(
 
     return {
       success: true,
-      userTotalClaimed: result.userTotalClaimed,
-      globalTotalClaimed: result.globalTotalClaimed,
-      userPendingClaim: result.userPendingClaim,
-      globalPendingClaim: result.globalPendingClaim
+      userTotalClaimed: Number(result.userTotalClaimed),
+      globalTotalClaimed: Number(result.globalTotalClaimed),
+      userPendingClaim: Number(result.userPendingClaim),
+      globalPendingClaim: Number(result.globalPendingClaim)
     }
   } catch (error) {
     console.error('Error recording xLABS claim:', error)
@@ -126,6 +127,7 @@ export async function updatePendingXLabs(
 ): Promise<PendingUpdateResult> {
   try {
     const currentTime = Math.floor(Date.now() / 1000)
+    const newPendingAmountBigInt = BigInt(newPendingAmount)
 
     const result = await prisma.$transaction(async (tx) => {
       // Get current user's pending amount
@@ -134,27 +136,27 @@ export async function updatePendingXLabs(
         select: { pendingXLabsClaim: true }
       })
 
-      const currentPending = currentUser?.pendingXLabsClaim || 0
-      const pendingDifference = newPendingAmount - currentPending
+      const currentPending = currentUser?.pendingXLabsClaim || BigInt(0)
+      const pendingDifference = newPendingAmountBigInt - currentPending
 
       // Update user's pending amount
       const user = await tx.user.upsert({
         where: { walletAddress },
         update: {
-          pendingXLabsClaim: newPendingAmount,
+          pendingXLabsClaim: newPendingAmountBigInt,
           lastPendingUpdate: currentTime
         },
         create: {
           walletAddress,
           firstVisitTime: currentTime,
-          labsBalance: 0,
-          xLABSBalance: 0,
-          stakedBalance: 0,
-          unstakedBalance: 0,
-          pendingRewards: 0,
-          interestIndex: 0,
+          labsBalance: BigInt(0),
+          xLABSBalance: BigInt(0),
+          stakedBalance: BigInt(0),
+          unstakedBalance: BigInt(0),
+          pendingRewards: BigInt(0),
+          interestIndex: BigInt(0),
           bump: 0,
-          pendingXLabsClaim: newPendingAmount,
+          pendingXLabsClaim: newPendingAmountBigInt,
           lastPendingUpdate: currentTime
         }
       })
@@ -170,9 +172,9 @@ export async function updatePendingXLabs(
         },
         create: {
           id: 'global',
-          totalPendingXLabs: newPendingAmount,
+          totalPendingXLabs: newPendingAmountBigInt,
           totalUsers: 1,
-          totalStaked: 0,
+          totalStaked: BigInt(0),
           lastUpdated: currentTime
         }
       })
@@ -185,8 +187,8 @@ export async function updatePendingXLabs(
 
     return {
       success: true,
-      userPendingClaim: result.userPendingClaim,
-      globalPendingClaim: result.globalPendingClaim
+      userPendingClaim: Number(result.userPendingClaim),
+      globalPendingClaim: Number(result.globalPendingClaim)
     }
   } catch (error) {
     console.error('Error updating pending xLABS:', error)
@@ -429,15 +431,16 @@ export async function recordStakingActivity(
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0] // YYYY-MM-DD
     const endOfDayTimestamp = Math.floor(new Date(dateStr + 'T23:59:59.999Z').getTime() / 1000)
+    const amountBigInt = BigInt(stakedAmount)
 
     await prisma.$transaction(async (tx) => {
       // Update or create daily analytics record
       await tx.dailyAnalytics.upsert({
         where: { date: dateStr },
         update: {
-          totalStaked: isStaking ? { increment: stakedAmount } : undefined,
-          totalUnstaked: !isStaking ? { increment: stakedAmount } : undefined,
-          netStaked: { increment: isStaking ? stakedAmount : -stakedAmount },
+          totalStaked: isStaking ? { increment: amountBigInt } : undefined,
+          totalUnstaked: !isStaking ? { increment: amountBigInt } : undefined,
+          netStaked: { increment: isStaking ? amountBigInt : -amountBigInt },
           activeUsers: {
             increment: 1 // This is an approximation - could be refined to track unique users
           }
@@ -445,9 +448,9 @@ export async function recordStakingActivity(
         create: {
           date: dateStr,
           timestamp: endOfDayTimestamp,
-          totalStaked: isStaking ? stakedAmount : 0,
-          totalUnstaked: !isStaking ? stakedAmount : 0,
-          netStaked: isStaking ? stakedAmount : -stakedAmount,
+          totalStaked: isStaking ? amountBigInt : BigInt(0),
+          totalUnstaked: !isStaking ? amountBigInt : BigInt(0),
+          netStaked: isStaking ? amountBigInt : -amountBigInt,
           activeUsers: 1
         }
       })
@@ -489,19 +492,20 @@ export async function recordXLabsClaimActivity(
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0] // YYYY-MM-DD
     const endOfDayTimestamp = Math.floor(new Date(dateStr + 'T23:59:59.999Z').getTime() / 1000)
+    const claimedAmountBigInt = BigInt(claimedAmount)
 
     await prisma.$transaction(async (tx) => {
       // Update or create daily analytics record
       await tx.dailyAnalytics.upsert({
         where: { date: dateStr },
         update: {
-          totalClaimed: { increment: claimedAmount },
+          totalClaimed: { increment: claimedAmountBigInt },
           activeUsers: { increment: 1 }
         },
         create: {
           date: dateStr,
           timestamp: endOfDayTimestamp,
-          totalClaimed: claimedAmount,
+          totalClaimed: claimedAmountBigInt,
           activeUsers: 1
         }
       })

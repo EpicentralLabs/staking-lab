@@ -17,14 +17,15 @@ export async function POST(request: NextRequest) {
     const currentTime = Math.floor(Date.now() / 1000)
 
     // Update user's staked balance
+    const amountBigInt = BigInt(amount)
     await prisma.user.update({
       where: { walletAddress },
       data: {
         stakedBalance: isStaking 
-          ? { increment: amount }
-          : { decrement: amount },
+          ? { increment: amountBigInt }
+          : { decrement: amountBigInt },
         unstakedBalance: !isStaking
-          ? { increment: amount }
+          ? { increment: amountBigInt }
           : undefined,
         lastStakeTime: isStaking ? currentTime : undefined,
         lastUnstakeTime: !isStaking ? currentTime : undefined
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
       where: { id: 'global' },
       data: {
         totalStaked: isStaking
-          ? { increment: amount }
-          : { decrement: amount },
+          ? { increment: amountBigInt }
+          : { decrement: amountBigInt },
         lastUpdated: currentTime
       }
     })

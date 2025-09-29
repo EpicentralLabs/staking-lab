@@ -24,15 +24,15 @@ export async function POST(request: NextRequest) {
       create: {
         walletAddress,
         firstVisitTime: currentTime,
-        labsBalance: 0,
-        xLABSBalance: 0,
-        stakedBalance: 0,
-        unstakedBalance: 0,
-        pendingRewards: 0,
-        interestIndex: 0,
+        labsBalance: BigInt(0),
+        xLABSBalance: BigInt(0),
+        stakedBalance: BigInt(0),
+        unstakedBalance: BigInt(0),
+        pendingRewards: BigInt(0),
+        interestIndex: BigInt(0),
         bump: 0,
-        totalXLabsClaimed: 0,
-        pendingXLabsClaim: 0
+        totalXLabsClaimed: BigInt(0),
+        pendingXLabsClaim: BigInt(0)
       }
     })
 
@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
       create: {
         id: 'global',
         totalUsers: 1,
-        totalStaked: 0,
-        totalXLabsClaimed: 0,
-        totalPendingXLabs: 0,
+        totalStaked: BigInt(0),
+        totalXLabsClaimed: BigInt(0),
+        totalPendingXLabs: BigInt(0),
         lastUpdated: currentTime
       }
     })
@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
       user: {
         walletAddress: user.walletAddress,
         firstVisit: user.firstVisitTime === currentTime,
-        totalXLabsClaimed: user.totalXLabsClaimed,
-        pendingXLabsClaim: user.pendingXLabsClaim,
-        stakedBalance: user.stakedBalance
+        totalXLabsClaimed: user.totalXLabsClaimed.toString(),
+        pendingXLabsClaim: user.pendingXLabsClaim.toString(),
+        stakedBalance: user.stakedBalance.toString()
       }
     })
   } catch (error) {

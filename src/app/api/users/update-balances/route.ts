@@ -16,11 +16,12 @@ export async function POST(request: NextRequest) {
     const currentTime = Math.floor(Date.now() / 1000)
 
     // Update user's balance information
+    // Convert to BigInt for storage
     const user = await prisma.user.update({
       where: { walletAddress },
       data: {
-        labsBalance: labsBalance || 0,
-        stakedBalance: stakedBalance || 0,
+        labsBalance: BigInt(labsBalance || 0),
+        stakedBalance: BigInt(stakedBalance || 0),
         lastBalanceUpdate: currentTime
       }
     })
@@ -28,8 +29,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       balances: {
-        labs: user.labsBalance,
-        staked: user.stakedBalance
+        labs: user.labsBalance.toString(),
+        staked: user.stakedBalance.toString()
       }
     })
   } catch (error) {
