@@ -13,7 +13,10 @@
     "format:check": "prettier --check .",
     "lint": "next lint",
     "setup": "npm run anchor keys sync && npm run codama:js",
-    "start": "next start"
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "description": "Next.js, Tailwind, Anchor Counter example, gill (based on @solana/kit), Wallet UI",
   "keywords": [
