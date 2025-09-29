@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { EChartLabsStaked } from "@/components/charts/echart-labs-staked"
+import { EChartLabsStaked } from "@/components/charts/echart-labs-data"
 import { EChartXLabsData } from "@/components/charts/echart-xlabs-data"
 import { BarChart3 } from "lucide-react"
 
