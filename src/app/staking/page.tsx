@@ -14,6 +14,7 @@ import { AnimatedRewardCounter } from "@/components/ui/animated-reward-counter"
 import { StakeModal } from "@/components/modals/stake-modal"
 import { UnstakeModal } from "@/components/modals/unstake-modal"
 import { STAKE_REFETCH_DELAY, UNSTAKE_REFETCH_DELAY, ACCOUNT_OVERVIEW_REFETCH_DELAY, STAKE_POOL_AUTO_REFRESH_INTERVAL, LABS_TOKEN_PRICE_USD } from "@/components/constants"
+import { useActivityTracking } from "@/hooks/use-activity-tracking"
 
 export default function StakingPage() {
   const { account } = useWalletUi()
@@ -32,6 +33,7 @@ export default function StakingPage() {
 }
 
 function StakingPageConnected() {
+  const { account } = useWalletUi()
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isUnstakeModalOpen, setIsUnstakeModalOpen] = useState(false)
 
@@ -43,6 +45,9 @@ function StakingPageConnected() {
 
   // Coordinated refetch hook
   const { isRefetching, refetchStakingQueries, refetchUnstakingQueries, refetchClaimingQueries } = useCoordinatedRefetch()
+  
+  // Activity tracking hook
+  const { trackStakingActivity, trackClaimActivity } = useActivityTracking()
 
   // Enhanced mutation hooks with coordinated refetch
   const stakeMutation = useEnhancedStakeToStakePoolMutation(refetchStakingQueries)
@@ -114,6 +119,37 @@ function StakingPageConnected() {
   }, [totalValueLocked]);
 
   const availableBalance = walletBalance;
+  
+  // Update pending rewards in the database periodically
+  useEffect(() => {
+    if (!account?.address || pendingRewards <= 0) return;
+    
+    const updatePendingRewards = async () => {
+      try {
+        const pendingAmountInBaseUnit = Math.floor(pendingRewards * 1e9);
+        await fetch('/api/users/update-pending', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            walletAddress: account.address,
+            pendingAmount: pendingAmountInBaseUnit
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to update pending rewards:', error);
+      }
+    };
+    
+    // Update pending rewards every 30 seconds
+    const interval = setInterval(updatePendingRewards, 30000);
+    
+    // Update immediately on first load
+    updatePendingRewards();
+    
+    return () => clearInterval(interval);
+  }, [account?.address, pendingRewards]);
 
   // Helper function to format numbers intelligently
   const formatNumber = (value: number): string => {
@@ -138,6 +174,9 @@ function StakingPageConnected() {
       await stakeMutation.mutateAsync(numericAmount);
       setIsStakeModalOpen(false);
       
+      // Track the staking activity
+      await trackStakingActivity(numericAmount, true);
+      
       // Wait for blockchain data to propagate, then refetch
       setTimeout(async () => {
         await refetchStakingQueries();
@@ -153,6 +192,9 @@ function StakingPageConnected() {
       await unstakeMutation.mutateAsync(numericAmount);
       setIsUnstakeModalOpen(false);
       
+      // Track the unstaking activity
+      await trackStakingActivity(numericAmount, false);
+      
       // Wait for blockchain data to propagate, then refetch
       setTimeout(async () => {
         await refetchUnstakingQueries();
@@ -166,7 +208,12 @@ function StakingPageConnected() {
     if (pendingRewards <= 0) return;
 
     try {
+      // Convert pendingRewards to the base unit (multiply by 1e9)
+      const claimAmount = Math.floor(pendingRewards * 1e9);
       await claimMutation.mutateAsync(pendingRewards);
+      
+      // Track the claim activity
+      await trackClaimActivity(claimAmount);
       
       // Wait for blockchain data to propagate, then refetch (5 seconds for account overview)
       setTimeout(async () => {

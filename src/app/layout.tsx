@@ -4,6 +4,7 @@ import { AppProviders } from '@/components/app-providers'
 import { DynamicAppLayout } from '@/components/dynamic-app-layout'
 import React from 'react'
 import { install as installEd25519 } from '@solana/webcrypto-ed25519-polyfill'
+import AnalyticsInit from './analytics-init'
 
 // polyfill ed25519 for browsers (to allow `generateKeyPairSigner` to work)
 installEd25519()
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
       </head>
       <body className={`antialiased`}>
+        <AnalyticsInit />
         <AppProviders>
           <DynamicAppLayout>{children}</DynamicAppLayout>
         </AppProviders>

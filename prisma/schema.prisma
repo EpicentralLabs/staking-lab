@@ -25,6 +25,9 @@ model User {
   pendingXLabsClaim Int @default(0) // xLABS pending to be claimed by this user
   lastClaimTime   Int?   // Unix timestamp of last xLABS claim (nullable)
   lastPendingUpdate Int?  // Unix timestamp of last pending xLABS update
+  lastBalanceUpdate Int?  // Unix timestamp of last balance update
+  lastStakeTime     Int?  // Unix timestamp of last stake action
+  lastUnstakeTime   Int?  // Unix timestamp of last unstake action
 
   @@map("users")
 }
