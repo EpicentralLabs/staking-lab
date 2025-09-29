@@ -10,12 +10,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Example model - you can modify this according to your needs
 model User {
-  id        String   @id @default(cuid())
-  wallet    String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String @id @default(cuid())
+  walletAddress   String @unique
+  firstVisitTime  Int    // Unix timestamp when user first entered the site
+  labsBalance     Int    // LABS balance of the user
+  xLABSBalance    Int    // xLABS balance of the user
+  stakedBalance   Int    // Staked balance of the user
+  unstakedBalance Int    // Unstaked balance of the user
+  pendingRewards  Int    // Pending rewards of the user
+  interestIndex   Int    // Interest index of the user
+  bump            Int    // Bump of the user
+  totalXLabsClaimed Int @default(0) // Total xLABS claimed by this user
+  pendingXLabsClaim Int @default(0) // xLABS pending to be claimed by this user
+  lastClaimTime   Int?   // Unix timestamp of last xLABS claim (nullable)
+  lastPendingUpdate Int?  // Unix timestamp of last pending xLABS update
 
   @@map("users")
+}
+
+model GlobalStats {
+  id                String @id @default("global") // Single row with fixed ID
+  totalXLabsClaimed Int    @default(0) // Total xLABS claimed across all users
+  totalPendingXLabs Int    @default(0) // Total xLABS pending to be claimed across all users
+  totalUsers        Int    @default(0) // Total number of users
+  totalStaked       Int    @default(0) // Total amount staked across all users
+  lastUpdated       Int    // Unix timestamp of last update
+  createdAt         DateTime @default(now())
+
+  @@map("global_stats")
 }
