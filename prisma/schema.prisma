@@ -40,3 +40,31 @@ model GlobalStats {
 
   @@map("global_stats")
 }
+
+model DailyAnalytics {
+  id              String   @id @default(cuid())
+  date            String   // Date in YYYY-MM-DD format for easy querying
+  timestamp       Int      // Unix timestamp for the end of the day
+  
+  // LABS Staking Activity Data (for EChartLabsStaked)
+  totalStaked     Int      @default(0) // Total amount staked on this day
+  totalUnstaked   Int      @default(0) // Total amount unstaked on this day
+  netStaked       Int      @default(0) // Net staking activity (staked - unstaked)
+  cumulativeStaked Int     @default(0) // Cumulative staked amount at end of day
+  
+  // xLABS Rewards Activity Data (for EChartXLabsData)
+  totalClaimed    Int      @default(0) // Total xLABS claimed on this day
+  totalPending    Int      @default(0) // Total xLABS pending at end of day
+  dailyRewardsGenerated Int @default(0) // New rewards generated on this day
+  
+  // General metrics
+  activeUsers     Int      @default(0) // Number of users who interacted on this day
+  newUsers        Int      @default(0) // Number of new users who joined on this day
+  totalUsers      Int      @default(0) // Total cumulative users at end of day
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([date]) // Ensure one record per day
+  @@map("daily_analytics")
+}

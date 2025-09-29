@@ -10,3 +10,8 @@ export const POST_DEPOSIT_QUERY_DELAY = REFETCH_DELAY
 
 // Token pricing
 export const LABS_TOKEN_PRICE_USD = 1 // $1 per LABS token
+
+// Analytics data collection intervals
+export const ANALYTICS_DATA_COLLECTION_INTERVAL = 60 * 1000 // 1 minute (60 seconds)
+export const DAILY_ANALYTICS_SNAPSHOT_INTERVAL = 24 * 60 * 60 * 1000 // 24 hours
+export const ANALYTICS_RETENTION_DAYS = 90 // Keep 90 days of daily data

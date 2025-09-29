@@ -406,3 +406,288 @@ export async function syncGlobalPendingStats() {
     }
   }
 }
+
+/**
+ * Daily Analytics Functions for Chart Data
+ */
+
+export interface DailyAnalyticsResult {
+  success: boolean
+  data?: any
+  error?: string
+}
+
+/**
+ * Record a staking transaction for daily analytics
+ */
+export async function recordStakingActivity(
+  walletAddress: string,
+  stakedAmount: number,
+  isStaking: boolean = true // true for stake, false for unstake
+): Promise<DailyAnalyticsResult> {
+  try {
+    const now = new Date()
+    const dateStr = now.toISOString().split('T')[0] // YYYY-MM-DD
+    const endOfDayTimestamp = Math.floor(new Date(dateStr + 'T23:59:59.999Z').getTime() / 1000)
+
+    await prisma.$transaction(async (tx) => {
+      // Update or create daily analytics record
+      await tx.dailyAnalytics.upsert({
+        where: { date: dateStr },
+        update: {
+          totalStaked: isStaking ? { increment: stakedAmount } : undefined,
+          totalUnstaked: !isStaking ? { increment: stakedAmount } : undefined,
+          netStaked: { increment: isStaking ? stakedAmount : -stakedAmount },
+          activeUsers: {
+            increment: 1 // This is an approximation - could be refined to track unique users
+          }
+        },
+        create: {
+          date: dateStr,
+          timestamp: endOfDayTimestamp,
+          totalStaked: isStaking ? stakedAmount : 0,
+          totalUnstaked: !isStaking ? stakedAmount : 0,
+          netStaked: isStaking ? stakedAmount : -stakedAmount,
+          activeUsers: 1
+        }
+      })
+
+      // Update cumulative staked amount and user counts from current global state
+      const globalStats = await tx.globalStats.findUnique({
+        where: { id: 'global' }
+      })
+
+      if (globalStats) {
+        await tx.dailyAnalytics.update({
+          where: { date: dateStr },
+          data: {
+            cumulativeStaked: globalStats.totalStaked,
+            totalUsers: globalStats.totalUsers
+          }
+        })
+      }
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error recording staking activity:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Record xLABS claim activity for daily analytics
+ */
+export async function recordXLabsClaimActivity(
+  walletAddress: string,
+  claimedAmount: number
+): Promise<DailyAnalyticsResult> {
+  try {
+    const now = new Date()
+    const dateStr = now.toISOString().split('T')[0] // YYYY-MM-DD
+    const endOfDayTimestamp = Math.floor(new Date(dateStr + 'T23:59:59.999Z').getTime() / 1000)
+
+    await prisma.$transaction(async (tx) => {
+      // Update or create daily analytics record
+      await tx.dailyAnalytics.upsert({
+        where: { date: dateStr },
+        update: {
+          totalClaimed: { increment: claimedAmount },
+          activeUsers: { increment: 1 }
+        },
+        create: {
+          date: dateStr,
+          timestamp: endOfDayTimestamp,
+          totalClaimed: claimedAmount,
+          activeUsers: 1
+        }
+      })
+
+      // Update pending amounts from current global state
+      const globalStats = await tx.globalStats.findUnique({
+        where: { id: 'global' }
+      })
+
+      if (globalStats) {
+        await tx.dailyAnalytics.update({
+          where: { date: dateStr },
+          data: {
+            totalPending: globalStats.totalPendingXLabs,
+            totalUsers: globalStats.totalUsers
+          }
+        })
+      }
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error recording xLABS claim activity:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Create a daily analytics snapshot with current system state
+ * Should be called once per day to capture end-of-day totals
+ */
+export async function createDailyAnalyticsSnapshot(date?: string): Promise<DailyAnalyticsResult> {
+  try {
+    const targetDate = date || new Date().toISOString().split('T')[0]
+    const endOfDayTimestamp = Math.floor(new Date(targetDate + 'T23:59:59.999Z').getTime() / 1000)
+
+    // Get current global stats
+    const globalStats = await prisma.globalStats.findUnique({
+      where: { id: 'global' }
+    })
+
+    // Get user stats for the day (new users)
+    const startOfDay = new Date(targetDate + 'T00:00:00.000Z')
+    const endOfDay = new Date(targetDate + 'T23:59:59.999Z')
+    const startTimestamp = Math.floor(startOfDay.getTime() / 1000)
+    const endTimestamp = Math.floor(endOfDay.getTime() / 1000)
+
+    const newUsersCount = await prisma.user.count({
+      where: {
+        firstVisitTime: {
+          gte: startTimestamp,
+          lte: endTimestamp
+        }
+      }
+    })
+
+    // Update daily analytics with end-of-day snapshot
+    const dailyRecord = await prisma.dailyAnalytics.upsert({
+      where: { date: targetDate },
+      update: {
+        cumulativeStaked: globalStats?.totalStaked || 0,
+        totalPending: globalStats?.totalPendingXLabs || 0,
+        totalUsers: globalStats?.totalUsers || 0,
+        newUsers: newUsersCount,
+        timestamp: endOfDayTimestamp
+      },
+      create: {
+        date: targetDate,
+        timestamp: endOfDayTimestamp,
+        cumulativeStaked: globalStats?.totalStaked || 0,
+        totalPending: globalStats?.totalPendingXLabs || 0,
+        totalUsers: globalStats?.totalUsers || 0,
+        newUsers: newUsersCount
+      }
+    })
+
+    return { success: true, data: dailyRecord }
+  } catch (error) {
+    console.error('Error creating daily analytics snapshot:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Get daily analytics data for LABS staking chart
+ */
+export async function getLabsStakingChartData(days: number = 30) {
+  try {
+    const dailyData = await prisma.dailyAnalytics.findMany({
+      select: {
+        date: true,
+        totalStaked: true,
+        totalUnstaked: true,
+        cumulativeStaked: true
+      },
+      orderBy: { date: 'asc' },
+      take: days
+    })
+
+    const chartData = dailyData.map(day => ({
+      date: day.date,
+      staked: day.totalStaked,
+      unstaked: day.totalUnstaked
+    }))
+
+    return {
+      success: true,
+      data: chartData
+    }
+  } catch (error) {
+    console.error('Error fetching LABS staking chart data:', error)
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Get daily analytics data for xLABS rewards chart
+ */
+export async function getXLabsRewardsChartData(days: number = 30) {
+  try {
+    const dailyData = await prisma.dailyAnalytics.findMany({
+      select: {
+        date: true,
+        totalClaimed: true,
+        totalPending: true
+      },
+      orderBy: { date: 'asc' },
+      take: days
+    })
+
+    const chartData = dailyData.map(day => ({
+      date: day.date,
+      claimed: day.totalClaimed,
+      pending: day.totalPending
+    }))
+
+    return {
+      success: true,
+      data: chartData
+    }
+  } catch (error) {
+    console.error('Error fetching xLABS rewards chart data:', error)
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Clean up old daily analytics data beyond retention period
+ */
+export async function cleanupOldAnalyticsData(retentionDays: number = 90): Promise<DailyAnalyticsResult> {
+  try {
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
+    const cutoffDateStr = cutoffDate.toISOString().split('T')[0]
+
+    const deletedRecords = await prisma.dailyAnalytics.deleteMany({
+      where: {
+        date: {
+          lt: cutoffDateStr
+        }
+      }
+    })
+
+    return {
+      success: true,
+      data: { deletedCount: deletedRecords.count }
+    }
+  } catch (error) {
+    console.error('Error cleaning up old analytics data:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}

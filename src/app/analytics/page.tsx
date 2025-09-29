@@ -3,9 +3,14 @@
 import { motion } from "framer-motion"
 import { EChartLabsStaked } from "@/components/charts/echart-labs-data"
 import { EChartXLabsData } from "@/components/charts/echart-xlabs-data"
-import { BarChart3 } from "lucide-react"
+import { useAnalyticsData } from "@/hooks/use-analytics-data"
+import { BarChart3, AlertCircle } from "lucide-react"
+import { Card, CardBody } from "@heroui/react"
 
 export default function AnalyticsPage() {
+  // Fetch analytics data for the last 30 days
+  const { labsStaking, xLabsRewards, isLoading, isError, error } = useAnalyticsData(30)
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -53,17 +58,44 @@ export default function AnalyticsPage() {
         </p>
       </motion.div>
 
+      {/* Error State */}
+      {isError && (
+        <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 sm:mb-12 px-2 sm:px-0">
+          <Card className="bg-gradient-to-br from-red-950/80 via-red-900/60 to-red-800/40 border border-red-700/30 backdrop-blur-sm">
+            <CardBody className="p-6">
+              <div className="flex items-center gap-3 text-red-400">
+                <AlertCircle className="w-6 h-6" />
+                <div>
+                  <h3 className="text-lg font-semibold">Failed to load analytics data</h3>
+                  <p className="text-sm text-red-300 mt-1">
+                    {error?.message || 'An unexpected error occurred while fetching analytics data.'}
+                  </p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Charts Section - Side by Side */}
       <motion.div variants={itemVariants} className="max-w-7xl mx-auto mb-8 sm:mb-12 px-2 sm:px-0">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
           {/* LABS Staking Chart */}
           <div className="w-full">
-            <EChartLabsStaked className="h-full" />
+            <EChartLabsStaked 
+              className="h-full" 
+              data={labsStaking.data}
+              isLoading={labsStaking.isLoading}
+            />
           </div>
 
           {/* xLABS Rewards Chart */}
           <div className="w-full">
-            <EChartXLabsData className="h-full" />
+            <EChartXLabsData 
+              className="h-full" 
+              data={xLabsRewards.data}
+              isLoading={xLabsRewards.isLoading}
+            />
           </div>
         </div>
       </motion.div>
