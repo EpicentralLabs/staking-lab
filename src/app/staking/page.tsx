@@ -300,7 +300,7 @@ function StakingPageConnected() {
                   </div>
 
                   <div className="space-y-1 sm:space-y-2">
-                    <span className="text-white/70 text-sm font-medium">My stake</span>
+                    <span className="text-white/70 text-sm font-medium">My Stake</span>
                     <div className="flex items-center justify-center">
                       <span className="text-xl sm:text-2xl font-normal text-white/95" style={{textShadow: '0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)'}}>
                         {formatNumber(stakedAmount)}
