@@ -150,7 +150,7 @@ export function UnstakeModal({
     >
       <div ref={modalContentRef}>
         <ModalContent 
-          className="border border-gray-700/30 backdrop-blur-xl max-h-[80vh] overflow-hidden relative transition-all duration-300 ease-out rounded-xl max-w-md mx-auto"
+          className="border border-gray-700/30 backdrop-blur-xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden relative transition-all duration-300 ease-out rounded-xl max-w-md mx-auto m-4 sm:m-0"
           style={{
             background: `
               linear-gradient(to bottom right, 
@@ -163,7 +163,7 @@ export function UnstakeModal({
         >
         {(onClose) => (
           <>
-            <ModalHeader className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+            <ModalHeader className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-400/10 flex items-center justify-center border border-orange-400/20">
                   <ArrowDownRight className="w-4 h-4 text-orange-400" />
@@ -179,7 +179,7 @@ export function UnstakeModal({
               </div>
             </ModalHeader>
 
-            <ModalBody className="p-6 overflow-y-auto">
+            <ModalBody className="p-4 sm:p-6 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -207,7 +207,7 @@ export function UnstakeModal({
                       classNames={{
                         base: "max-w-full",
                         label: "text-white/80 text-base",
-                        input: "text-white/95 text-lg font-medium",
+                        input: "text-white/95 text-lg font-medium placeholder:font-normal",
                         inputWrapper: "bg-white/5 border-white/10 hover:border-white/20 data-[hover=true]:bg-white/8 data-[focus=true]:!bg-white/8 data-[focus-visible=true]:!bg-white/8 focus:!bg-white/8 data-[focus=true]:!border-orange-400/40 data-[focus-visible=true]:!border-orange-400/40 focus:!border-orange-400/40 h-14 rounded-xl"
                       }}
                       isInvalid={!!unstakeError}
@@ -234,7 +234,7 @@ export function UnstakeModal({
                 </div>
 
                 {/* Information Section */}
-                <div className="p-6 rounded-xl bg-gray-950/40 border border-white/5 space-y-3">
+                <div className="p-4 sm:p-6 rounded-xl bg-gray-950/40 border border-white/5 space-y-3">
                   <h4 className="text-base font-medium text-white/90 mb-4">Transaction Details</h4>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between items-center">
@@ -256,7 +256,7 @@ export function UnstakeModal({
                 </div>
 
                 {/* Warning Section */}
-                <div className="p-4 rounded-xl bg-orange-500/5 border border-orange-400/20">
+                <div className="p-3 sm:p-4 rounded-xl bg-orange-500/5 border border-orange-400/20">
                   <div className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-orange-400/20 flex items-center justify-center mt-0.5">
                       <span className="text-orange-400 text-xs">!</span>
@@ -272,41 +272,35 @@ export function UnstakeModal({
               </motion.div>
             </ModalBody>
 
-            <ModalFooter className="border-t border-white/10 px-6 py-4">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2 text-sm text-white/60">
-                  <ArrowDownRight className="w-4 h-4" />
-                  <span>Unstake Transaction</span>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="flat"
-                    size="lg"
-                    onPress={onClose}
-                    className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white/95 border border-white/10 hover:border-white/20 transition-all duration-200 rounded-xl px-6 h-12"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "font-semibold transition-all duration-300 rounded-xl px-8 h-12 min-w-[120px]",
-                      (!isProcessing && unstakeAmount && !unstakeError && Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) > 0)
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white shadow-xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:scale-[1.02]"
-                        : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
-                    )}
-                    isDisabled={
-                      isProcessing ||
-                      !unstakeAmount ||
-                      !!unstakeError ||
-                      Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) <= 0
-                    }
-                    isLoading={isProcessing}
-                    onPress={handleUnstake}
-                  >
-                    {isProcessing ? "Unstaking..." : "Confirm Unstake"}
-                  </Button>
-                </div>
+            <ModalFooter className="border-t border-white/10 px-4 sm:px-6 py-4">
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="flat"
+                  size="lg"
+                  onPress={onClose}
+                  className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white/95 border border-white/10 hover:border-white/20 transition-all duration-200 rounded-xl px-4 sm:px-6 h-12 flex-1 sm:flex-none"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="lg"
+                  className={cn(
+                    "font-semibold transition-all duration-300 rounded-xl px-4 sm:px-8 h-12 min-w-[120px] flex-1 sm:flex-none",
+                    (!isProcessing && unstakeAmount && !unstakeError && Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) > 0)
+                      ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white shadow-xl shadow-orange-500/40 hover:shadow-orange-500/60 hover:scale-[1.02]"
+                      : "bg-white/10 text-white/40 border border-white/10 cursor-not-allowed"
+                  )}
+                  isDisabled={
+                    isProcessing ||
+                    !unstakeAmount ||
+                    !!unstakeError ||
+                    Number.parseFloat(unstakeAmount.replace(/[^\d.\-]/g, '')) <= 0
+                  }
+                  isLoading={isProcessing}
+                  onPress={handleUnstake}
+                >
+                  {isProcessing ? "Unstaking..." : "Confirm Unstake"}
+                </Button>
               </div>
             </ModalFooter>
           </>
