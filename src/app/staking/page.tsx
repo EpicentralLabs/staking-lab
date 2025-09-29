@@ -361,7 +361,6 @@ function StakingPageConnected() {
         </Card>
       </motion.div>
 
-
       {/* Modals */}
       <StakeModal
         isOpen={isStakeModalOpen}

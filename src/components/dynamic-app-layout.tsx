@@ -12,6 +12,7 @@ export function DynamicAppLayout({ children }: { children: React.ReactNode }) {
   const links = useMemo(() => {
     const baseLinks = [
       { label: 'Staking', path: '/staking' },
+      { label: 'Analytics', path: '/analytics' },
     ]
 
     // Only add admin link if wallet is connected and whitelisted

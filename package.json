@@ -49,6 +49,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "codama": "^1.3.3",
+    "echarts": "^6.0.0",
     "edge": "link:@prisma/client/edge",
     "framer-motion": "^12.23.22",
     "gill": "0.10.2",
